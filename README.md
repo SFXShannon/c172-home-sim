@@ -69,12 +69,12 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 | Control | Looks like | Inside | Sensor |
 |---|---|---|---|
 | [Parking brake](parts/parking-brake) | Black L-lever; pull and rotate down to set | Spring + bayonet slot | Microswitch |
-| [Throttle](parts/throttle) | Smooth round knob, knurled friction nut | 8 mm rod, O-ring friction | 60 mm slide pot |
-| [Mixture](parts/mixture) | Red ribbed vernier knob with lock button | Same as throttle | 60 mm slide pot |
-| [Prop](parts/prop) (optional) | Blue crenellated knob | Same as throttle | 60 mm slide pot |
+| [Throttle](parts/throttle) | Smooth round knob, knurled friction nut | 8 mm rod, O-ring friction | 128 mm slide pot (100 mm travel) |
+| [Mixture](parts/mixture) | Red ribbed vernier knob with lock button | Same as throttle | 128 mm slide pot (100 mm travel) |
+| [Prop](parts/prop) (optional) | Blue crenellated knob | Same as throttle | 128 mm slide pot (100 mm travel) |
 | [Elevator trim wheel](parts/trim-wheel) | Black ridged wheel in the pedestal, NOSE DN / T.O. / NOSE UP placard | 608 bearings, 3:1 gear | EC11 encoder |
 | [Fuel selector](parts/fuel-selector) | Pointer handle on a LEFT / BOTH / RIGHT placard | 3:1 gear to rotary switch | 1P12T rotary switch |
-| [Flap lever](parts/flap-lever) | White flap handle, UP / 10 / 20 / FULL scale | Slide with 4 detent clicks | 60 mm slide pot |
+| [Flap lever](parts/flap-lever) | White flap handle, UP / 10 / 20 / FULL scale | Slide with 4 detent clicks | 128 mm slide pot (100 mm travel) |
 | [G1000 PFD / MFD](parts/g1000-gdu) | Garmin GDU 1040 bezel, real size and key layout | Printed caps on tactile switches, 10.4" screen | 32 keys, 9 knobs (EC11 / dual EC11) |
 | [Audio panel](parts/g1000-gma) | Garmin GMA 1347 | Same as the G1000 bezel | 22 keys, 1 knob |
 | [Switch panels](parts/switch-panel) | C-post (STBY BATT, MASTER, AVIONICS) and lights / dimming | Off-the-shelf rockers, toggles and pots | 18 switches, 4 pots |

@@ -71,7 +71,7 @@ brake_pos = [-117, 25];
 alt_static_pos = [98, 50];
 throttle_pos = [197, 38];
 mixture_pos = [266, 38];
-flap_pos = [371, 56];
+flap_pos = [380, 60];
 cabin_heat_pos = [433, 78];
 cabin_air_pos = [433, 34];
 

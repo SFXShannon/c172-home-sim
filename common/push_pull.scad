@@ -6,7 +6,8 @@
 //   - it slides through a printed U-channel housing bolted behind the panel
 //   - an O-ring in the front bushing gives the friction that holds it in place
 //   - a printed carriage clamped to the rod drives a slide potentiometer
-//     (60 mm travel, e.g. Bourns PTA6043 or any "60mm slide pot" module)
+//     (default: the common 128 mm long / 100 mm travel fader, e.g. Fielect 10K
+//     linear; the control only uses 60 mm of its travel)
 //
 // Do not use this file directly: open parts/throttle, parts/mixture or parts/prop.
 // Those files set `control` and `part` and then include this one.
@@ -14,10 +15,11 @@
 include <sim_common.scad>
 
 /* [Slide potentiometer] */
-// Travel of your slide pot (mm)
-pot_travel = 60;
-// Pot body length / width / height (without the lever)
-pot_len = 76;
+// How far the knob moves, pushed in to pulled out (mm)
+control_travel = 60;
+// Your slide pot: travel, then body length / width / height (without the lever). Measure yours.
+pot_travel = 100;
+pot_len = 128;
 pot_w = 9.5;
 pot_h = 8;
 // Lever height above the pot body
@@ -26,7 +28,7 @@ pot_lever_h = 15;
 /* [Hidden] */
 rod_d        = 8;
 bore_d       = rod_d + 0.4;
-travel       = pot_travel;
+travel       = min(control_travel, pot_travel);
 knob_gap     = 2;          // knob back to escutcheon when pushed fully in
 socket_depth = 15;         // rod goes this far into the knob
 
@@ -41,6 +43,7 @@ carr_len   = 14;
 rear_len   = 12;
 z_rear     = bush_len + travel + carr_len;   // front face of rear bushing block
 z_end      = z_rear + rear_len;
+z_floor_end = max(z_end, pot_z0() + pot_len + 3);   // the floor runs on under a long pot
 wall_in    = 8.5;          // channel inner half-width
 wall_t     = 3;
 carr_half  = 8;
@@ -164,10 +167,12 @@ module housing() {
                 linear_extrude(flange_t) translate([mount_flange_size/2, (flange_y1 - flange_y0)/2])
                     rounded_rect([mount_flange_size, flange_y1 - flange_y0], 5);
             // floor
-            translate([-(wall_in + wall_t), y_floor_bot, 0]) cube([2 * (wall_in + wall_t), floor_t, z_end]);
-            // side walls
-            for (s = [-1, 1]) translate([s > 0 ? wall_in : -wall_in - wall_t, y_floor_bot, 0])
+            translate([-(wall_in + wall_t), y_floor_bot, 0]) cube([2 * (wall_in + wall_t), floor_t, z_floor_end]);
+            // side walls (full height along the carriage, low beside the rest of the pot)
+            for (s = [-1, 1]) translate([s > 0 ? wall_in : -wall_in - wall_t, y_floor_bot, 0]) {
                 cube([wall_t, y_wall_top - y_floor_bot, z_end]);
+                cube([wall_t, y_floor_top - y_floor_bot + pot_h, z_floor_end]);
+            }
             // front bushing block + round boss
             translate([-wall_in, y_block_bot, 0]) cube([2 * wall_in, y_wall_top - y_block_bot, bush_len]);
             cylinder(d = 18, h = bush_len);
@@ -194,8 +199,15 @@ module housing() {
     }
 }
 
-// Pot body start (z) so its travel centre lines up with the carriage's.
-function pot_z0() = bush_len + (travel + carr_len) / 2 - pot_len / 2;
+// Pot body start (z): its travel centre lines up with the carriage's, unless
+// that would put the pot into the flange - then it moves back a little.
+function pot_z0() = max(bush_len + (travel + carr_len) / 2 - pot_len / 2, flange_t + 3);
+// Part of the pot's travel the carriage uses (0 = pot's front end), for the firmware
+pot_mid = pot_z0() + pot_len / 2;
+lever_in = z_carr_in + carr_len / 2;
+use_from = 0.5 + (lever_in - travel - pot_mid) / pot_travel;
+use_to = 0.5 + (lever_in - pot_mid) / pot_travel;
+if (use_from < 0 || use_to > 1) echo(str("WARNING: ", control, ": the carriage runs past the end of the pot's travel - use a longer pot or less control_travel"));
 
 // ------------------------------------------------------------------ carriage
 // Clamped to the rod with an M3 set screw; the pot lever sits in the cross slot.
@@ -303,5 +315,6 @@ module push_pull_output() {
 }
 
 echo(str(control, ": 8 mm smooth rod, cut to ", ceil(rod_len), " mm"));
+echo(str(control, ": uses ", round(use_from * 100), "% to ", round(use_to * 100), "% of the pot's travel; reaches ", ceil(z_floor_end), " mm behind the panel"));
 echo(str(control, ": panel screws 4x M3 x ", mount_screw_len(panel_thickness), " countersunk + 4x M3 nuts"));
 echo(str(control, ": panel hole ", panel_hole_d, " mm + standard 4-hole mount"));

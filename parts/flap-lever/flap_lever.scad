@@ -4,8 +4,8 @@
 // with the UP 10 20 FULL scale beside it (engraved in the panel).
 // Inside (kept simple): a printed carriage slides in a printed channel bolted
 // behind the panel (4 x M3 countersunk screws from the front into captive nuts). A springy finger on the carriage
-// clicks into 4 notches. The carriage drives a 60 mm slide pot, the same pot
-// as the throttle - bind it to the flaps axis.
+// clicks into 4 notches. The carriage drives a slide pot, the same pot as the
+// throttle (default: 128 mm long, 100 mm travel) - bind it to the flaps axis.
 //
 // Coordinates like the other controls: panel back at z = 0, behind the panel
 // is +z, pilot at -z, +y up, pilot's right = -x.
@@ -18,10 +18,14 @@ part = "assembly"; // [assembly, housing, carriage, handle, panel_cutout]
 position = 0;
 
 /* [Slide pot] */
-pot_len = 76;
+// Your slide pot (measure it): travel, body length / width / height, lever height
+pot_travel = 100;
+pot_len = 128;
 pot_w = 9.5;
 pot_h = 8;
 pot_lever_h = 15;
+// Moves the pot toward UP (mm), so a long pot doesn't hang below the panel
+pot_shift = 4;
 
 /* [Hidden] */
 travel = 60;                 // UP to FULL
@@ -66,10 +70,23 @@ module housing() {
         }
         // pot: zip-tie slots + wire exit in the back plate
         for (y = [-20, 20]) for (s = [-1, 1]) translate([s * (pot_w / 2 + 2) - 1, y, z_back - 1]) cube([2, 4, 5]);
-        translate([-4, -pot_len / 2 - 2, z_back - 1]) cube([8, 6, 5]);
     }
 }
-
+pot_y0 = pot_shift - pot_len / 2;   // pot body ends (y)
+pot_y1 = pot_shift + pot_len / 2;
+// narrow channels that carry a pot longer than the housing: two walls standing
+// on the panel back, bridged at the back (prints with the housing, flange down)
+module pot_spines() for (r = [[pot_y0, -fl_size[1] / 2 + 1], [fl_size[1] / 2 - 1, pot_y1]]) if (r[1] > r[0])
+    translate([-pot_w / 2 - 4, r[0], 0]) difference() {
+        union() {
+            translate([0, 0, z_back]) cube([pot_w + 8, r[1] - r[0], 3]);
+            for (x = [0, pot_w + 6]) cube([2, r[1] - r[0], z_back + 0.01]);
+        }
+        translate([pot_w / 2, r[0] < 0 ? 2 : r[1] - r[0] - 6, z_back - 1]) {     // zip-tie slots
+            translate([-pot_w / 2 - 3, 0, 0]) cube([2, 4, 5]);
+            translate([pot_w / 2 + 1, 0, 0]) cube([2, 4, 5]);
+        }
+    }
 // ------------------------------------------------------------------ carriage (+ stem)
 module carriage() {
     difference() {
@@ -138,14 +155,14 @@ module flap_countersinks() for (sc = fl_screws) translate([sc[0], sc[1], -0.01])
 
 // ------------------------------------------------------------------ views
 module pot_dummy(dy) {
-    color("dimgray") translate([-pot_w / 2, -pot_len / 2, z_pot_top]) cube([pot_w, pot_len, pot_h]);
+    color("dimgray") translate([-pot_w / 2, pot_y0, z_pot_top]) cube([pot_w, pot_len, pot_h]);
     color("silver") translate([-2.5, dy - 0.6, z_carr1 - lever_engage]) cube([5, 1.2, pot_lever_h]);
 }
 // animation: UP -> 10 -> 20 -> FULL (a pause at each click), then back UP
 fl_anim = [[0, 0], [0.06, 0], [0.14, 1], [0.24, 1], [0.32, 2], [0.42, 2], [0.50, 3], [0.66, 3], [0.90, 0], [1, 0]];
 module flap_mounted(pos = position) {
     dy = anim >= 0 ? travel / 2 - lookup(anim, fl_anim) * step : detents[pos];
-    color("darkorange", ghost_a()) housing();
+    color("darkorange", ghost_a()) { housing(); pot_spines(); }
     color("silver") for (sc = fl_screws) translate(sc) {
         translate([0, 0, -panel_thickness]) cylinder(d1 = m3_head_d, d2 = 3, h = 1.6);
         translate([0, 0, -panel_thickness]) cylinder(d = 3, h = mount_screw_len(panel_thickness, flange_t));
@@ -163,9 +180,10 @@ module panel_slab() {
 }
 
 if (part == "assembly") rotate([90, 0, 0]) { panel_slab(); flap_mounted(); }
-else if (part == "housing") housing();
+else if (part == "housing") { housing(); pot_spines(); }
 else if (part == "carriage") rotate([180, 0, 0]) translate([0, 0, -z_carr1]) carriage();
 else if (part == "handle") translate([0, 0, panel_thickness + 10 + 20]) handle();
 else if (part == "panel_cutout") panel_cutout();
 
-echo(str("Flap lever: detents every ", step, " mm (UP, 10, 20, FULL); same 60 mm slide pot as the throttle"));
+echo(str("Flap lever: detents every ", step, " mm (UP, 10, 20, FULL); uses ", round(100 * (0.5 + (-travel / 2 - pot_shift) / pot_travel)), "% to ", round(100 * (0.5 + (travel / 2 - pot_shift) / pot_travel)), "% of the pot's travel"));
+if (travel / 2 + abs(pot_shift) > pot_travel / 2) echo("WARNING: the flap carriage runs past the end of the pot's travel - reduce pot_shift");

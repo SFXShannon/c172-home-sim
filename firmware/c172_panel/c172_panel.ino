@@ -24,6 +24,12 @@
 // Wiring: every switch goes between its pin and GND (internal pull-ups are
 // used). Pots: ends to VCC and GND, wiper to the analog pin.
 //
+// Calibration: the levers only use part of a long slide pot's travel (about
+// 60 mm of the 128 mm pot's 100 mm). The sketch learns each axis's range by
+// itself: after flashing, move every lever end to end once. The range is saved
+// in EEPROM, so it survives unplugging. Set RESET_CALIBRATION = true, flash,
+// then set it back to false and flash again to start over.
+//
 //   Pin 2  parking brake microswitch (COM -> GND, NC -> pin 2)
 //   Pin 3  fuel selector position LEFT   (rotary switch common -> GND)
 //   Pin 4  fuel selector position BOTH
@@ -33,6 +39,7 @@
 //   Pin 8  trim encoder B   (encoder C / middle pin -> GND)
 
 #include <Joystick.h>
+#include <EEPROM.h>
 
 // ---- settings ---------------------------------------------------------------
 const bool HAS_PROP = false;        // true if you built the prop control
@@ -44,6 +51,7 @@ const bool REVERSE_FLAPS    = false;
 const bool REVERSE_TRIM     = false;  // swap if nose-down/up come out backwards
 const int  STEPS_PER_DETENT = 4;      // EC11 encoders: usually 4 (try 2 if it skips)
 const int  PULSE_MS         = 40;     // how long each trim / brake pulse is held
+const bool RESET_CALIBRATION = false; // true = forget the learned lever ranges
 
 // ---- pins -------------------------------------------------------------------
 const int PIN_THROTTLE = A0, PIN_MIXTURE = A1, PIN_PROP = A2, PIN_FLAPS = A3;
@@ -62,6 +70,36 @@ Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
 int smooth(int pin, float &state) {
   state += (analogRead(pin) - state) * 0.2;
   return (int)(state + 0.5);
+}
+
+// ---- self-calibrating axes: each one stretches the part of the pot it uses
+// to the full 0..1023. The range only grows, and is saved in EEPROM.
+const int CAL_ADDR = 0, CAL_MAGIC = 0x172C;
+const int DEAD = 6;                 // a little dead zone at each end so 0 % / 100 % are easy to hit
+int calLo[4], calHi[4];
+bool calDirty = false;
+unsigned long calSaveAt = 0;
+
+void loadCalibration() {
+  int magic;
+  EEPROM.get(CAL_ADDR, magic);
+  if (magic == CAL_MAGIC && !RESET_CALIBRATION) {
+    EEPROM.get(CAL_ADDR + 2, calLo);
+    EEPROM.get(CAL_ADDR + 2 + sizeof(calLo), calHi);
+  } else {
+    for (int i = 0; i < 4; i++) { calLo[i] = 450; calHi[i] = 570; }   // grows as you move the levers
+  }
+}
+void saveCalibration() {
+  EEPROM.put(CAL_ADDR, CAL_MAGIC);
+  EEPROM.put(CAL_ADDR + 2, calLo);
+  EEPROM.put(CAL_ADDR + 2 + sizeof(calLo), calHi);
+}
+int calibrated(int i, int raw) {
+  if (raw < calLo[i] - 3) { calLo[i] = raw; calDirty = true; }
+  if (raw > calHi[i] + 3) { calHi[i] = raw; calDirty = true; }
+  long v = map(raw, calLo[i] + DEAD, calHi[i] - DEAD, 0, 1023);
+  return (int)constrain(v, 0L, 1023L);
 }
 
 float sThr = 0, sMix = 0, sProp = 0, sFlap = 0;
@@ -96,6 +134,7 @@ void setup() {
   Joystick.setZAxisRange(0, 1023);
   Joystick.setRxAxisRange(0, 1023);
   Joystick.begin(false);
+  loadCalibration();
   sThr = analogRead(PIN_THROTTLE); sMix = analogRead(PIN_MIXTURE); sProp = analogRead(PIN_PROP); sFlap = analogRead(PIN_FLAPS);
 }
 
@@ -103,13 +142,16 @@ void loop() {
   unsigned long now = millis();
 
   // ---- axes
-  int t = smooth(PIN_THROTTLE, sThr);
-  int m = smooth(PIN_MIXTURE, sMix);
-  int p = HAS_PROP ? smooth(PIN_PROP, sProp) : 1023;
+  int t = calibrated(0, smooth(PIN_THROTTLE, sThr));
+  int m = calibrated(1, smooth(PIN_MIXTURE, sMix));
+  int p = HAS_PROP ? calibrated(2, smooth(PIN_PROP, sProp)) : 1023;
   Joystick.setXAxis(REVERSE_THROTTLE ? 1023 - t : t);
   Joystick.setYAxis(REVERSE_MIXTURE  ? 1023 - m : m);
   Joystick.setZAxis(REVERSE_PROP     ? 1023 - p : p);
-  int fl = HAS_FLAPS ? smooth(PIN_FLAPS, sFlap) : 0;
+  int fl = HAS_FLAPS ? calibrated(3, smooth(PIN_FLAPS, sFlap)) : 0;
+  // save a grown range once the levers have been still for 2 s (saves EEPROM wear)
+  if (calDirty) { calSaveAt = now + 2000; calDirty = false; }
+  if (calSaveAt && now > calSaveAt) { saveCalibration(); calSaveAt = 0; }
   Joystick.setRxAxis(REVERSE_FLAPS   ? 1023 - fl : fl);
 
   // ---- parking brake (held + edge pulses)
