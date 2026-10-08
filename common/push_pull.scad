@@ -22,8 +22,8 @@ pot_travel = 100;
 pot_len = 128;
 pot_w = 9.5;
 pot_h = 8;
-// Lever height above the pot body
-pot_lever_h = 15;
+// Lever height above the pot body (the "16mm" in the Fielect "128 x 16mm" listing)
+pot_lever_h = 16;
 
 /* [Hidden] */
 rod_d        = 8;

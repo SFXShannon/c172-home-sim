@@ -23,7 +23,7 @@ pot_travel = 100;
 pot_len = 128;
 pot_w = 9.5;
 pot_h = 8;
-pot_lever_h = 15;
+pot_lever_h = 16;
 // Moves the pot toward UP (mm), so a long pot doesn't hang below the panel
 pot_shift = 4;
 
