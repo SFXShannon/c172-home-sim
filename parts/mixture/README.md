@@ -2,6 +2,8 @@
 
 Red ribbed vernier-style knob with the centre lock button, on a hex bushing nut.
 
+![mixture working](../../docs/anim/mixture.gif)
+
 It uses the same mechanism, parts list and assembly as the throttle; see [`../throttle/README.md`](../throttle/README.md).
 
 | Pushed in (rich) | Pulled out (idle cut-off) | Knob |

@@ -8,6 +8,8 @@ Throttle, mixture and prop all use the same simple mechanism. Only the knob and 
 | **Mixture** | Red, fine ribs around the edge, lock button in the centre (vernier style) | Hex bushing nut | [`../mixture`](../mixture) |
 | **Prop** | Blue, crenellated edge (172RG / 182 / constant-speed) | Hex bushing nut | [`../prop`](../prop) |
 
+![throttle working](../../docs/anim/throttle.gif)
+
 | Pushed in | Pulled out | Behind the panel |
 |---|---|---|
 | ![](images/assembly_in.png) | ![](images/assembly_out.png) | ![](images/rear.png) |

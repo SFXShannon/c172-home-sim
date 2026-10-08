@@ -299,7 +299,7 @@ module microswitch_dummy() {
 }
 
 module panel_slab() {
-    color([0.30, 0.31, 0.33]) difference() {
+    color([0.30, 0.31, 0.33], ghost_a(0.55)) difference() {
         translate([0, 0, -panel_thickness]) linear_extrude(panel_thickness) difference() {
             translate([-80, -60]) square([160, 120]);
             circle(d = panel_hole_d);
@@ -314,13 +314,18 @@ module sec() {
     else children();
 }
 
+// Demo animation: pull out, twist down, drop into the notch, hold, then release.
+pb_anim_dz = [[0, 0], [0.08, 0], [0.30, -travel], [0.42, -travel], [0.48, -travel + notch_depth],
+              [0.62, -travel + notch_depth], [0.66, -travel], [0.78, -travel], [0.96, 0], [1, 0]];
+pb_anim_a  = [[0, 0], [0.30, 0], [0.42, 1], [0.66, 1], [0.78, 0], [1, 0]];
+
 module assembly(slab = true, set = brake_state == "set") {
-    dz = set ? -travel + notch_depth : 0;
-    a  = set ? twist * twist_dir : 0;
+    dz = anim >= 0 ? lookup(anim, pb_anim_dz) : set ? -travel + notch_depth : 0;
+    a  = anim >= 0 ? lookup(anim, pb_anim_a) * twist * twist_dir : set ? twist * twist_dir : 0;
     if (slab) sec() panel_slab();
     color([0.1, 0.1, 0.1]) sec() escutcheon();
-    color("darkorange") sec() housing();
-    color("goldenrod") sec() rear_cap();
+    color("darkorange", ghost_a()) sec() housing();
+    color("goldenrod", ghost_a()) sec() rear_cap();
     sec() mount_hardware_dummy(panel_thickness);
     microswitch_dummy();
     color("silver") sec() translate([0, 0, dz]) rotate([0, 0, a]) shaft();

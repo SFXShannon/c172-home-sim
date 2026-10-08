@@ -54,7 +54,8 @@ flange_y0  = sw_pos[1] - 14;
 flange_y1  = mount_flange_size / 2;
 flange_x   = post_x + 5;
 
-pos_angle = show_position == "left" ? -90 : show_position == "right" ? 90 : show_position == "off" ? 180 : 0;
+pos_angle = anim >= 0 ? lookup(anim, [[0, 0], [0.08, 0], [0.2, -90], [0.38, -90], [0.5, 0], [0.58, 0], [0.7, 90], [0.88, 90], [1, 0]])
+          : show_position == "left" ? -90 : show_position == "right" ? 90 : show_position == "off" ? 180 : 0;
 
 // ------------------------------------------------------------------ handle
 // Print coordinates: flat bottom on the bed, pointer along +y.
@@ -216,7 +217,7 @@ module panel_test_plate() {
 
 // ------------------------------------------------------------------ views
 module panel_slab() {
-    color([0.30, 0.31, 0.33]) difference() {
+    color([0.30, 0.31, 0.33], ghost_a(0.55)) difference() {
         translate([0, 0, -panel_thickness]) linear_extrude(panel_thickness) difference() {
             translate([-85, -80]) square([170, 160]);
             circle(d = panel_hole_d);
@@ -235,8 +236,8 @@ module switch_dummy() {
 module assembly(slab = true) {
     if (slab) panel_slab();
     color([0.12, 0.12, 0.12]) placard_placed();
-    color("darkorange") housing();
-    color("goldenrod") switch_bracket();
+    color("darkorange", ghost_a()) housing();
+    color("goldenrod", ghost_a()) switch_bracket();
     mount_hardware_dummy(panel_thickness);
     switch_dummy();
     rotate([0, 0, pos_angle]) {

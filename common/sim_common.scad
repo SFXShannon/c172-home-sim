@@ -26,6 +26,13 @@ function m3_tap_d() = use_heat_set_inserts ? m3_insert_d : m3_pilot_d;
 
 $fn = 72;
 
+/* [Animation] */
+// 0..1 = position in the demo animation (used to make the README GIFs); -1 = off
+anim = -1;
+// See-through housings so the mechanism shows in the animations
+ghost = false;
+function ghost_a(a = 0.32) = ghost ? a : 1;
+
 // ---------- helpers ----------
 
 // Countersunk M3 hole, head at z = top, going down by depth.

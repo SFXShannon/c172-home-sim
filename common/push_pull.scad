@@ -241,7 +241,7 @@ module panel_test_plate() {
 knob_color = control == "throttle" ? [0.08, 0.08, 0.08] : (control == "mixture" ? [0.75, 0.05, 0.05] : [0.1, 0.25, 0.75]);
 
 module panel_slab() {
-    color([0.30, 0.31, 0.33]) difference() {
+    color([0.30, 0.31, 0.33], ghost_a(0.55)) difference() {
         translate([0, 0, -panel_thickness]) linear_extrude(panel_thickness) difference() {
             translate([-60, -60]) square([120, 120]);
             circle(d = panel_hole_d);
@@ -268,7 +268,7 @@ module moving(pos) {
 module assembly(pos = 0.4, slab = true) {
     if (slab) panel_slab();
     color([0.6, 0.6, 0.62]) escutcheon();
-    color("darkorange") housing();
+    color("darkorange", ghost_a()) housing();
     mount_hardware_dummy(panel_thickness);
     pot_dummy(pos);
     moving(pos);
@@ -288,7 +288,8 @@ module push_pull_panel_cutout() { circle(d = panel_hole_d); mount_panel_holes();
 
 // ------------------------------------------------------------------ output
 module push_pull_output() {
-    if (part == "assembly") rotate([90, 0, 0]) assembly(0.4);
+    if (part == "assembly") rotate([90, 0, 0])
+        assembly(anim >= 0 ? lookup(anim, [[0, 0], [0.08, 0], [0.42, 1], [0.58, 1], [0.92, 0], [1, 0]]) : 0.4);
     else if (part == "assembly_in") rotate([90, 0, 0]) assembly(0);
     else if (part == "assembly_out") rotate([90, 0, 0]) assembly(1);
     else if (part == "exploded") rotate([90, 0, 0]) exploded();

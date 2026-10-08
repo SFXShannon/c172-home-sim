@@ -2,6 +2,8 @@
 
 The 172 has a fixed-pitch prop, so the standard 172 doesn't have this control. Build it if you also fly constant-speed aircraft like the 172RG, 182 or Comanche. The knob is blue with a crenellated edge, on a hex bushing nut.
 
+![prop working](../../docs/anim/prop.gif)
+
 It uses the same mechanism, parts list and assembly as the throttle; see [`../throttle/README.md`](../throttle/README.md).
 
 | Pushed in (high RPM) | Pulled out | Knob |

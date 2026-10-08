@@ -182,7 +182,7 @@ module panel_test_plate() {
 // ------------------------------------------------------------------ views
 
 module panel_slab() {
-    color([0.30, 0.31, 0.33]) translate([0, 0, -panel_thickness]) linear_extrude(panel_thickness) difference() {
+    color([0.30, 0.31, 0.33], ghost_a(0.55)) translate([0, 0, -panel_thickness]) linear_extrude(panel_thickness) difference() {
         translate([-90, -85]) square([180, 170]);
         rounded_rect([slot_w, slot_len], 4);
     }
@@ -200,12 +200,17 @@ module enc_gear_placed() {
     translate([x_wheel + 0.3, enc_pos[0], enc_pos[1]]) rotate([0, 90, 0]) rotate([0, 0, 180 / enc_gear_z]) encoder_gear();
 }
 
+// Demo animation: roll the top forward (nose down), then back (nose up).
+tw_anim = [[0, 0], [0.30, 150], [0.38, 150], [0.75, -60], [0.85, -60], [1, 0]];
+
 module assembly(slab = true) {
+    w = anim >= 0 ? lookup(anim, tw_anim) : 0;   // wheel angle, + = top rolls forward
     if (slab) panel_slab();
     color([0.85, 0.85, 0.85]) translate([slot_w/2 + 18, 0, -panel_thickness]) rotate([0, 180, 0]) placard();
-    color("darkorange") housing();
-    color([0.08, 0.08, 0.08]) wheel();
-    color("goldenrod") enc_gear_placed();
+    color("darkorange", ghost_a()) housing();
+    color([0.08, 0.08, 0.08]) translate([0, 0, z_c]) rotate([w, 0, 0]) translate([0, 0, -z_c]) wheel();
+    color("goldenrod") translate([0, enc_pos[0], enc_pos[1]]) rotate([-w * wheel_gear_z / enc_gear_z, 0, 0])
+        translate([0, -enc_pos[0], -enc_pos[1]]) enc_gear_placed();
     encoder_dummy();
     color("silver") translate([x_wall_n - wall_t - 2, 0, z_c]) rotate([0, 90, 0]) cylinder(d = 8, h = x_wall_p - x_wall_n + 2 * wall_t + 6);
 }

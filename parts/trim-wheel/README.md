@@ -2,6 +2,8 @@
 
 The black ridged trim wheel from the 172's centre pedestal. It sticks out of a slot in the pedestal face, with a NOSE DN / T.O. / NOSE UP placard beside it. Roll the top forward for nose down, like the real one.
 
+![trim-wheel working](../../docs/anim/trim-wheel.gif)
+
 | Front | Behind the panel | Wheel |
 |---|---|---|
 | ![](images/assembly.png) | ![](images/rear.png) | ![](images/wheel.png) |

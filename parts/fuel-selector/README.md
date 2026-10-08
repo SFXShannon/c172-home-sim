@@ -2,6 +2,8 @@
 
 The pointer handle on the pedestal floor, over a LEFT / BOTH / RIGHT placard, as in the 172S. For older 172s that have OFF on the selector, set `has_off = true`.
 
+![fuel-selector working](../../docs/anim/fuel-selector.gif)
+
 | Pointing BOTH | Pointing LEFT | Underneath |
 |---|---|---|
 | ![](images/assembly_both.png) | ![](images/assembly_left.png) | ![](images/underside.png) |

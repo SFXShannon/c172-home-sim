@@ -2,6 +2,8 @@
 
 Modelled on the Cessna 172 parking brake: a black L-shaped lever on a 3/8" shaft that comes out of the lower panel, below the switch row and left of the throttle.
 
+![parking-brake working](../../docs/anim/parking-brake.gif)
+
 - **To set it:** pull the handle aft and rotate it 90° so the grip points down.
 - **To release it:** rotate it back up. The spring pulls it home.
 

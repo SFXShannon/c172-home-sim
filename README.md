@@ -6,6 +6,34 @@ The goal is **parts that look like the real aircraft's, with simple insides**: p
 
 ![Panel preview](panel/images/preview.png)
 
+## See them work
+
+Each animation shows the control from the pilot's seat (left) and from behind the panel with the housing see-through (right), so you can watch the mechanism move.
+
+**Parking brake**: pull out, rotate down to set, the lug drops into its notch; rotate back up and the spring pulls it home.
+
+![Parking brake working](docs/anim/parking-brake.gif)
+
+**Throttle**: the 8 mm rod slides through the housing and the carriage moves the slide pot. The mixture and prop work the same way.
+
+![Throttle working](docs/anim/throttle.gif)
+
+**Mixture**
+
+![Mixture working](docs/anim/mixture.gif)
+
+**Prop** (optional)
+
+![Prop working](docs/anim/prop.gif)
+
+**Elevator trim wheel**: roll the top forward for nose down, back for nose up. The gear on the side of the wheel spins the encoder 3× as fast.
+
+![Trim wheel working](docs/anim/trim-wheel.gif)
+
+**Fuel selector**: BOTH → LEFT → BOTH → RIGHT. The small gear on the handle turns the big gear on the rotary switch 1/3 as far, so the handle clicks once per tank position.
+
+![Fuel selector working](docs/anim/fuel-selector.gif)
+
 ## Controls
 
 | Control | Looks like | Inside | Sensor |
@@ -123,7 +151,7 @@ scripts/render.sh panel            # just the panel (after moving controls)
 PANEL=3 scripts/render.sh          # for a 3 mm panel
 ```
 
-Everything needs OpenSCAD 2021.01 or newer. The script runs on Linux, macOS, or Windows with Git Bash or WSL.
+Everything needs OpenSCAD 2021.01 or newer. To re-make the animations above after a change, run `python3 scripts/make_gifs.py` (needs Pillow). The script runs on Linux, macOS, or Windows with Git Bash or WSL.
 
 ## Status
 
