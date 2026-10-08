@@ -14,7 +14,7 @@ The goal is **parts that look like the real aircraft's, with simple insides**: p
 - **Pedestal:** trim wheel and fuel selector.
 - **Yoke:** an opening for the Moza AY210 shaft.
 
-It prints as 9 tiles sized for a 305 mm bed (QIDI Plus4). On a smaller printer, change `bed` and the seams; OpenSCAD warns if a tile won't fit.
+It prints as 9 tiles sized for a 305 mm bed (QIDI Plus4). On a smaller printer, change `bed` and the seams; OpenSCAD warns if a tile won't fit. Or [cut it on a CNC router](panel/dashboard/cnc) from 1/4" plywood in 4 pieces (fits an 800 × 400 mm router such as the FoxAlien XE-PRO 8040).
 
 ## See them work
 
@@ -176,9 +176,11 @@ parts/<control>/
   README.md        parts list, printing, assembly, wiring, MSFS binding
 panel/             g1000_dashboard.scad (full dashboard) + c172_panel.scad (simple lower panel)
   dashboard/       dashboard tiles, glareshield, pedestal STLs + full-size templates
+    cnc/           CNC router files (layered DXF / SVG) for cutting the panel from 1/4" sheet
 firmware/          Arduino Pro Micro sketch, G1000 wiring / MobiFlight guide (G1000_WIRING.md)
 tools/             panel-layout.html: drag-and-drop panel layout page
 scripts/render.sh  regenerate STLs/templates for the controls
+scripts/make_cnc.py  regenerate the CNC router files
 ```
 
 ## Rebuilding after changes

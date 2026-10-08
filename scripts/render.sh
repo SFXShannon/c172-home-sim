@@ -29,6 +29,7 @@ render_dashboard() {
   done
   for ext in svg dxf; do openscad -q "${extra[@]}" -D 'part="panel_2d"' -o "$out/templates/dashboard_panel.$ext" "$scad"; done
   echo "  dashboard/templates/*"
+  python3 scripts/make_cnc.py
 }
 
 render_panel() {

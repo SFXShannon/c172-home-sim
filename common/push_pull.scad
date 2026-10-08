@@ -17,13 +17,14 @@ include <sim_common.scad>
 /* [Slide potentiometer] */
 // How far the knob moves, pushed in to pulled out (mm)
 control_travel = 60;
-// Your slide pot: travel, then body length / width / height (without the lever). Measure yours.
+// Your slide pot: travel, then body length / width / height (without the lever).
+// Defaults: Fielect 128 mm fader (128 x 15.7 x 6.9 mm). Measure yours.
 pot_travel = 100;
 pot_len = 128;
-pot_w = 9.5;
-pot_h = 8;
-// Lever height above the pot body (the "16mm" in the Fielect "128 x 16mm" listing)
-pot_lever_h = 16;
+pot_w = 15.7;
+pot_h = 6.9;
+// How far the lever sticks up above the pot body (measure yours)
+pot_lever_h = 5;
 
 /* [Hidden] */
 rod_d        = 8;
@@ -44,12 +45,12 @@ rear_len   = 12;
 z_rear     = bush_len + travel + carr_len;   // front face of rear bushing block
 z_end      = z_rear + rear_len;
 z_floor_end = max(z_end, pot_z0() + pot_len + 3);   // the floor runs on under a long pot
-wall_in    = 8.5;          // channel inner half-width
+wall_in    = max(8.5, pot_w / 2 + 3.5);   // channel inner half-width (room for zip ties beside the pot)
 wall_t     = 3;
 carr_half  = 8;
 y_wall_top = 6;
-y_lever_tip = -9;          // pot lever tip height when engaged in the carriage
 y_carr_bot = -15;
+y_lever_tip = y_carr_bot + min(6, pot_lever_h - 1);   // pot lever tip, engaged in the carriage slot
 y_carr_top = 12;
 y_pot_top  = y_lever_tip - pot_lever_h;
 y_floor_top = y_pot_top - pot_h;

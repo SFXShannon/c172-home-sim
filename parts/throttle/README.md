@@ -18,7 +18,7 @@ Throttle, mixture and prop all use the same simple mechanism. Only the knob and 
 
 - **Shaft:** an 8 mm smooth steel rod, the same rod 3D printers use, so it's cheap, straight and smooth. It slides through a printed U-channel bolted behind the panel.
 - **Friction:** an 8 × 2 mm O-ring in the front bushing holds the knob wherever you leave it, like the friction lock on the real throttle.
-- **Sensor:** a printed carriage clamped to the rod with an M3 set screw pushes the lever of a slide potentiometer that sits in the bottom of the channel. It's drawn for the common **128 mm long, 100 mm travel** fader (e.g. Fielect 10K linear).
+- **Sensor:** a printed carriage clamped to the rod with an M3 set screw pushes the lever of a slide potentiometer that sits in the bottom of the channel. It's drawn for the Fielect **128 mm** fader (10K linear, 100 mm travel, body 128 × 15.7 × 6.9 mm). The lever height (`pot_lever_h = 5`) is read off a photo, so measure yours.
 - **Travel:** 60 mm (`control_travel`), set by the bushings, about like the real knob. That uses the middle 60 % of the pot's travel; the Pro Micro sketch learns the range and stretches it to the full axis. The housing reaches about 140 mm behind the panel.
 
 ## Parts list (per control)

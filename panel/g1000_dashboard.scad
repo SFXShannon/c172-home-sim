@@ -33,7 +33,7 @@ use <../parts/panel-extras/panel_extras.scad>
 use <../parts/flap-lever/flap_lever.scad>
 
 /* [What to show] */
-part = "preview"; // [preview, preview_rear, layout_map, tile_L1, tile_L2, tile_L3, tile_L4, tile_M1, tile_M2, tile_M3, tile_M4, tile_U1, tile_U2, tile_U3, tile_U4, splice, glareshield_1, glareshield_2, glareshield_3, glareshield_4, pedestal_face, pedestal_floor, panel_2d]
+part = "preview"; // [preview, preview_rear, layout_map, tile_L1, tile_L2, tile_L3, tile_L4, tile_M1, tile_M2, tile_M3, tile_M4, tile_U1, tile_U2, tile_U3, tile_U4, splice, glareshield_1, glareshield_2, glareshield_3, glareshield_4, pedestal_face, pedestal_floor, panel_2d, cnc_lower_1, cnc_lower_2, cnc_upper_1, cnc_upper_2, cnc_pedestal_face, cnc_pedestal_floor, cnc_splice]
 
 /* [Panel size] */
 x_left = -280;
@@ -92,6 +92,21 @@ mid_splits = [-58, 240];
 upper_splits = [-10, 250];
 // Splice plates on the back of the panel: centres [x, y]. Each gets 4 blind pilot holes (+/-10, +/-25).
 splices = [[15, 56], [310, 56], [-58, 160]];
+
+/* [CNC router] */
+// Cutting the panel from 1/4" sheet on a CNC router instead of printing it:
+// the lower (black) and upper (grey) panels are each cut in 2 pieces. Lower split at this x:
+cnc_lower_split = 15;
+// Upper split: [x below the jog, x above it, jog height y]. The default is a straight seam
+// through the attitude gauge and the MFD: both bezels screw to both pieces and tie them.
+cnc_upper_split = [248, 248, 207];
+// Holes narrower than this are drilled instead of routed (mm)
+cnc_drill_max = 6;
+// Which layer to write for a cnc_* part: "cut" (outline + openings, routed through),
+// "drill" (small through holes), "engrave" (labels, 0.6 mm deep), "countersink"
+// (M3 head circles, front), "back" (blind pilot holes, mirrored for drilling from the back).
+// scripts/make_cnc.py writes them all into one layered DXF / SVG per piece.
+cnc_layer = "cut"; // [cut, drill, engrave, countersink, back]
 
 /* [Hidden] */
 t = panel_thickness;
@@ -243,7 +258,7 @@ module pedestal_face() {
         translate([0, -pedestal_h / 2, -t - 1]) linear_extrude(t + 2) mirror([1, 0]) trim_wheel_panel_cutout();
         translate([0, -pedestal_h / 2, -t]) trim_wheel_panel_countersinks();
         translate([0, -pedestal_h + 22, -t - 1]) cylinder(d = 8.5, h = t + 2);     // fuel shutoff
-        translate([0, -pedestal_h + 22 + 18, -t - 0.01]) linear_extrude(0.61) mirror([1, 0])
+        translate([0, -pedestal_h + 10, -t - 0.01]) linear_extrude(0.61) mirror([1, 0])
             text("FUEL SHUTOFF", size = 3, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
     }
 }
@@ -331,6 +346,62 @@ module layout_map() {
     }
 }
 
+// ------------------------------------------------------------------ CNC (2D, front view, each piece at 0,0)
+us = cnc_upper_split;
+cnc_top = top_centre + 10;
+// [name, piece outline polygon (cut with the panel outline), origin corner]
+cnc_pieces = [
+    ["lower_1", [[x_left - 1, -1], [cnc_lower_split, -1], [cnc_lower_split, lower_h], [x_left - 1, lower_h]], [x_left, 0]],
+    ["lower_2", [[cnc_lower_split, -1], [x_right + 1, -1], [x_right + 1, lower_h], [cnc_lower_split, lower_h]], [cnc_lower_split, 0]],
+    ["upper_1", [[x_left - 1, lower_h], [us[0], lower_h], [us[0], us[2]], [us[1], us[2]], [us[1], cnc_top], [x_left - 1, cnc_top]], [x_left, lower_h]],
+    ["upper_2", [[us[0], lower_h], [x_right + 1, lower_h], [x_right + 1, cnc_top], [us[1], cnc_top], [us[1], us[2]], [us[0], us[2]]], [min(us[0], us[1]), lower_h]]];
+cnc_splices = [[cnc_lower_split, lower_h / 2]];
+module countersinks_2d() for (c = cs_list) translate(c[0]) {
+    if (c[1] == "std") projection() mount_panel_countersinks();
+    else projection() flap_countersinks();
+}
+module cnc_back_2d() {
+    for (p = [pfd_pos, mfd_pos]) translate(p) gdu_cradle_holes_2d();
+    for (c = cnc_splices, dx = [-10, 10], dy = [-25, 25]) translate(c + [dx, dy]) circle(d = m3_pilot_d);
+}
+// split holes into routed openings and small drilled holes
+module routed(r = cnc_drill_max / 2) offset(delta = r) offset(delta = -r) children();
+module drilled() difference() { children(); offset(delta = 0.05) routed() children(); }
+module cnc_piece(name, layer) {
+    pc = [for (q = cnc_pieces) if (q[0] == name) q][0];
+    o = pc[2];
+    module region() intersection() { outline_2d(); polygon(pc[1]); }
+    if (layer == "back") mirror([1, 0]) translate([-o[0], -o[1]]) intersection() { region(); cnc_back_2d(); }
+    else translate([-o[0], -o[1]]) {
+        if (layer == "cut") difference() { region(); routed() holes_2d(); }
+        else if (layer == "drill") intersection() { region(); drilled() holes_2d(); }
+        else if (layer == "engrave") intersection() { region(); engrave_2d(); }
+        else if (layer == "countersink") intersection() { region(); countersinks_2d(); }
+    }
+}
+module pedestal_face_holes() { translate([0, -pedestal_h / 2]) trim_wheel_panel_cutout(); translate([0, -pedestal_h + 22]) circle(d = 8.5); }
+// pedestal face (front view) and floor (seen from above), each at 0,0
+module cnc_pedestal_face(layer) translate([pedestal_w / 2, pedestal_h]) {
+    if (layer == "cut") difference() { translate([-pedestal_w / 2, -pedestal_h]) square([pedestal_w, pedestal_h]); routed() pedestal_face_holes(); }
+    else if (layer == "drill") drilled() pedestal_face_holes();
+    else if (layer == "engrave") translate([0, -pedestal_h + 10])
+        text("FUEL SHUTOFF", size = 3, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
+    else if (layer == "countersink") translate([0, -pedestal_h / 2]) mirror([1, 0]) projection() trim_wheel_panel_countersinks();
+}
+// splice plate for the lower seam (same 1/4" sheet), glued and screwed across the back
+module cnc_splice(layer) translate([17, 35]) {
+    if (layer == "cut") square([34, 70], center = true);
+    else if (layer == "drill") for (dx = [-10, 10], dy = [-25, 25]) translate([dx, dy]) circle(d = m3_clear_d);
+}
+module cnc_pedestal_floor(layer) translate([pedestal_w / 2 + 10, floor_d / 2 + 10]) mirror([1, 0]) {
+    if (layer == "cut") difference() { translate([-pedestal_w / 2 - 10, -floor_d / 2 - 10]) square([pedestal_w + 20, floor_d]); routed() fuel_selector_panel_cutout(); }
+    else if (layer == "drill") drilled() fuel_selector_panel_cutout();
+    else if (layer == "countersink") projection() fuel_selector_panel_countersinks();
+}
+for (pc = cnc_pieces) let(xs = [for (p = pc[1]) min(max(p[0], x_left), x_right)], ys = [for (p = pc[1]) min(max(p[1], 0), top_centre)])
+    if (max(xs) - min(xs) > 790 || max(ys) - min(ys) > 390)
+        echo(str("WARNING: CNC piece ", pc[0], " is bigger than an 800 x 400 router bed."));
+
 // ------------------------------------------------------------------ checks
 deep_items = [["parking brake", brake_pos, 75], ["dimming/lights panel", lights_pos, 30], ["PFD", pfd_pos, 30]];
 for (it = deep_items) {
@@ -355,4 +426,9 @@ else if (part == "glareshield_4") gs_print(3);
 else if (part == "glareshield_5") gs_print(4);
 else if (part == "pedestal_face") translate([0, 0, t]) pedestal_face();
 else if (part == "pedestal_floor") translate([0, 0, t]) pedestal_floor();
+else if (len(part) > 4 && part[0] == "c" && part[1] == "n" && part[2] == "c" && part != "cnc_pedestal_face" && part != "cnc_pedestal_floor" && part != "cnc_splice")
+    cnc_piece(str(part[4], part[5], part[6], part[7], part[8], part[9], part[10]), cnc_layer);
+else if (part == "cnc_pedestal_face") cnc_pedestal_face(cnc_layer);
+else if (part == "cnc_pedestal_floor") cnc_pedestal_floor(cnc_layer);
+else if (part == "cnc_splice") cnc_splice(cnc_layer);
 else if (part == "panel_2d") difference() { outline_2d(); holes_2d(); }   // front view, for laser / CNC

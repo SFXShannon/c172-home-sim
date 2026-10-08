@@ -21,9 +21,9 @@ position = 0;
 // Your slide pot (measure it): travel, body length / width / height, lever height
 pot_travel = 100;
 pot_len = 128;
-pot_w = 9.5;
-pot_h = 8;
-pot_lever_h = 16;
+pot_w = 15.7;
+pot_h = 6.9;
+pot_lever_h = 5;
 // Moves the pot toward UP (mm), so a long pot doesn't hang below the panel
 pot_shift = 4;
 
@@ -40,7 +40,7 @@ wall = 3;
 carr = [23, 16, 13];         // carriage x, y, z
 z_carr0 = flange_t + 0.5;
 z_carr1 = z_carr0 + carr[2];
-lever_engage = 6;
+lever_engage = min(6, pot_lever_h - 1);
 z_pot_top = z_carr1 - lever_engage + pot_lever_h;
 z_back = z_pot_top + pot_h;
 stem = [8, 6];               // stem cross-section (x, z... it passes the slot with 0.3 clearance)

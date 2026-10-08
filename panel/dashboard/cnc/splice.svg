@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="34.000mm" height="70.000mm" viewBox="0 0 34.000 70.000">
+<g id="CUT" inkscape:groupmode="layer" inkscape:label="CUT" fill="none" stroke="#000000" stroke-width="0.2">
+<path d="M 0.0000,70.0000 L 34.0000,70.0000 L 34.0000,0.0000 L 0.0000,0.0000 Z"/>
+</g>
+<g id="DRILL" inkscape:groupmode="layer" inkscape:label="DRILL" fill="none" stroke="#d0021b" stroke-width="0.2">
+<circle cx="7.0000" cy="10.0000" r="1.7000"/>
+<circle cx="27.0000" cy="10.0000" r="1.7000"/>
+<circle cx="7.0000" cy="60.0000" r="1.7000"/>
+<circle cx="27.0000" cy="60.0000" r="1.7000"/>
+</g>
+</svg>
