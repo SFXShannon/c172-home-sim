@@ -32,6 +32,20 @@ anim = -1;
 // See-through housings so the mechanism shows in the animations
 ghost = false;
 function ghost_a(a = 0.32) = ghost ? a : 1;
+// true while the animation is between t0 and t1
+function anim_in(t0, t1) = anim >= t0 && anim < t1;
+// orange "turn" arrow hovering over a knob of radius r: dir = 1 clockwise, -1 anticlockwise
+module turn_arrow(r, dir = 1, z = 2) {
+    color([1, 0.5, 0.1]) translate([0, 0, z]) mirror([dir > 0 ? 1 : 0, 0, 0]) {
+        linear_extrude(1.2) intersection() {
+            difference() { circle(r = r + 3.2, $fn = 64); circle(r = r + 1.6, $fn = 64); }
+            polygon(concat([[0, 0]], [for (a = [-230 : 10 : -4]) (2 * r + 20) * [cos(a), sin(a)]]));
+        }
+        // arrow head at the end of the arc (pointing anticlockwise before the mirror)
+        linear_extrude(1.2) translate([r + 2.4, 0]) polygon([[-3.2, 0], [3.2, 0], [0, 4.2]]);
+    }
+}
+
 
 // ---------- helpers ----------
 

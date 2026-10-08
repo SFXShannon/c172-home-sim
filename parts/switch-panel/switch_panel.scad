@@ -138,16 +138,40 @@ function upper_size() = U;
 function switch_plate_t() = plate_t;
 function lower_size() = L;
 
+// ---- demo animation (README GIF): when each switch goes ON; everything goes OFF again at sp_off
+sp_on_master = [0.10, 0.04];             // ALT, BAT
+sp_on_stby = 0.17;
+sp_on_avionics = [0.25, 0.30];
+sp_on_lights = [0.38, 0.43, 0.48, 0.53, 0.58];
+sp_on_misc = [0.63, 0.68, 2];            // FUEL PUMP, PITOT HEAT, (CABIN PWR stays off)
+sp_dim_turn = [[0.70, 0.75], [0.75, 0.80], [0.80, 0.85], [0.85, 0.90]];
+sp_off = 0.93;
+function sw_on(t_on) = anim >= 0 && anim >= t_on && anim < sp_off;
+function dim_angle(i) = anim < 0 ? 0 : -1200 * (min(max(anim < sp_off ? anim : 0, sp_dim_turn[i][0]), sp_dim_turn[i][1]) - sp_dim_turn[i][0]);
+
+// rocker: top half pressed in = ON
+module rocker(on, col) color(col) translate([0, 0, 2.2]) rotate([on ? -9 : 9, 0, 0]) translate([-7.3, -10.3, -1.8]) cube([14.6, 20.6, 4]);
+// bat-handle toggle: down = OFF, up = ON
+module toggle(on) {
+    color("silver") { cylinder(d = 9, h = 2); rotate([on ? -14 : 14, 0, 0]) cylinder(d = 2.5, h = 11); }
+}
 module switch_dummies_upper() {
-    color([0.75, 0.1, 0.1]) for (p = master) translate([p[0], p[1], 0]) translate([-7.3, -10.3, 0]) cube([14.6, 20.6, 4]);
-    color([0.85, 0.85, 0.82]) for (p = avionics) translate([p[0], p[1], 0]) translate([-7.3, -10.3, 0]) cube([14.6, 20.6, 4]);
-    color("silver") translate(stby_toggle) { cylinder(d = 9, h = 2); rotate([12, 0, 0]) cylinder(d = 2.5, h = 11); }
-    color([0.8, 0.1, 0.1]) translate(stby_toggle) rotate([12, 0, 0]) translate([0, 0, 10]) sphere(d = 4);
-    color([0.2, 0.7, 0.3]) translate(stby_led) cylinder(d = 5, h = 3);
+    for (i = [0 : 1]) translate(master[i]) rocker(sw_on(sp_on_master[i]), [0.75, 0.1, 0.1]);
+    for (i = [0 : 1]) translate(avionics[i]) rocker(sw_on(sp_on_avionics[i]), [0.85, 0.85, 0.82]);
+    translate(stby_toggle) toggle(sw_on(sp_on_stby));
+    color([0.8, 0.1, 0.1]) translate(stby_toggle) rotate([sw_on(sp_on_stby) ? -14 : 14, 0, 0]) translate([0, 0, 10]) sphere(d = 4);
+    color(sw_on(sp_on_stby) ? [0.3, 1, 0.4] : [0.2, 0.45, 0.25]) translate(stby_led) cylinder(d = 5, h = 3);
 }
 module switch_dummies_lower() {
-    color([0.1, 0.1, 0.1]) for (p = dimmers) translate([p[0], p[1], 10]) mirror([0, 0, 1]) dimmer_knob();
-    color("silver") for (p = concat(lights, misc)) translate(p) { cylinder(d = 9, h = 2); rotate([-12, 0, 0]) cylinder(d = 2.5, h = 11); }
+    for (i = [0 : 3]) translate(dimmers[i]) {
+        rotate(dim_angle(i)) {
+            color([0.1, 0.1, 0.1]) translate([0, 0, 10]) mirror([0, 0, 1]) dimmer_knob();
+            color("white") translate([-0.6, 1.5, 9.95]) cube([1.2, 5, 0.2]);   // painted index line
+        }
+        if (anim_in(sp_dim_turn[i][0], sp_dim_turn[i][1])) turn_arrow(8.5, 1, 10.5);
+    }
+    for (i = [0 : 4]) translate(lights[i]) toggle(sw_on(sp_on_lights[i]));
+    for (i = [0 : 2]) translate(misc[i]) toggle(sw_on(sp_on_misc[i]));
 }
 
 module upper_mounted() { color([0.42, 0.44, 0.46]) upper_plate(); paint_fill() upper_labels(); switch_dummies_upper(); }

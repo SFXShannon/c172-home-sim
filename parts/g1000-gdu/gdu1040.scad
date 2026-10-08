@@ -7,7 +7,7 @@
 // Build two of these: one PFD, one MFD (the real ones are identical).
 //
 // Inside (kept simple):
-//   - printed front plate (two halves if your bed is under 300 mm)
+//   - printed front plate (one piece on a 300 mm+ bed, or two halves)
 //   - printed key caps that press 6x6 mm tactile switches
 //   - a printed switch plate holding the switches, screwed to posts on the front plate
 //   - EC11 encoders (single) and EC11 dual-shaft encoders, nut on the face, knob over it
@@ -22,7 +22,7 @@ include <../../common/sim_common.scad>
 include <../../common/avionics_lib.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, exploded, front, front_left, front_right, switch_plate_left, switch_plate_right, lcd_cradle_left, lcd_cradle_right, caps_sheet, knobs_sheet, panel_cutout]
+part = "assembly"; // [assembly, exploded, front, front_left, front_right, switch_plate, switch_plate_left, switch_plate_right, lcd_cradle_left, lcd_cradle_right, caps_sheet, knobs_sheet, panel_cutout]
 
 /* [Options] */
 // "PFD" or "MFD" - only changes the label used in renders
@@ -196,14 +196,30 @@ module knobs_sheet() {
     }
 }
 
+// ---- demo animation (README GIF): key presses [t, key index]; knob turns [t0, t1, knob, 0 outer / 1 inner, 1 cw / -1 ccw]
+// key index: 0-11 softkeys, 12 NAV flip, 13 COM flip, 14-25 AP keys, 26-31 D> MENU FPL PROC CLR ENT
+gdu_presses = concat([for (i = [0 : 11]) [i * 0.025, i]],
+    [[0.31, 12], [0.475, 14], [0.50, 16], [0.525, 17], [0.585, 13], [0.785, 26], [0.81, 28], [0.835, 31]]);
+gdu_turns = [[0.34, 0.46, 2, 0, 1], [0.61, 0.69, 5, 0, 1], [0.69, 0.77, 5, 1, -1], [0.86, 0.96, 7, 0, -1]];
+function gdu_key_down(i) = key_down(i, gdu_presses, 0.024);
+// knob angle (deg) and whether it is turning right now
+function knob_turn(j, w) = let(ts = [for (t = gdu_turns) if (t[2] == j && t[3] == w) t])
+    len(ts) == 0 || anim < 0 ? [0, 0] :
+    let(t = ts[0], a = -t[4] * 280 * (min(max(anim, t[0]), t[1]) - t[0])) [a, anim_in(t[0], t[1]) ? t[4] : 0];
+
 // knobs in place (face-up assembly): front of the knob up, 2.5 mm nut under it
 module knobs_placed() {
-    for (k = knobs) translate([k[0], k[1], 2.5]) {
+    for (j = [0 : len(knobs) - 1]) let(k = knobs[j], o = knob_turn(j, 0), n = knob_turn(j, 1)) translate([k[0], k[1], 2.5]) {
         if (k[2] == "dual") {
-            color([0.1, 0.1, 0.1]) translate([0, 0, 7]) mirror([0, 0, 1]) knob_dual_outer(19, 7);
-            color([0.16, 0.16, 0.16]) translate([0, 0, 7 + 9]) mirror([0, 0, 1]) knob_dual_inner(12, 13);
+            rotate(o[0]) color([0.1, 0.1, 0.1]) translate([0, 0, 7]) mirror([0, 0, 1]) knob_dual_outer(19, 7);
+            rotate(n[0]) color([0.16, 0.16, 0.16]) translate([0, 0, 7 + 9]) mirror([0, 0, 1]) knob_dual_inner(12, 13);
+            if (o[1] != 0) turn_arrow(9.5, o[1], 7.5);
+            if (n[1] != 0) turn_arrow(6, n[1], 16.5);
         } else if (k[2] == "vol") color([0.1, 0.1, 0.1]) translate([0, 0, 8]) mirror([0, 0, 1]) knob_single(10, 8, 18);
-        else color([0.1, 0.1, 0.1]) translate([0, 0, 12]) mirror([0, 0, 1]) knob_single(16, 12, 24);
+        else {
+            rotate(o[0]) color([0.1, 0.1, 0.1]) translate([0, 0, 12]) mirror([0, 0, 1]) knob_single(16, 12, 24);
+            if (o[1] != 0) turn_arrow(8, o[1], 12.5);
+        }
     }
 }
 
@@ -226,9 +242,11 @@ module screen_dummy() {
 module assembly(show_screen = true) {
     color([0.17, 0.18, 0.19]) front_plate();
     paint_fill() face_labels();
-    color([0.25, 0.25, 0.26]) for (k = keys) translate([k[0], k[1]]) cap_in_place() cap_for(k);
-    color([0.93, 0.93, 0.9]) for (k = keys) translate([k[0], k[1], cap_out - 0.2]) scale([1, 1, 0.3])
-        cap_label_geom(k[2], k[4], len(k[4]) > 3 ? 1.7 : 2.2, k[5]);
+    for (i = [0 : len(keys) - 1]) let(k = keys[i], dn = gdu_key_down(i)) translate([k[0], k[1], dn ? -key_travel : 0]) {
+        color(cap_col(dn)) cap_in_place() cap_for(k);
+        color([0.93, 0.93, 0.9]) translate([0, 0, cap_out - 0.2]) scale([1, 1, 0.3])
+            cap_label_geom(k[2], k[4], len(k[4]) > 3 ? 1.7 : 2.2, k[5]);
+    }
     knobs_placed();
     color("darkorange", ghost_a()) switch_plate();
     if (show_screen) { color("goldenrod", ghost_a()) { lcd_cradle(-1); lcd_cradle(1); } screen_dummy(); }
@@ -254,6 +272,7 @@ else if (part == "exploded") exploded();
 else if (part == "front") rotate([180, 0, 0]) front_plate();                  // face down
 else if (part == "front_left") rotate([180, 0, 0]) front_half(-1);
 else if (part == "front_right") rotate([180, 0, 0]) front_half(1);
+else if (part == "switch_plate") translate([0, 0, sw_z + sw_t]) switch_plate();
 else if (part == "switch_plate_left") translate([0, 0, sw_z + sw_t]) switch_half(-1);
 else if (part == "switch_plate_right") translate([0, 0, sw_z + sw_t]) switch_half(1);
 else if (part == "lcd_cradle_left") translate([0, 0, -z_lcd_back + 2]) lcd_cradle(-1);

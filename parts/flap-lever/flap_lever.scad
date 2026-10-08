@@ -141,8 +141,10 @@ module pot_dummy(dy) {
     color("dimgray") translate([-pot_w / 2, -pot_len / 2, z_pot_top]) cube([pot_w, pot_len, pot_h]);
     color("silver") translate([-2.5, dy - 0.6, z_carr1 - lever_engage]) cube([5, 1.2, pot_lever_h]);
 }
+// animation: UP -> 10 -> 20 -> FULL (a pause at each click), then back UP
+fl_anim = [[0, 0], [0.06, 0], [0.14, 1], [0.24, 1], [0.32, 2], [0.42, 2], [0.50, 3], [0.66, 3], [0.90, 0], [1, 0]];
 module flap_mounted(pos = position) {
-    dy = detents[pos];
+    dy = anim >= 0 ? travel / 2 - lookup(anim, fl_anim) * step : detents[pos];
     color("darkorange", ghost_a()) housing();
     color("silver") for (sc = fl_screws) translate(sc) {
         translate([0, 0, -panel_thickness]) cylinder(d1 = m3_head_d, d2 = 3, h = 1.6);

@@ -14,11 +14,11 @@ The goal is **parts that look like the real aircraft's, with simple insides**: p
 - **Pedestal:** trim wheel and fuel selector.
 - **Yoke:** an opening for the Moza AY210 shaft.
 
-It prints as 12 tiles that fit a 250 mm bed.
+It prints as 9 tiles sized for a 305 mm bed (QIDI Plus4). On a smaller printer, change `bed` and the seams; OpenSCAD warns if a tile won't fit.
 
 ## See them work
 
-Each animation shows the control from the pilot's seat (left) and from behind the panel with the housing see-through (right), so you can watch the mechanism move.
+Each animation shows the control from the pilot's seat (left) and from behind the panel with the housing see-through (right), so you can watch the mechanism move. The bezels and switch panels show a close-up on the right instead.
 
 **Parking brake**: pull out, rotate down to set, the lug drops into its notch; rotate back up and the spring pulls it home.
 
@@ -43,6 +43,26 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 **Fuel selector**: BOTH → LEFT → BOTH → RIGHT. The small gear on the handle turns the big gear on the rotary switch 1/3 as far, so the handle clicks once per tank position.
 
 ![Fuel selector working](docs/anim/fuel-selector.gif)
+
+**Flap lever**: push the handle down through UP → 10° → 20° → FULL. A springy finger on the carriage clicks into a notch at each stop, and the carriage slides a pot like the throttle's.
+
+![Flap lever working](docs/anim/flap-lever.gif)
+
+**G1000 PFD / MFD bezel**: every key cap is a printed T-shape that presses a 6 mm tactile switch on the plate behind; each knob is an EC11 encoder, and the dual knobs are ALPS dual-shaft encoders. Keys are shown lit while pressed.
+
+![G1000 bezel working](docs/anim/g1000-gdu.gif)
+
+**GMA 1347 audio panel**: same keys and encoder as the G1000 bezel.
+
+![Audio panel working](docs/anim/g1000-gma.gif)
+
+**C-post and lights panels**: off-the-shelf rockers for MASTER and AVIONICS, mini toggles for STBY BATT, lights, fuel pump and pitot heat, and 16 mm pots for the dimmers.
+
+![Switch panels working](docs/anim/switch-panel.gif)
+
+**Ignition key**: OFF → R → L → BOTH → START on a rotary switch. The real key springs back from START; this one you turn back to BOTH yourself.
+
+![Ignition key working](docs/anim/ignition.gif)
 
 ## Controls
 
@@ -99,7 +119,7 @@ Each control's position is the centre of its knob or shaft.
 | `yoke_hole` | Cuts a yoke-shaft opening: `[x, y, width, height]`, or `[]` for none | `[]` |
 | `labels` | Engraved THROTTLE / MIXTURE / ... labels on or off | `true` |
 | `lower_splits` | Where the lower panel is split into print tiles (x positions) | `[-75]` |
-| `bed` | Your printer's bed size, so tiles are checked to fit | `250` |
+| `bed` | Your printer's bed size, so tiles are checked to fit | `305` (QIDI Plus4) |
 
 ### Easiest: drag them around in the layout page
 

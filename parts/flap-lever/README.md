@@ -4,6 +4,8 @@ The 172S flap lever: a small white handle that moves up and down a slot with cli
 
 ![Flap lever](images/front.png)
 
+![Flap lever working](../../docs/anim/flap-lever.gif)
+
 ## How it works (kept simple)
 
 - **Housing:** a printed channel bolted behind the panel (4 × M3 countersunk screws into captive nuts).

@@ -65,8 +65,8 @@ moza_shaft_h = 150;
 
 /* [Lower panel] */
 ignition_pos = [-245, 55];
-cb1_pos = [-185, 72];
-cb2_pos = [-25, 75];
+cb1_pos = [-175, 75];
+cb2_pos = [-35, 75];
 brake_pos = [-117, 25];
 alt_static_pos = [98, 50];
 throttle_pos = [197, 38];
@@ -82,9 +82,16 @@ pedestal_h = 170;
 floor_d = 150;
 
 /* [Printing] */
-bed = 250;
-lower_splits = [-70, 150, 330];
-upper_splits = [-70, 175, 350];
+// Print bed size (mm). 305 = QIDI Plus4. Each row is split into tiles no wider than this.
+bed = 305;
+// Tile seams (x positions) for each row: lower (black), middle and upper (grey).
+// Seams may run through a bezel or gauge (it screws to both tiles and ties them);
+// anywhere else, put a splice plate across the seam (see `splices`).
+lower_splits = [15, 310];
+mid_splits = [-58, 240];
+upper_splits = [-10, 250];
+// Splice plates on the back of the panel: centres [x, y]. Each gets 4 blind pilot holes (+/-10, +/-25).
+splices = [[15, 56], [310, 56], [-58, 160]];
 
 /* [Hidden] */
 t = panel_thickness;
@@ -118,7 +125,7 @@ module holes_2d() {
     at(mixture_pos) mixture_panel_cutout();
     at(flap_pos) flap_cutout_2d();
     // frame screws along the bottom and the sides
-    for (x = [x_left + 10, -70 - 15, 150 - 15, 330 + 15, x_right - 10]) translate([x, 8]) circle(d = frame_hole_d);
+    for (x = concat([x_left + 10], [for (s = lower_splits) s - 15], [x_right - 10])) translate([x, 8]) circle(d = frame_hole_d);
     for (x = [x_left + 10, x_right - 10]) translate([x, mid_split - 20]) circle(d = frame_hole_d);
 }
 
@@ -139,8 +146,7 @@ module engrave_2d() {
 // Back-side blind pilot holes (front view): G1000 screen cradles + splice strips
 module back_pilots_2d() {
     for (p = [pfd_pos, mfd_pos]) translate(p) gdu_cradle_holes_2d();
-    for (sx = upper_splits, y = [lower_h + 18, mid_split + 30], dx = [-10, 10]) translate([sx + dx, y]) circle(d = m3_pilot_d);
-    for (sx = lower_splits, y = [20, lower_h - 18], dx = [-10, 10]) translate([sx + dx, y]) circle(d = m3_pilot_d);
+    for (c = splices, dx = [-10, 10], dy = [-25, 25]) translate(c + [dx, dy]) circle(d = m3_pilot_d);
 }
 // Countersinks (front view positions + kind)
 cs_list = concat([for (p = [brake_pos, throttle_pos, mixture_pos]) [p, "std"]], [[flap_pos, "flap"]]);
@@ -168,12 +174,13 @@ module panel_body(band = [-1, 9999], xr = [-9999, 9999]) {
 
 // ------------------------------------------------------------------ tiles
 L_edges = concat([x_left], lower_splits, [x_right]);
+M_edges = concat([x_left], mid_splits, [x_right]);
 U_edges = concat([x_left], upper_splits, [x_right]);
 module tile(row, i) {
-    e = row == "L" ? L_edges : U_edges;
+    e = row == "L" ? L_edges : row == "M" ? M_edges : U_edges;
     y0 = row == "L" ? 0 : row == "M" ? lower_h : mid_split;
     y1 = row == "L" ? lower_h : row == "M" ? mid_split : top_centre + 10;
-    translate([0, 0, t]) panel_body([y0, y1], [e[i], e[i + 1]]);
+    if (i >= 0 && i < len(e) - 1) translate([0, 0, t]) panel_body([y0, y1], [e[i], e[i + 1]]);
 }
 module splice() {
     difference() {
@@ -223,7 +230,7 @@ module glareshield_segment(i) {
 }
 
 // Print orientation: standing as it sits on the panel (top up), lowest point on the bed.
-module gs_print(i) {
+module gs_print(i) if (i < len(U_edges) - 1) {
     e = U_edges;
     ymin = min(top_y(e[i]), top_y(e[i + 1]), top_y(min(max(aircraft_cl, e[i]), e[i + 1]))) - 30;
     translate([0, 0, -ymin]) rotate([90, 0, 0]) glareshield_segment(i);
@@ -309,7 +316,9 @@ module layout_map() {
     color([0.11, 0.11, 0.12]) translate([0, 0, 0.5]) linear_extrude(1) intersection() { difference() { outline_2d(); holes_2d(); } translate([x_left, 0]) square([x_right - x_left, lower_h]); }
     color("orange") translate([0, 0, 2]) linear_extrude(0.5) {
         for (s = lower_splits) translate([s - 0.6, 0]) square([1.2, lower_h]);
-        for (s = upper_splits) translate([s - 0.6, lower_h]) square([1.2, top_centre - lower_h]);
+        for (s = mid_splits) translate([s - 0.6, lower_h]) square([1.2, mid_split - lower_h]);
+        for (s = upper_splits) translate([s - 0.6, mid_split]) square([1.2, top_centre - mid_split]);
+        for (c = splices) translate(c) difference() { square([34, 70], center = true); square([31.6, 67.6], center = true); }
         translate([x_left, lower_h - 0.6]) square([x_right - x_left, 1.2]);
         translate([x_left, mid_split - 0.6]) square([x_right - x_left, 1.2]);
     }
@@ -329,7 +338,7 @@ for (it = deep_items) {
     if (abs(p[0] - yoke_pos[0]) < 121.5 + 30 && p[1] > yoke_pos[1] - moza_shaft_h - 10 && it[2] > moza_front)
         echo(str("WARNING: the ", it[0], " sticks out ", it[2], " mm behind the panel - more than moza_front (", moza_front, " mm). Move the AY210 back."));
 }
-for (row = [["lower", L_edges], ["upper", U_edges]]) for (i = [0 : len(row[1]) - 2])
+for (row = [["lower", L_edges], ["middle", M_edges], ["upper", U_edges]]) for (i = [0 : len(row[1]) - 2])
     if (row[1][i + 1] - row[1][i] > bed) echo(str("WARNING: ", row[0], " tile ", i + 1, " is ", row[1][i + 1] - row[1][i], " mm wide, more than your bed."));
 if (top_centre - mid_split > bed) echo("WARNING: the top tile row is taller than your bed - raise mid_split.");
 
@@ -343,6 +352,7 @@ else if (part == "glareshield_1") gs_print(0);
 else if (part == "glareshield_2") gs_print(1);
 else if (part == "glareshield_3") gs_print(2);
 else if (part == "glareshield_4") gs_print(3);
+else if (part == "glareshield_5") gs_print(4);
 else if (part == "pedestal_face") translate([0, 0, t]) pedestal_face();
 else if (part == "pedestal_floor") translate([0, 0, t]) pedestal_floor();
 else if (part == "panel_2d") difference() { outline_2d(); holes_2d(); }   // front view, for laser / CNC

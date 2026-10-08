@@ -14,7 +14,7 @@
 include <../../common/sim_common.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, ignition_key, ignition_escutcheon, knob_alt_static, knob_cabin_heat, knob_cabin_air, knob_fuel_shutoff, knob_stem, stem_clip, cb_strip, yoke_boot]
+part = "assembly"; // [assembly, assembly_ignition, ignition_key, ignition_escutcheon, knob_alt_static, knob_cabin_heat, knob_cabin_air, knob_fuel_shutoff, knob_stem, stem_clip, cb_strip, yoke_boot]
 
 /* [Yoke opening] */
 // Diameter of the hole the yoke shaft passes through
@@ -53,8 +53,8 @@ module ignition_escutcheon() {   // hides the switch nut, sits on the panel
 }
 // 2D: OFF R L BOTH START round the key (engrave into the panel)
 module ignition_labels_2d() {
-    for (p = ign_positions) rotate(-p[1]) translate([0, 20]) text(p[0], size = 3.2, font = f, halign = "center", valign = "center");
-    for (p = ign_positions) rotate(-p[1]) translate([-0.4, 14.5]) square([0.8, 3]);
+    for (p = ign_positions) rotate(-p[1]) translate([0, 23]) text(p[0], size = 2.6, font = f, halign = "center", valign = "center");
+    for (p = ign_positions) rotate(-p[1]) translate([-0.4, 16]) square([0.8, 3.5]);
 }
 
 // ------------------------------------------------------------------ look-only knobs
@@ -130,9 +130,27 @@ module yoke_boot() {
 module yoke_boot_screw_holes_2d() for (a = [0, 120, 240]) rotate(a) translate([yoke_hole_d / 2 + 7.5, 0]) circle(d = m3_pilot_d);
 
 // ------------------------------------------------------------------ mounted (for the dashboard renders)
+// demo animation (README GIF): key angle, OFF -60 / R -30 / L 0 / BOTH 30 / START 60 (springs back to BOTH)
+ign_anim = [[0, -60], [0.08, -60], [0.15, -30], [0.25, -30], [0.32, 0], [0.42, 0], [0.49, 30], [0.59, 30],
+            [0.65, 60], [0.75, 60], [0.79, 30], [0.88, 30], [0.96, -60], [1, -60]];
+function ign_angle() = anim < 0 ? 0 : lookup(anim, ign_anim);
 module ignition_mounted() {
     color([0.75, 0.76, 0.78]) ignition_escutcheon();
-    color([0.75, 0.76, 0.78]) translate([0, 0, 15]) mirror([0, 0, 1]) rotate([0, 0, 0]) translate([0, 0, 0]) ignition_key();
+    color([0.75, 0.76, 0.78]) rotate(-ign_angle()) translate([0, 0, 15]) mirror([0, 0, 1]) ignition_key();
+}
+// key switch behind the panel (look only): 5-position rotary switch, white mark on the rotor
+module ignition_switch_dummy(t = panel_thickness) {
+    color("silver") translate([0, 0, -t - 8]) cylinder(d = 6, h = t + 10);
+    color([0.15, 0.15, 0.15], ghost_a(0.85)) translate([0, 0, -t - 22]) cylinder(d = 28, h = 14);
+    color("silver") translate([0, 0, -t - 25]) cylinder(d = 6, h = 4);
+    rotate(-ign_angle()) color("white") translate([-1, 0, -t - 25.5]) cube([2, 11, 1]);
+}
+module ignition_demo() {
+    t = panel_thickness;
+    color([0.11, 0.11, 0.12], ghost_a(0.6)) translate([0, 0, -t]) linear_extrude(t) difference() { square([80, 70], center = true); circle(d = 10); }
+    color("white") translate([0, 0, 0.01]) linear_extrude(0.2) ignition_labels_2d();
+    ignition_mounted();
+    ignition_switch_dummy(t);
 }
 module knob_mounted(kind) {
     c = (kind == "alt" || kind == "fuel") ? [0.75, 0.1, 0.1] : [0.1, 0.1, 0.1];
@@ -153,6 +171,7 @@ if (part == "assembly") {
     color([0.15, 0.15, 0.15]) translate([0, -50]) cb_strip();
     color([0.1, 0.1, 0.1]) translate([120, -60]) yoke_boot();
 }
+else if (part == "assembly_ignition") ignition_demo();
 else if (part == "ignition_key") ignition_key();
 else if (part == "ignition_escutcheon") ignition_escutcheon();
 else if (part == "knob_alt_static") knob_alt_static();

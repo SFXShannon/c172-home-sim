@@ -26,8 +26,8 @@ Laid out from photos of the real 172S NAV III panel and kept at real scale; only
 
 ### Printing it
 
-- **Tiles:** 12 of them, 4 columns × 3 rows. Row L (lower) in black; rows M and U in grey. Print them **front face down**. The largest is 245 × 180 mm.
-- **Joining:** the modules (bezels, switch plates, instruments) sit over the seams and screw into the tiles on both sides, which ties the panel together. Add the 34 × 70 mm `splice` plates on the back where the seams are clear (blind pilot holes are already there).
+- **Tiles:** 9 of them, 3 per row, sized for a 305 × 305 mm bed (QIDI Plus4). Row L (lower) in black; rows M and U in grey. Print them **front face down**. The largest is 298 × 148 mm. For a smaller printer, set `bed` and move the seams in `lower_splits`, `mid_splits` and `upper_splits` (up to 5 tiles per row); OpenSCAD warns if a tile is too wide.
+- **Joining:** the modules (bezels, switch plates, instruments) sit over the seams and screw into the tiles on both sides, which ties the panel together. Where a seam doesn't run under a module, glue and screw a 34 × 70 mm `splice` plate across it on the back. The blind pilot holes are already there, at the spots listed in `splices` (3 of them, outlined in the layout map).
 - **Glareshield:** 4 segments. Print them upside down with tree supports, or use them as formers and cover with foam and vinyl like the real padded one.
 - **Pedestal:** the face and floor plates.
 - **Plywood instead:** [`dashboard/templates/`](dashboard/templates) has the full panel as SVG/DXF (front view) for a laser or CNC.

@@ -63,14 +63,23 @@ module panel_cutout() {
     for (s = screws) translate(s) circle(d = m3_clear_d);
 }
 
+// ---- demo animation (README GIF): key presses [t, key index]; key index = row * 2 + column, 22 = DISPLAY BACKUP
+gma_presses = [[0.04, 1], [0.12, 3], [0.20, 13], [0.26, 15], [0.32, 14], [0.38, 10], [0.46, 9], [0.52, 18], [0.86, 22]];
+gma_turn = [0.60, 0.80];   // VOL/SQ knob turning
 module assembly() {
     color([0.17, 0.18, 0.19]) front_plate();
-    for (i = [0 : len(keys) - 1]) color(i == len(keys) - 1 ? [0.8, 0.1, 0.1] : [0.25, 0.25, 0.26])
-        translate([keys[i][0], keys[i][1]]) cap_in_place() cap_for(keys[i]);
-    color([0.1, 0.1, 0.1]) translate([knob[0], knob[1], 2.5 + 10]) mirror([0, 0, 1]) knob_single(13, 10, 20);
+    for (i = [0 : len(keys) - 1]) let(k = keys[i], dn = key_down(i, gma_presses, 0.05)) translate([k[0], k[1], dn ? -key_travel : 0]) {
+        color(cap_col(dn, i == len(keys) - 1 ? [0.8, 0.1, 0.1] : [0.25, 0.25, 0.26])) cap_in_place() cap_for(k);
+        color([0.93, 0.93, 0.9]) translate([0, 0, cap_out - 0.2]) scale([1, 1, 0.3])
+            cap_label_geom(k[2], k[4], len(k[4]) > 3 ? 1.6 : 2.0, k[5]);
+    }
+    turning = anim_in(gma_turn[0], gma_turn[1]);
+    translate([knob[0], knob[1]]) {
+        rotate(anim < 0 ? 0 : -280 * (min(max(anim, gma_turn[0]), gma_turn[1]) - gma_turn[0]))
+            color([0.1, 0.1, 0.1]) translate([0, 0, 2.5 + 10]) mirror([0, 0, 1]) knob_single(13, 10, 20);
+        if (turning) turn_arrow(6.5, 1, 13);
+    }
     paint_fill() face_labels();
-    color([0.93, 0.93, 0.9]) for (k = keys) translate([k[0], k[1], cap_out - 0.2]) scale([1, 1, 0.3])
-        cap_label_geom(k[2], k[4], len(k[4]) > 3 ? 1.6 : 2.0, k[5]);
     color("darkorange", ghost_a()) switch_plate();
 }
 

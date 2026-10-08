@@ -135,3 +135,13 @@ module knob_dual_inner(d = 12, h = 13) {
         }
     }
 }
+
+// ---------- demo animation helpers (README GIFs; nothing here is printed)
+
+// is key i pressed?  presses = [[start t, key index], ...], each held for `hold`
+function key_down(i, presses, hold = 0.045) =
+    len([for (p = presses) if (p[1] == i && anim_in(p[0], p[0] + hold)) 1]) > 0;
+// how far a pressed key cap travels (it bottoms the tact switch)
+key_travel = 1.4;
+// cap colour: normal, or lit amber while pressed
+function cap_col(down, c = [0.25, 0.25, 0.26]) = down ? [1, 0.62, 0.15] : c;

@@ -4,6 +4,8 @@ The narrow audio panel between the PFD and MFD, at real size (34.3 × 195.6 mm):
 
 ![GMA 1347](images/front.png)
 
+![Audio panel working](../../docs/anim/g1000-gma.gif)
+
 ## Parts list
 
 | Qty | Item |

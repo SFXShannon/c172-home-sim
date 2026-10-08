@@ -49,7 +49,7 @@ floor_d    = 150;         // floor plate depth (toward the pilot)
 
 /* [Printing] */
 // Largest piece your printer can do (mm)
-bed = 250;
+bed = 305;
 // Where to split the lower panel into tiles (x positions)
 lower_splits = [-75];
 

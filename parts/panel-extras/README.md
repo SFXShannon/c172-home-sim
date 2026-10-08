@@ -1,5 +1,7 @@
 # Panel extras
 
+![Ignition key working](../../docs/anim/ignition.gif)
+
 | Part | What it is |
 |---|---|
 | `ignition_key` + `ignition_escutcheon` | Key-shaped knob and chrome-look ring on a 1-pole 12-position rotary switch (stop washer set to 5 positions). OFF R L BOTH START is engraved round it on the panel. |
