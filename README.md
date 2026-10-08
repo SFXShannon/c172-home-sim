@@ -55,7 +55,16 @@ Each control's position is the centre of its knob or shaft.
 | `lower_splits` | Where the lower panel is split into print tiles (x positions) | `[-75]` |
 | `bed` | Your printer's bed size, so tiles are checked to fit | `250` |
 
-### How to move them (easy way: OpenSCAD Customizer)
+### Easiest: drag them around in the layout page
+
+Download [`tools/panel-layout.html`](tools/panel-layout.html) (*Raw* → save) and open it in your browser.
+
+- Drag the controls, the pedestal, the tile seams and the yoke opening on a to-scale drawing of the panel.
+- It runs the same checks as the OpenSCAD file as you drag (overlaps, edges, seams, bed size). It also warns if the parking brake handle would swing into a knob or hang in front of the pedestal.
+- Press **Copy settings** and paste the lines over the layout section of `panel/c172_panel.scad`, then run `scripts/render.sh panel`.
+- It can also load the settings from your current file, so you can keep tweaking an existing layout.
+
+### Or in OpenSCAD's Customizer
 
 1. Install [OpenSCAD](https://openscad.org) and open `panel/c172_panel.scad`.
 2. Open *Window → Customizer*. The settings above appear under **Layout - lower panel**, **Layout - pedestal** and **Printing**.
@@ -101,6 +110,7 @@ parts/<control>/
   README.md        parts list, printing, assembly, wiring, MSFS binding
 panel/             printable panel pieces + full-size templates
 firmware/          Arduino Pro Micro sketch
+tools/             panel-layout.html: drag-and-drop panel layout page
 scripts/render.sh  regenerate STLs/templates for the controls
 ```
 

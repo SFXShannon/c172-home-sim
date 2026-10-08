@@ -24,7 +24,7 @@ Panel pieces with every control's cutouts, mounting holes and countersinks alrea
 
 ## Changing the layout
 
-See **[Moving the controls](../README.md#moving-the-controls)** in the main README for the full guide. In short:
+The easiest way is the drag-and-drop page [`tools/panel-layout.html`](../tools/panel-layout.html). See **[Moving the controls](../README.md#moving-the-controls)** in the main README for the full guide.
 
 ![Layout map](images/layout_map.png)
 

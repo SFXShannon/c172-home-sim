@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important} body{margin:0}</style>
+</head>
+<body>
+<title>C172 Panel Layout</title>
+<meta name="description" content="Drag the C172 home-sim controls around a to-scale panel and copy the positions into c172_panel.scad.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: drafting-table editor - to-scale panel drawing on the left, a settings rail on the right
+   that stacks under the drawing on phones. Panel paint grey + placard amber come from the cockpit. */
+:root {
+  --bg: #e9ece9;
+  --surface: #f7f8f6;
+  --ink: #1b2126;
+  --muted: #5a646b;
+  --line: #c6cdc9;
+  --panel: #4a4e54;
+  --panel-edge: #33373c;
+  --panel-ink: #e8eae4;
+  --grid: rgba(232, 234, 228, 0.10);
+  --grid-major: rgba(232, 234, 228, 0.24);
+  --accent: #c26a12;
+  --accent-ink: #ffffff;
+  --ok: #2c7f50;
+  --warn: #b2471a;
+  --warn-bg: #f6e3d8;
+  --ok-bg: #dcefe3;
+  --code-bg: #20262b;
+  --warn-on-panel: #ffb08c;
+  --code-ink: #e3e6e0;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121518; --surface: #1a1f23; --ink: #e5e8e3; --muted: #97a0a6; --line: #2d343a;
+    --panel: #3e4349; --panel-edge: #2a2e33; --panel-ink: #e8eae4;
+    --accent: #e48a2c; --accent-ink: #1a1206; --ok: #52bd80; --warn: #f0875a;
+    --warn-bg: #3a2219; --ok-bg: #18301f; --code-bg: #0c0f11; --code-ink: #e3e6e0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121518; --surface: #1a1f23; --ink: #e5e8e3; --muted: #97a0a6; --line: #2d343a;
+  --panel: #3e4349; --panel-edge: #2a2e33; --panel-ink: #e8eae4;
+  --accent: #e48a2c; --accent-ink: #1a1206; --ok: #52bd80; --warn: #f0875a;
+  --warn-bg: #3a2219; --ok-bg: #18301f; --code-bg: #0c0f11; --code-ink: #e3e6e0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.45;
+  padding-inline: 16px; padding-block: 18px 40px;
+}
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; }
+h1 {
+  font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1;
+  letter-spacing: 0.01em; margin: 0; text-wrap: balance;
+}
+h1 span { color: var(--accent); }
+.lede { margin: 6px 0 0; color: var(--muted); max-width: 68ch; }
+.lede code, .note code { font-family: var(--font-mono); font-size: 0.88em; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+.stage {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+  padding: 10px; min-width: 0; display: grid; gap: 8px;
+}
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.legend b { color: var(--ink); font-weight: 600; }
+svg#board { width: 100%; height: auto; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+
+aside { display: grid; gap: 12px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 10px; min-width: 0; }
+.card h2 {
+  font-family: var(--font-display); font-weight: 600; font-size: 15px; text-transform: uppercase;
+  letter-spacing: 0.08em; margin: 0; color: var(--muted);
+}
+.sel-name { font-family: var(--font-display); font-size: 24px; font-weight: 700; line-height: 1; }
+.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.field { display: grid; gap: 3px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.field input[type="number"], select {
+  font-family: var(--font-mono); font-size: 14px; width: 92px; padding: 5px 7px;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.field input[type="number"]:disabled { opacity: 0.45; }
+label.check { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
+label.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+.hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+button {
+  font-family: var(--font-body); font-weight: 600; font-size: 14px; cursor: pointer;
+  border-radius: 4px; padding: 7px 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button.danger-armed { background: var(--warn); border-color: var(--warn); color: #fff; }
+button.small { padding: 3px 8px; font-size: 12.5px; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 5px 10px; font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.checks li { font-size: 13.5px; padding: 6px 9px; border-radius: 4px; background: var(--warn-bg); color: var(--ink); border-left: 3px solid var(--warn); }
+.checks li.ok { background: var(--ok-bg); border-left-color: var(--ok); }
+
+pre.code {
+  margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 4px; padding: 10px 12px;
+  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; overflow-x: auto; white-space: pre;
+}
+.seams { display: grid; gap: 6px; }
+.seam-row { display: flex; gap: 8px; align-items: center; font-size: 13.5px; }
+.seam-row .field { flex-direction: row; }
+textarea {
+  width: 100%; min-height: 110px; font-family: var(--font-mono); font-size: 12.5px; padding: 8px;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); resize: vertical;
+}
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.status { font-size: 13px; color: var(--ok); min-height: 1.2em; }
+
+/* SVG drawing - colours from tokens so both themes read */
+.svg-panel { fill: var(--panel); stroke: var(--panel-edge); stroke-width: 1; }
+.svg-grid { stroke: var(--grid); stroke-width: 0.4; }
+.svg-grid-major { stroke: var(--grid-major); stroke-width: 0.6; }
+.svg-axis-text { fill: var(--muted); font-family: var(--font-mono); font-size: 6.5px; }
+.svg-axis-title { fill: var(--muted); font-family: var(--font-body); font-size: 7px; }
+.svg-engrave { fill: var(--panel-ink); opacity: 0.75; font-family: var(--font-display); font-weight: 600; font-size: 5.5px; letter-spacing: 0.06em; }
+.svg-flange { fill: rgba(194, 106, 18, 0.10); stroke: var(--accent); stroke-width: 0.6; stroke-dasharray: 2 1.6; }
+.svg-flange.bad { fill: rgba(178, 71, 26, 0.28); stroke: var(--warn); stroke-dasharray: none; stroke-width: 1; }
+.svg-screw { fill: #b9bdb8; stroke: #6e7377; stroke-width: 0.3; }
+.svg-tag { fill: var(--panel-ink); font-family: var(--font-display); font-weight: 700; font-size: 6.5px; letter-spacing: 0.05em; }
+.svg-coord { fill: var(--panel-ink); opacity: 0.85; font-family: var(--font-mono); font-size: 4.6px; }
+.svg-sel { fill: none; stroke: var(--accent); stroke-width: 1.4; }
+.draggable { cursor: grab; }
+.dragging, .dragging * { cursor: grabbing !important; }
+.svg-seam { stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.svg-seam-handle { fill: var(--accent); }
+.svg-seam-hit { stroke: transparent; stroke-width: 9; cursor: ew-resize; }
+.svg-tile-text { fill: var(--panel-ink); opacity: 0.7; font-family: var(--font-mono); font-size: 5px; }
+.svg-tile-text.bad { fill: var(--warn-on-panel); opacity: 1; font-weight: 500; }
+.svg-ped { fill: var(--panel); stroke: var(--panel-edge); stroke-width: 1; opacity: 0.92; }
+.svg-floor { fill: var(--panel-edge); }
+.svg-slot { fill: #121417; }
+.svg-placard { fill: #d6d8d2; }
+.svg-placard-text { fill: #2a2d31; font-family: var(--font-display); font-weight: 700; font-size: 3.4px; }
+.svg-yoke { fill: rgba(0,0,0,0.35); stroke: var(--panel-ink); stroke-width: 0.6; stroke-dasharray: 2 1.5; }
+.svg-yoke-text { fill: var(--panel-ink); font-family: var(--font-display); font-size: 5px; font-weight: 600; }
+.svg-floor-text { fill: var(--panel-ink); font-family: var(--font-display); font-size: 5.4px; font-weight: 600; letter-spacing: 0.05em; }
+@media (prefers-reduced-motion: no-preference) { .svg-flange { transition: fill 120ms; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>C172 <span>Panel Layout</span></h1>
+      <p class="lede">Drag the controls, the pedestal, the tile seams and the yoke opening. Everything is drawn to scale in millimetres, as seen from the pilot's seat. Copy the settings at the bottom into <code>panel/c172_panel.scad</code> and re-render the panel.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="stage" aria-label="Panel drawing">
+      <div class="toolbar">
+        <div class="legend">
+          <span><b>x</b> mm right of panel centre</span>
+          <span><b>y</b> mm up from the panel bottom</span>
+          <span>Dashed box = 42 × 42 mm mounting flange behind the panel</span>
+        </div>
+        <div class="row">
+          <span class="hint">Snap</span>
+          <div class="seg" role="group" aria-label="Snap to grid">
+            <button type="button" id="snap1" data-snap="1">1 mm</button>
+            <button type="button" id="snap5" data-snap="5">5 mm</button>
+            <button type="button" id="snap10" data-snap="10">10 mm</button>
+          </div>
+        </div>
+      </div>
+      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lower panel and pedestal, to scale"></svg>
+      <p class="hint">Click a control to select it, then use the arrow keys to nudge it 1 mm (Shift + arrow = 10 mm).</p>
+    </section>
+
+    <aside>
+      <div class="card" id="selCard">
+        <h2>Selected</h2>
+        <div class="sel-name" id="selName">Throttle</div>
+        <div class="row">
+          <label class="field" for="selX">x (mm)<input type="number" id="selX" step="1"></label>
+          <label class="field" for="selY">y (mm)<input type="number" id="selY" step="1"></label>
+        </div>
+        <p class="hint" id="selNote">Centre of the knob or shaft.</p>
+      </div>
+
+      <div class="card">
+        <h2>Layout checks</h2>
+        <ul class="checks" id="checks"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Lower panel</h2>
+        <div class="row">
+          <label class="field" for="lowerW">Width<input type="number" id="lowerW" step="5" min="150" max="900"></label>
+          <label class="field" for="lowerH">Height<input type="number" id="lowerH" step="5" min="60" max="400"></label>
+        </div>
+        <label class="check" for="hasProp"><input type="checkbox" id="hasProp"> Constant-speed prop control (blue knob)</label>
+        <label class="check" for="labels"><input type="checkbox" id="labels"> Engraved labels under the controls</label>
+        <label class="check" for="yokeOn"><input type="checkbox" id="yokeOn"> Opening for a yoke shaft</label>
+        <div class="row" id="yokeRow">
+          <label class="field" for="yokeW">Opening W<input type="number" id="yokeW" step="1" min="10" max="300"></label>
+          <label class="field" for="yokeH">Opening H<input type="number" id="yokeH" step="1" min="10" max="300"></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Pedestal (trim wheel + fuel selector)</h2>
+        <div class="row">
+          <label class="field" for="pedX">Centre x<input type="number" id="pedX" step="1"></label>
+          <label class="field" for="pedW">Width<input type="number" id="pedW" step="5" min="120" max="400"></label>
+        </div>
+        <div class="row">
+          <label class="field" for="pedH">Height<input type="number" id="pedH" step="5" min="150" max="600"></label>
+          <label class="field" for="floorD">Floor depth<input type="number" id="floorD" step="5" min="140" max="400"></label>
+        </div>
+        <p class="hint">Drag the pedestal sideways on the drawing. The trim wheel and fuel selector stay centred on it.</p>
+      </div>
+
+      <div class="card">
+        <h2>Printing</h2>
+        <div class="row">
+          <label class="field" for="bed">Print bed (mm)<input type="number" id="bed" step="5" min="100" max="600"></label>
+        </div>
+        <div class="seams" id="seams"></div>
+        <div class="row">
+          <button type="button" id="addSeam" class="small">Add tile seam</button>
+        </div>
+        <p class="hint">The lower panel is printed as tiles joined by a splice strip on the back. Drag a seam on the drawing; keep it in a gap between controls. Up to 3 tiles.</p>
+      </div>
+
+      <div class="card">
+        <h2>Settings for c172_panel.scad</h2>
+        <div class="seg" role="group" aria-label="Output format">
+          <button type="button" id="fmtFile" aria-pressed="true">Paste into file</button>
+          <button type="button" id="fmtCli" aria-pressed="false">Command line</button>
+        </div>
+        <pre class="code" id="code" tabindex="0"></pre>
+        <div class="row">
+          <button type="button" class="primary" id="copy">Copy settings</button>
+          <span class="status" id="copyStatus" role="status"></span>
+        </div>
+        <p class="hint" id="fmtHint"></p>
+      </div>
+
+      <div class="card">
+        <details>
+          <summary>Load settings from your file</summary>
+          <div style="display:grid; gap:8px; margin-top:10px;">
+            <p class="hint">Paste the layout lines from your <code>c172_panel.scad</code> (or a block copied from here) and load them.</p>
+            <textarea id="importText" spellcheck="false" placeholder="throttle_pos = [0, 70];&#10;mixture_pos  = [60, 70];"></textarea>
+            <div class="row">
+              <button type="button" id="importBtn">Load</button>
+              <span class="status" id="importStatus" role="status"></span>
+            </div>
+          </div>
+        </details>
+        <div class="row">
+          <button type="button" id="reset">Reset to repo defaults</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------- model
+  // Same names and defaults as panel/c172_panel.scad (repo version).
+  const DEFAULTS = {
+    lower_w: 330, lower_h: 120, has_prop: false,
+    brake_pos: [-140, 45], throttle_pos: [0, 70], prop_pos: [55, 70],
+    mixture_pos: [60, 70], mixture_pos_with_prop: [110, 70],
+    labels: true, yoke_on: false, yoke_hole: [-95, 70, 50, 40],
+    pedestal_x: 30, pedestal_w: 130, pedestal_h: 170, floor_d: 150,
+    bed: 250, lower_splits: [-75]
+  };
+  const FLANGE = 42, HALF = 21, MIN_GAP = 4, MIN_PITCH = FLANGE + MIN_GAP;
+  const GRIP_LEN = 95, GRIP_ROOT = 22, GRIP_TIP = 13;
+  const STORE_KEY = "c172-panel-layout-v1";
+
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  let S = clone(DEFAULTS);
+  let snap = 1;
+  let selected = "throttle";
+  let fmt = "file";
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved && saved.state) { S = Object.assign(clone(DEFAULTS), saved.state); snap = saved.snap || 1; }
+  } catch (e) { /* storage unavailable - start from defaults */ }
+
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ state: S, snap })); } catch (e) { /* ignore */ }
+  }
+
+  function controls() {
+    const list = [
+      { id: "brake", key: "brake_pos", name: "Parking brake", label: "PARK BRAKE" },
+      { id: "throttle", key: "throttle_pos", name: "Throttle", label: "THROTTLE" }
+    ];
+    if (S.has_prop) list.push({ id: "prop", key: "prop_pos", name: "Prop", label: "PROP" });
+    list.push({ id: "mixture", key: S.has_prop ? "mixture_pos_with_prop" : "mixture_pos", name: "Mixture", label: "MIXTURE" });
+    return list;
+  }
+  const byId = (id) => controls().find((c) => c.id === id);
+
+  // ---------------------------------------------------------------- checks (mirror the .scad warnings, plus a few visual ones)
+  function runChecks() {
+    const out = [];
+    const bad = new Set();
+    const cs = controls();
+    const W = S.lower_w, H = S.lower_h;
+    cs.forEach((c) => {
+      const [x, y] = S[c.key];
+      if (Math.abs(x) + HALF > W / 2 || y - HALF < 0 || y + HALF > H) {
+        out.push(`${c.name} hangs off the edge of the panel. Keep its centre at least 21 mm from every edge.`); bad.add(c.id);
+      }
+      S.lower_splits.forEach((s) => {
+        if (Math.abs(x - s) < HALF + 2) { out.push(`The tile seam at x = ${s} cuts through the ${c.name.toLowerCase()}. Move the seam or the control.`); bad.add(c.id); }
+      });
+    });
+    for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
+      const a = S[cs[i].key], b = S[cs[j].key];
+      if (Math.abs(a[0] - b[0]) < MIN_PITCH && Math.abs(a[1] - b[1]) < MIN_PITCH) {
+        out.push(`${cs[i].name} and ${cs[j].name.toLowerCase()} are too close: their flanges overlap behind the panel. Keep centres ${MIN_PITCH} mm apart.`);
+        bad.add(cs[i].id); bad.add(cs[j].id);
+      }
+    }
+    // parking brake grip: stowed points to the pilot's right, set hangs down
+    const [bx, by] = S.brake_pos;
+    cs.filter((c) => c.id !== "brake").forEach((c) => {
+      const [x, y] = S[c.key];
+      const r = c.id === "throttle" ? 19 : 16;
+      if (x > bx && x - r < bx + GRIP_LEN && Math.abs(y - by) < GRIP_ROOT / 2 + r) {
+        out.push(`The parking brake handle points right when released and would hit the ${c.name.toLowerCase()} knob.`); bad.add("brake");
+      }
+    });
+    const pedL = S.pedestal_x - S.pedestal_w / 2, pedR = S.pedestal_x + S.pedestal_w / 2;
+    if (by - GRIP_LEN < 0 && bx + GRIP_ROOT / 2 > pedL && bx - GRIP_ROOT / 2 < pedR) {
+      out.push("When set, the parking brake handle hangs down in front of the pedestal. Move the brake or the pedestal sideways.");
+      bad.add("brake");
+    }
+    // tiles
+    const edges = [-W / 2, ...S.lower_splits.slice().sort((a, b) => a - b), W / 2];
+    for (let i = 0; i < edges.length - 1; i++) {
+      const w = edges[i + 1] - edges[i];
+      if (w > S.bed) out.push(`Tile ${i + 1} is ${fmtNum(w)} mm wide, more than your ${S.bed} mm bed. Add a seam.`);
+      if (w <= 0) out.push(`Tile ${i + 1} has no width. Move the seams apart.`);
+    }
+    if (edges.length - 1 > 3) out.push("The panel file makes at most 3 tiles. Remove a seam.");
+    // yoke opening
+    if (S.yoke_on) {
+      const [yx, yy, yw, yh] = S.yoke_hole;
+      cs.forEach((c) => {
+        const [x, y] = S[c.key];
+        if (Math.abs(x - yx) < HALF + yw / 2 && Math.abs(y - yy) < HALF + yh / 2) { out.push(`The yoke opening overlaps the ${c.name.toLowerCase()} flange.`); bad.add(c.id); }
+      });
+      if (Math.abs(yx) + yw / 2 > W / 2 || yy - yh / 2 < 0 || yy + yh / 2 > H) out.push("The yoke opening runs off the edge of the panel.");
+    }
+    if (pedL < -W / 2 || pedR > W / 2) out.push("The pedestal is wider than the panel above it at one side. That's fine to print, but check it clears your desk and yoke.");
+    return { out, bad, edges };
+  }
+
+  // ---------------------------------------------------------------- drawing
+  const svg = document.getElementById("board");
+  const NS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, parent, text) {
+    const n = document.createElementNS(NS, name);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (text != null) n.textContent = text;
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  const X = (x) => x, Y = (y) => -y;   // world (y up) -> svg (y down)
+  function fmtNum(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+
+  function viewBox() {
+    const W = S.lower_w, H = S.lower_h;
+    const pedL = S.pedestal_x - S.pedestal_w / 2 - 10, pedR = S.pedestal_x + S.pedestal_w / 2 + 10;
+    const minX = Math.min(-W / 2, pedL) - 34, maxX = Math.max(W / 2, pedR) + 12;
+    const minY = -(H + 22), maxY = S.pedestal_h + 58;
+    return [minX, minY, maxX - minX, maxY - minY];
+  }
+
+  function drawBrake(g, c) {
+    const [x, y] = S[c.key];
+    // grip (released position: horizontal, toward the pilot's right)
+    const pts = [
+      [x, y + GRIP_ROOT / 2], [x + GRIP_LEN - GRIP_TIP / 2, y + GRIP_TIP / 2 + 1],
+      [x + GRIP_LEN, y + 1], [x + GRIP_LEN - GRIP_TIP / 2, y - GRIP_TIP / 2 + 1], [x, y - GRIP_ROOT / 2]
+    ].map(([a, b]) => `${X(a)},${Y(b)}`).join(" ");
+    el("polygon", { points: pts, fill: "#111315", stroke: "#000", "stroke-width": 0.4, "stroke-linejoin": "round" }, g);
+    el("circle", { cx: X(x), cy: Y(y), r: GRIP_ROOT / 2, fill: "#111315" }, g);
+    el("circle", { cx: X(x), cy: Y(y), r: 2, fill: "#3b3f44" }, g);
+  }
+  function drawKnob(g, c) {
+    const [x, y] = S[c.key];
+    if (c.id === "throttle") {
+      el("circle", { cx: X(x), cy: Y(y), r: 13, fill: "#9a9fa3", stroke: "#5d6266", "stroke-width": 0.5, "stroke-dasharray": "0.8 0.8" }, g); // knurled nut
+      el("circle", { cx: X(x), cy: Y(y), r: 19, fill: "#141618" }, g);
+      el("circle", { cx: X(x), cy: Y(y), r: 12, fill: "#1f2225" }, g);
+    } else {
+      const col = c.id === "mixture" ? "#b2161a" : "#1f47b8";
+      el("circle", { cx: X(x), cy: Y(y), r: 16, fill: col }, g);
+      const n = c.id === "mixture" ? 36 : 10;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const r0 = c.id === "mixture" ? 14.6 : 12.5;
+        el("line", { x1: X(x + Math.cos(a) * r0), y1: Y(y + Math.sin(a) * r0), x2: X(x + Math.cos(a) * 16), y2: Y(y + Math.sin(a) * 16),
+          stroke: "rgba(0,0,0,0.45)", "stroke-width": c.id === "mixture" ? 0.5 : 2.6 }, g);
+      }
+      if (c.id === "mixture") el("circle", { cx: X(x), cy: Y(y), r: 5.5, fill: "#1a1a1a" }, g);
+      else el("circle", { cx: X(x), cy: Y(y), r: 10, fill: "rgba(0,0,0,0.15)" }, g);
+    }
+  }
+
+  function render() {
+    const { bad, edges } = runChecks();
+    const [vx, vy, vw, vh] = viewBox();
+    svg.setAttribute("viewBox", `${vx} ${vy} ${vw} ${vh}`);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const W = S.lower_w, H = S.lower_h;
+
+    // ---- pedestal + floor (behind the lower panel in drawing order)
+    const ped = el("g", { class: "draggable", "data-drag": "ped", tabindex: 0, "aria-label": "Pedestal" }, svg);
+    const pl = S.pedestal_x - S.pedestal_w / 2;
+    el("rect", { x: X(pl), y: Y(0), width: S.pedestal_w, height: S.pedestal_h, class: "svg-ped" }, ped);
+    const slotCx = S.pedestal_x, slotCy = -S.pedestal_h / 2;
+    el("rect", { x: X(slotCx - 13), y: Y(slotCy + 52), width: 26, height: 104, rx: 4, class: "svg-slot" }, ped);
+    for (let i = -10; i <= 10; i++) el("rect", { x: X(slotCx - 11), y: Y(slotCy + i * 4.6 + 1.2), width: 22, height: 2.4, fill: "#1d2023" }, ped);
+    // placard on the pilot's left of the wheel
+    el("rect", { x: X(slotCx - 13 - 18 - 12), y: Y(slotCy + 52), width: 24, height: 104, rx: 2, class: "svg-placard" }, ped);
+    [["NOSE", 44], ["DN", 39], ["T.O.", -6], ["NOSE", -39], ["UP", -44]].forEach(([t, dy]) =>
+      el("text", { x: X(slotCx - 31), y: Y(slotCy + dy) + 1.2, "text-anchor": "middle", class: "svg-placard-text" }, ped, t));
+    el("text", { x: X(S.pedestal_x), y: Y(-12) + 2, "text-anchor": "middle", class: "svg-floor-text" }, ped, "PEDESTAL · TRIM WHEEL");
+    // floor plate, drawn as a band seen from the front
+    const fw = S.pedestal_w + 20, ft = 14;
+    el("polygon", { points: [
+      [pl - 10, -S.pedestal_h], [pl + S.pedestal_w + 10, -S.pedestal_h],
+      [pl + S.pedestal_w + 26, -S.pedestal_h - ft], [pl - 26, -S.pedestal_h - ft]
+    ].map(([a, b]) => `${X(a)},${Y(b)}`).join(" "), class: "svg-floor" }, ped);
+    el("text", { x: X(S.pedestal_x), y: Y(-S.pedestal_h - ft / 2) + 1.9, "text-anchor": "middle", class: "svg-floor-text" }, ped,
+      `FLOOR ${fw} × ${S.floor_d} · FUEL SELECTOR`);
+    if (selected === "ped") el("rect", { x: X(pl) - 1.5, y: Y(0) - 1.5, width: S.pedestal_w + 3, height: S.pedestal_h + ft + 3, class: "svg-sel" }, ped);
+
+    // ---- lower panel
+    el("rect", { x: X(-W / 2), y: Y(H), width: W, height: H, class: "svg-panel" }, svg);
+    const grid = el("g", {}, svg);
+    for (let x = Math.ceil(-W / 2 / 10) * 10; x <= W / 2; x += 10)
+      el("line", { x1: X(x), y1: Y(0), x2: X(x), y2: Y(H), class: x % 50 === 0 ? "svg-grid-major" : "svg-grid" }, grid);
+    for (let y = 0; y <= H; y += 10)
+      el("line", { x1: X(-W / 2), y1: Y(y), x2: X(W / 2), y2: Y(y), class: y % 50 === 0 ? "svg-grid-major" : "svg-grid" }, grid);
+    // axis labels
+    for (let x = Math.ceil(-W / 2 / 50) * 50; x <= W / 2; x += 50)
+      el("text", { x: X(x), y: Y(H) - 3, "text-anchor": "middle", class: "svg-axis-text" }, svg, String(x));
+    for (let y = 0; y <= H; y += 50)
+      el("text", { x: X(-W / 2) - 3, y: Y(y) + 2.2, "text-anchor": "end", class: "svg-axis-text" }, svg, String(y));
+    el("text", { x: X(-W / 2) - 3, y: Y(H) - 12, "text-anchor": "start", class: "svg-axis-title" }, svg, "x → pilot's right   ·   y ↑");
+
+    // ---- yoke opening
+    if (S.yoke_on) {
+      const [yx, yy, yw, yh] = S.yoke_hole;
+      const yg = el("g", { class: "draggable", "data-drag": "yoke", tabindex: 0, "aria-label": "Yoke opening" }, svg);
+      el("rect", { x: X(yx - yw / 2), y: Y(yy + yh / 2), width: yw, height: yh, rx: 6, class: "svg-yoke" }, yg);
+      el("text", { x: X(yx), y: Y(yy) + 1.8, "text-anchor": "middle", class: "svg-yoke-text" }, yg, "YOKE");
+      if (selected === "yoke") el("rect", { x: X(yx - yw / 2) - 1.5, y: Y(yy + yh / 2) - 1.5, width: yw + 3, height: yh + 3, rx: 7, class: "svg-sel" }, yg);
+    }
+
+    // ---- controls
+    const cs = controls();
+    cs.forEach((c) => {
+      const [x, y] = S[c.key];
+      const g = el("g", { class: "draggable", "data-drag": "ctrl:" + c.id, tabindex: 0, "aria-label": c.name }, svg);
+      el("rect", { x: X(x - HALF), y: Y(y + HALF), width: FLANGE, height: FLANGE, class: "svg-flange" + (bad.has(c.id) ? " bad" : "") }, g);
+      [[-14, -14], [14, -14], [-14, 14], [14, 14]].forEach(([dx, dy]) =>
+        el("circle", { cx: X(x + dx), cy: Y(y + dy), r: 1.9, class: "svg-screw" }, g));
+      if (c.id === "brake") drawBrake(g, c); else drawKnob(g, c);
+      if (S.labels) el("text", { x: X(x), y: Y(y - 30) + 1.9, "text-anchor": "middle", class: "svg-engrave" }, g, c.label);
+      el("text", { x: X(x), y: Y(y + HALF) - 2.2, "text-anchor": "middle", class: "svg-coord" }, g, `${fmtNum(x)}, ${fmtNum(y)}`);
+      if (selected === c.id) el("rect", { x: X(x - HALF) - 1.6, y: Y(y + HALF) - 1.6, width: FLANGE + 3.2, height: FLANGE + 3.2, class: "svg-sel" }, g);
+    });
+
+    // ---- tile seams + widths
+    const sorted = S.lower_splits.map((s, i) => ({ s, i })).sort((a, b) => a.s - b.s);
+    for (let i = 0; i < edges.length - 1; i++) {
+      const w = edges[i + 1] - edges[i];
+      el("text", { x: X((edges[i] + edges[i + 1]) / 2), y: Y(0) - 3, "text-anchor": "middle",
+        class: "svg-tile-text" + (w > S.bed ? " bad" : "") }, svg, `tile ${i + 1} · ${fmtNum(w)} mm`);
+    }
+    sorted.forEach(({ s, i }) => {
+      const g = el("g", { "data-drag": "seam:" + i, tabindex: 0, "aria-label": "Tile seam" }, svg);
+      el("line", { x1: X(s), y1: Y(H + 4), x2: X(s), y2: Y(-2), class: "svg-seam" }, g);
+      el("line", { x1: X(s), y1: Y(H + 4), x2: X(s), y2: Y(-2), class: "svg-seam-hit" }, g);
+      el("path", { d: `M${X(s) - 3.2} ${Y(H) - 8} h6.4 l-3.2 4 z`, class: "svg-seam-handle", style: "cursor: ew-resize" }, g);
+    });
+
+    renderSide();
+  }
+
+  // ---------------------------------------------------------------- side panel
+  const $ = (id) => document.getElementById(id);
+  function renderSide() {
+    const { out } = runChecks();
+    const ul = $("checks");
+    ul.innerHTML = "";
+    if (!out.length) { const li = document.createElement("li"); li.className = "ok"; li.textContent = "Everything fits. No overlaps, every tile fits your bed."; ul.appendChild(li); }
+    else out.forEach((t) => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+
+    // selected
+    let name = "", x = null, y = null, note = "";
+    if (selected === "ped") { name = "Pedestal"; x = S.pedestal_x; note = "Pedestal centre line. It moves left and right only."; }
+    else if (selected === "yoke") { name = "Yoke opening"; [x, y] = S.yoke_hole; note = "Centre of the opening."; }
+    else {
+      const c = byId(selected) || controls()[1];
+      selected = c.id; name = c.name; [x, y] = S[c.key];
+      note = c.id === "brake" ? "Centre of the shaft. The grip points to the pilot's right when released and hangs down when set."
+        : c.id === "mixture" && S.has_prop ? "Centre of the knob. With the prop on, this is mixture_pos_with_prop." : "Centre of the knob.";
+    }
+    $("selName").textContent = name;
+    setVal($("selX"), x);
+    setVal($("selY"), y); $("selY").disabled = (selected === "ped");
+    $("selNote").textContent = note;
+
+    setVal($("lowerW"), S.lower_w); setVal($("lowerH"), S.lower_h);
+    $("hasProp").checked = S.has_prop; $("labels").checked = S.labels; $("yokeOn").checked = S.yoke_on;
+    $("yokeRow").hidden = !S.yoke_on;
+    setVal($("yokeW"), S.yoke_hole[2]); setVal($("yokeH"), S.yoke_hole[3]);
+    setVal($("pedX"), S.pedestal_x); setVal($("pedW"), S.pedestal_w); setVal($("pedH"), S.pedestal_h); setVal($("floorD"), S.floor_d);
+    setVal($("bed"), S.bed);
+    ["snap1", "snap5", "snap10"].forEach((id) => $(id).setAttribute("aria-pressed", String(Number($(id).dataset.snap) === snap)));
+
+    // seams list
+    const box = $("seams");
+    box.innerHTML = "";
+    S.lower_splits.forEach((s, i) => {
+      const row = document.createElement("div"); row.className = "seam-row";
+      const lab = document.createElement("label"); lab.className = "field"; lab.htmlFor = "seam" + i; lab.textContent = "Seam x ";
+      const inp = document.createElement("input"); inp.type = "number"; inp.id = "seam" + i; inp.step = "1"; inp.value = s;
+      inp.addEventListener("change", () => { const v = Number(inp.value); if (Number.isFinite(v)) { S.lower_splits[i] = clampSeam(v); commit(); } });
+      lab.appendChild(inp);
+      const rm = document.createElement("button"); rm.type = "button"; rm.className = "small"; rm.textContent = "Remove";
+      rm.addEventListener("click", () => { S.lower_splits.splice(i, 1); commit(); });
+      row.appendChild(lab); row.appendChild(rm); box.appendChild(row);
+    });
+    $("addSeam").disabled = S.lower_splits.length >= 2;
+
+    // code
+    $("code").textContent = fmt === "file" ? fileText() : cliText();
+    $("fmtFile").setAttribute("aria-pressed", String(fmt === "file"));
+    $("fmtCli").setAttribute("aria-pressed", String(fmt === "cli"));
+    $("fmtHint").textContent = fmt === "file"
+      ? "Replace the matching lines in the layout section near the top of panel/c172_panel.scad, then run scripts/render.sh panel."
+      : "Run from the repo folder to render a preview with this layout without editing the file. Change part= to export a tile.";
+  }
+  function setVal(input, v) { if (document.activeElement !== input) input.value = v == null ? "" : fmtNum(v); }
+
+  const vec = (a) => `[${a.map(fmtNum).join(", ")}]`;
+  function fileText() {
+    const lines = [
+      ["lower_w", String(S.lower_w)], ["lower_h", String(S.lower_h)], ["has_prop", String(S.has_prop)],
+      ["brake_pos", vec(S.brake_pos)], ["throttle_pos", vec(S.throttle_pos)], ["prop_pos", vec(S.prop_pos)],
+      ["mixture_pos", vec(S.mixture_pos)], ["mixture_pos_with_prop", vec(S.mixture_pos_with_prop)],
+      ["labels", String(S.labels)], ["yoke_hole", S.yoke_on ? vec(S.yoke_hole) : "[]"],
+      ["pedestal_x", fmtNum(S.pedestal_x)], ["pedestal_w", fmtNum(S.pedestal_w)], ["pedestal_h", fmtNum(S.pedestal_h)], ["floor_d", fmtNum(S.floor_d)],
+      ["bed", String(S.bed)], ["lower_splits", vec(S.lower_splits.slice().sort((a, b) => a - b))]
+    ];
+    const pad = Math.max(...lines.map(([k]) => k.length));
+    return lines.map(([k, v]) => `${k.padEnd(pad)} = ${v};`).join("\n");
+  }
+  function cliText() {
+    const d = (k, v) => `-D '${k}=${v}'`;
+    const parts = [
+      d("lower_w", S.lower_w), d("lower_h", S.lower_h), d("has_prop", S.has_prop),
+      d("brake_pos", vec(S.brake_pos)), d("throttle_pos", vec(S.throttle_pos)), d("prop_pos", vec(S.prop_pos)),
+      d("mixture_pos", vec(S.mixture_pos)), d("mixture_pos_with_prop", vec(S.mixture_pos_with_prop)),
+      d("labels", S.labels), d("yoke_hole", S.yoke_on ? vec(S.yoke_hole) : "[]"),
+      d("pedestal_x", fmtNum(S.pedestal_x)), d("pedestal_w", fmtNum(S.pedestal_w)), d("pedestal_h", fmtNum(S.pedestal_h)), d("floor_d", fmtNum(S.floor_d)),
+      d("bed", S.bed), d("lower_splits", vec(S.lower_splits.slice().sort((a, b) => a - b)))
+    ];
+    return "openscad \\\n  " + parts.join(" \\\n  ") + " \\\n  -D 'part=\"preview\"' -o preview.png panel/c172_panel.scad";
+  }
+
+  function commit() { save(); render(); }
+  const snapTo = (v) => Math.round(v / snap) * snap;
+  function clampSeam(v) { return Math.max(-S.lower_w / 2 + 10, Math.min(S.lower_w / 2 - 10, v)); }
+
+  // ---------------------------------------------------------------- dragging
+  let drag = null;
+  function toWorld(evt) {
+    const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return [p.x, -p.y];
+  }
+  svg.addEventListener("pointerdown", (evt) => {
+    const t = evt.target.closest("[data-drag]");
+    if (!t) return;
+    const kind = t.getAttribute("data-drag");
+    const [wx, wy] = toWorld(evt);
+    let origin;
+    if (kind.startsWith("ctrl:")) { selected = kind.slice(5); origin = S[byId(selected).key].slice(); }
+    else if (kind === "ped") { selected = "ped"; origin = [S.pedestal_x, 0]; }
+    else if (kind === "yoke") { selected = "yoke"; origin = S.yoke_hole.slice(0, 2); }
+    else if (kind.startsWith("seam:")) { origin = [S.lower_splits[Number(kind.slice(5))], 0]; }
+    drag = { kind, start: [wx, wy], origin };
+    svg.setPointerCapture(evt.pointerId);
+    svg.classList.add("dragging");
+    evt.preventDefault();
+    render();
+  });
+  svg.addEventListener("pointermove", (evt) => {
+    if (!drag) return;
+    const [wx, wy] = toWorld(evt);
+    const nx = snapTo(drag.origin[0] + wx - drag.start[0]);
+    const ny = snapTo(drag.origin[1] + wy - drag.start[1]);
+    const k = drag.kind;
+    if (k.startsWith("ctrl:")) S[byId(k.slice(5)).key] = [nx, ny];
+    else if (k === "ped") S.pedestal_x = nx;
+    else if (k === "yoke") { S.yoke_hole[0] = nx; S.yoke_hole[1] = ny; }
+    else if (k.startsWith("seam:")) S.lower_splits[Number(k.slice(5))] = clampSeam(nx);
+    render();
+  });
+  function endDrag(evt) {
+    if (!drag) return;
+    drag = null; svg.classList.remove("dragging");
+    try { svg.releasePointerCapture(evt.pointerId); } catch (e) { /* already released */ }
+    save();
+  }
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+
+  // keyboard nudge on the selected item
+  document.addEventListener("keydown", (evt) => {
+    const tag = (evt.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    const dirs = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+    const d = dirs[evt.key];
+    if (!d) return;
+    const step = evt.shiftKey ? 10 : 1;
+    if (selected === "ped") S.pedestal_x += d[0] * step;
+    else if (selected === "yoke") { S.yoke_hole[0] += d[0] * step; S.yoke_hole[1] += d[1] * step; }
+    else { const c = byId(selected); if (!c) return; const p = S[c.key]; S[c.key] = [p[0] + d[0] * step, p[1] + d[1] * step]; }
+    evt.preventDefault();
+    commit();
+  });
+
+  // ---------------------------------------------------------------- inputs
+  function num(id, fn) {
+    $(id).addEventListener("change", () => { const v = Number($(id).value); if (Number.isFinite(v)) { fn(v); commit(); } });
+  }
+  num("selX", (v) => {
+    if (selected === "ped") S.pedestal_x = v;
+    else if (selected === "yoke") S.yoke_hole[0] = v;
+    else { const c = byId(selected); S[c.key] = [v, S[c.key][1]]; }
+  });
+  num("selY", (v) => {
+    if (selected === "yoke") S.yoke_hole[1] = v;
+    else if (selected !== "ped") { const c = byId(selected); S[c.key] = [S[c.key][0], v]; }
+  });
+  num("lowerW", (v) => { S.lower_w = Math.max(150, v); });
+  num("lowerH", (v) => { S.lower_h = Math.max(60, v); });
+  num("yokeW", (v) => { S.yoke_hole[2] = Math.max(10, v); });
+  num("yokeH", (v) => { S.yoke_hole[3] = Math.max(10, v); });
+  num("pedX", (v) => { S.pedestal_x = v; });
+  num("pedW", (v) => { S.pedestal_w = Math.max(120, v); });
+  num("pedH", (v) => { S.pedestal_h = Math.max(150, v); });
+  num("floorD", (v) => { S.floor_d = Math.max(140, v); });
+  num("bed", (v) => { S.bed = Math.max(100, v); });
+  $("hasProp").addEventListener("change", (e) => { S.has_prop = e.target.checked; if (!S.has_prop && selected === "prop") selected = "throttle"; commit(); });
+  $("labels").addEventListener("change", (e) => { S.labels = e.target.checked; commit(); });
+  $("yokeOn").addEventListener("change", (e) => { S.yoke_on = e.target.checked; if (S.yoke_on) selected = "yoke"; else if (selected === "yoke") selected = "throttle"; commit(); });
+  ["snap1", "snap5", "snap10"].forEach((id) => $(id).addEventListener("click", () => { snap = Number($(id).dataset.snap); commit(); }));
+  $("addSeam").addEventListener("click", () => {
+    // put the new seam in the middle of the widest tile
+    const edges = [-S.lower_w / 2, ...S.lower_splits.slice().sort((a, b) => a - b), S.lower_w / 2];
+    let best = 0;
+    for (let i = 1; i < edges.length - 1; i++) if (edges[i + 1] - edges[i] > edges[best + 1] - edges[best]) best = i;
+    S.lower_splits.push(Math.round((edges[best] + edges[best + 1]) / 2));
+    commit();
+  });
+  $("fmtFile").addEventListener("click", () => { fmt = "file"; render(); });
+  $("fmtCli").addEventListener("click", () => { fmt = "cli"; render(); });
+
+  $("copy").addEventListener("click", () => {
+    const text = $("code").textContent;
+    const done = () => { $("copyStatus").textContent = "Copied"; setTimeout(() => { $("copyStatus").textContent = ""; }, 1800); };
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents($("code"));
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      $("copyStatus").textContent = "Selected. Press Ctrl+C to copy.";
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  });
+
+  // reset with an in-page second click instead of confirm()
+  let resetArmed = null;
+  $("reset").addEventListener("click", () => {
+    const b = $("reset");
+    if (!resetArmed) {
+      b.textContent = "Click again to reset"; b.classList.add("danger-armed");
+      resetArmed = setTimeout(() => { b.textContent = "Reset to repo defaults"; b.classList.remove("danger-armed"); resetArmed = null; }, 3000);
+      return;
+    }
+    clearTimeout(resetArmed); resetArmed = null;
+    b.textContent = "Reset to repo defaults"; b.classList.remove("danger-armed");
+    S = clone(DEFAULTS); selected = "throttle"; commit();
+  });
+
+  // import from pasted .scad text
+  $("importBtn").addEventListener("click", () => {
+    const txt = $("importText").value;
+    const found = [];
+    const getRaw = (k) => { const m = txt.match(new RegExp("(?:^|\\n)\\s*" + k + "\\s*=\\s*([^;]+);")); return m ? m[1].trim() : null; };
+    const arr = (raw) => { const m = raw && raw.match(/^\[(.*)\]$/s); if (!m) return null; const inner = m[1].trim(); return inner === "" ? [] : inner.split(",").map((s) => Number(s.trim())); };
+    ["brake_pos", "throttle_pos", "prop_pos", "mixture_pos", "mixture_pos_with_prop"].forEach((k) => {
+      const a = arr(getRaw(k)); if (a && a.length === 2 && a.every(Number.isFinite)) { S[k] = a; found.push(k); }
+    });
+    ["lower_w", "lower_h", "pedestal_x", "pedestal_w", "pedestal_h", "floor_d", "bed"].forEach((k) => {
+      const r = getRaw(k); if (r != null && Number.isFinite(Number(r))) { S[k] = Number(r); found.push(k); }
+    });
+    ["has_prop", "labels"].forEach((k) => { const r = getRaw(k); if (r === "true" || r === "false") { S[k] = r === "true"; found.push(k); } });
+    const sp = arr(getRaw("lower_splits")); if (sp && sp.every(Number.isFinite)) { S.lower_splits = sp.slice(0, 2); found.push("lower_splits"); }
+    const yh = arr(getRaw("yoke_hole"));
+    if (yh) { if (yh.length === 4 && yh.every(Number.isFinite)) { S.yoke_on = true; S.yoke_hole = yh; } else S.yoke_on = false; found.push("yoke_hole"); }
+    $("importStatus").textContent = found.length ? `Loaded ${found.length} setting${found.length > 1 ? "s" : ""}.` : "No settings found. Paste lines like throttle_pos = [0, 70];";
+    commit();
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
