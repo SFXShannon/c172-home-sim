@@ -1,0 +1,42 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='76.0mm' height='76.0mm' viewBox='0 0 76.0 76.0'>
+<title>Standby attitude</title>
+<circle cx='38.0' cy='38.0' r='38.0' fill='#0b0b0b'/>
+<clipPath id='c'><circle cx='38.0' cy='38.0' r='35.0'/></clipPath>
+<g clip-path='url(#c)'>
+<rect x='0' y='0' width='76.0' height='38.0' fill='#2f74d0'/>
+<rect x='0' y='38.0' width='76.0' height='38.0' fill='#8a5a2b'/>
+<line x1='0' y1='38.0' x2='76.0' y2='38.0' stroke='#fff' stroke-width='0.8'/>
+<line x1='35.50' y1='32.50' x2='40.50' y2='32.50' stroke='#fff' stroke-width='0.5'/>
+<line x1='35.50' y1='43.50' x2='40.50' y2='43.50' stroke='#fff' stroke-width='0.5'/>
+<line x1='33.50' y1='27.00' x2='42.50' y2='27.00' stroke='#fff' stroke-width='0.5'/>
+<text x='30.50' y='27.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<text x='45.50' y='27.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<line x1='33.50' y1='49.00' x2='42.50' y2='49.00' stroke='#fff' stroke-width='0.5'/>
+<text x='30.50' y='49.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<text x='45.50' y='49.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<line x1='35.50' y1='21.50' x2='40.50' y2='21.50' stroke='#fff' stroke-width='0.5'/>
+<line x1='35.50' y1='54.50' x2='40.50' y2='54.50' stroke='#fff' stroke-width='0.5'/>
+<line x1='33.50' y1='16.00' x2='42.50' y2='16.00' stroke='#fff' stroke-width='0.5'/>
+<text x='30.50' y='16.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+<text x='45.50' y='16.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+<line x1='33.50' y1='60.00' x2='42.50' y2='60.00' stroke='#fff' stroke-width='0.5'/>
+<text x='30.50' y='60.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+<text x='45.50' y='60.00' font-size='2.6' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+</g>
+<path d='M10.29,22.00 A32.0,32.0 0 0 1 65.71,22.00' fill='none' stroke='#fff' stroke-width='0.5'/>
+<line x1='10.29' y1='22.00' x2='7.26' y2='20.25' stroke='#fff' stroke-width='0.6'/>
+<line x1='15.37' y1='15.37' x2='13.96' y2='13.96' stroke='#fff' stroke-width='0.6'/>
+<line x1='22.00' y1='10.29' x2='20.25' y2='7.26' stroke='#fff' stroke-width='0.6'/>
+<line x1='27.06' y1='7.93' x2='26.37' y2='6.05' stroke='#fff' stroke-width='0.6'/>
+<line x1='32.44' y1='6.49' x2='32.10' y2='4.52' stroke='#fff' stroke-width='0.6'/>
+<line x1='43.56' y1='6.49' x2='43.90' y2='4.52' stroke='#fff' stroke-width='0.6'/>
+<line x1='48.94' y1='7.93' x2='49.63' y2='6.05' stroke='#fff' stroke-width='0.6'/>
+<line x1='54.00' y1='10.29' x2='55.75' y2='7.26' stroke='#fff' stroke-width='0.6'/>
+<line x1='60.63' y1='15.37' x2='62.04' y2='13.96' stroke='#fff' stroke-width='0.6'/>
+<line x1='65.71' y1='22.00' x2='68.74' y2='20.25' stroke='#fff' stroke-width='0.6'/>
+<polygon points='38.00,6.30 36.00,3.30 40.00,3.30' fill='#fff'/>
+<path d='M20.0,38.0 h11 l3,3 l3,-3 h11' fill='none' stroke='#ff9a00' stroke-width='1.6' stroke-linejoin='round'/>
+<circle cx='38.0' cy='38.0' r='1.1' fill='#ff9a00'/>
+<rect x='35.0' y='67.0' width='6' height='4' rx='1' fill='#222' stroke='#888' stroke-width='0.3'/>
+<circle cx='38.0' cy='38.0' r='37.8' fill='none' stroke='#555' stroke-width='0.3'/>
+</svg>

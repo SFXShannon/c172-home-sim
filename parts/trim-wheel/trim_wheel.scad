@@ -217,7 +217,10 @@ module assembly(slab = true) {
 
 // For the panel layout files (panel/*.scad), which `use` this file.
 module trim_wheel_mounted() assembly(slab = false);
-module trim_wheel_panel_cutout() panel_cutout();
+module trim_wheel_panel_cutout() {   // slot + screw holes only (no placard outline)
+    rounded_rect([slot_w, slot_len], 4);
+    for (x = [-hole_x, hole_x], y = [-hole_y, hole_y]) translate([x, y]) circle(d = m3_clear_d);
+}
 module trim_wheel_panel_countersinks() for (x = [-hole_x, hole_x], y = [-hole_y, hole_y]) translate([x, y, -0.01])
     cylinder(d1 = m3_head_d + 0.4, d2 = m3_clear_d, h = (m3_head_d + 0.4 - m3_clear_d) / 2);
 function trim_wheel_size() = [flange_x1 - flange_x0, 2 * y_half];

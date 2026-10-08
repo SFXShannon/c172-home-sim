@@ -4,11 +4,12 @@
 // Library: "Joystick" by Matthew Heironimus (ArduinoJoystickLibrary)
 //          https://github.com/MHeironimus/ArduinoJoystickLibrary
 //
-// Shows up in Windows / MSFS as a joystick with 3 axes and 16 buttons:
+// Shows up in Windows / MSFS as a joystick with 4 axes and 16 buttons:
 //
 //   X axis  throttle   (slide pot wiper -> A0)
 //   Y axis  mixture    (slide pot wiper -> A1)
 //   Z axis  prop       (slide pot wiper -> A2, optional)
+//   Rx axis flaps      (flap lever slide pot wiper -> A3, optional)
 //
 //   Button 1   parking brake SET      (held while the handle is out)
 //   Button 2   parking brake - pulse when it becomes SET
@@ -35,15 +36,17 @@
 
 // ---- settings ---------------------------------------------------------------
 const bool HAS_PROP = false;        // true if you built the prop control
+const bool HAS_FLAPS = false;       // true if you built the flap lever
 const bool REVERSE_THROTTLE = false;
 const bool REVERSE_MIXTURE  = false;
 const bool REVERSE_PROP     = false;
+const bool REVERSE_FLAPS    = false;
 const bool REVERSE_TRIM     = false;  // swap if nose-down/up come out backwards
 const int  STEPS_PER_DETENT = 4;      // EC11 encoders: usually 4 (try 2 if it skips)
 const int  PULSE_MS         = 40;     // how long each trim / brake pulse is held
 
 // ---- pins -------------------------------------------------------------------
-const int PIN_THROTTLE = A0, PIN_MIXTURE = A1, PIN_PROP = A2;
+const int PIN_THROTTLE = A0, PIN_MIXTURE = A1, PIN_PROP = A2, PIN_FLAPS = A3;
 const int PIN_BRAKE = 2;
 const int PIN_FUEL[4] = {3, 4, 5, 6};     // LEFT, BOTH, RIGHT, OFF
 const int PIN_ENC_A = 7, PIN_ENC_B = 8;
@@ -51,7 +54,7 @@ const int PIN_ENC_A = 7, PIN_ENC_B = 8;
 Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
                    16, 0,                 // buttons, hat switches
                    true, true, true,      // X, Y, Z
-                   false, false, false,   // Rx, Ry, Rz
+                   true, false, false,    // Rx, Ry, Rz
                    false, false,          // rudder, throttle
                    false, false, false);  // accelerator, brake, steering
 
@@ -61,7 +64,7 @@ int smooth(int pin, float &state) {
   return (int)(state + 0.5);
 }
 
-float sThr = 0, sMix = 0, sProp = 0;
+float sThr = 0, sMix = 0, sProp = 0, sFlap = 0;
 int lastBrake = -1;
 unsigned long brakePulseUntil[2] = {0, 0};   // [0]=set pulse, [1]=release pulse
 
@@ -91,8 +94,9 @@ void setup() {
   Joystick.setXAxisRange(0, 1023);
   Joystick.setYAxisRange(0, 1023);
   Joystick.setZAxisRange(0, 1023);
+  Joystick.setRxAxisRange(0, 1023);
   Joystick.begin(false);
-  sThr = analogRead(PIN_THROTTLE); sMix = analogRead(PIN_MIXTURE); sProp = analogRead(PIN_PROP);
+  sThr = analogRead(PIN_THROTTLE); sMix = analogRead(PIN_MIXTURE); sProp = analogRead(PIN_PROP); sFlap = analogRead(PIN_FLAPS);
 }
 
 void loop() {
@@ -105,6 +109,8 @@ void loop() {
   Joystick.setXAxis(REVERSE_THROTTLE ? 1023 - t : t);
   Joystick.setYAxis(REVERSE_MIXTURE  ? 1023 - m : m);
   Joystick.setZAxis(REVERSE_PROP     ? 1023 - p : p);
+  int fl = HAS_FLAPS ? smooth(PIN_FLAPS, sFlap) : 0;
+  Joystick.setRxAxis(REVERSE_FLAPS   ? 1023 - fl : fl);
 
   // ---- parking brake (held + edge pulses)
   int brake = digitalRead(PIN_BRAKE) == LOW;

@@ -129,6 +129,12 @@ module spur_gear(m, z, h, bore = 0, pa = 20) {
 }
 function gear_pitch_r(m, z) = m * z / 2;
 
+// White paint in engraved labels, for renders only: pass the same label geometry
+// (labels are cut ~0.6 mm deep from the face at z = 0; this squashes them into the recess).
+module paint_fill() {
+    color([0.93, 0.93, 0.9]) translate([0, 0, -0.25]) scale([1, 1, 0.3]) children();
+}
+
 // Rounded rectangle (2D), centred.
 module rounded_rect(size, r) {
     hull() for (x = [-1, 1], y = [-1, 1])

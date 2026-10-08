@@ -5,7 +5,8 @@
 #
 # Usage: scripts/render.sh                 # all controls + the panel
 #        scripts/render.sh parking-brake   # one control
-#        scripts/render.sh panel           # just the printable panel (after moving controls)
+#        scripts/render.sh panel           # just the simple lower panel (after moving controls)
+#        scripts/render.sh dashboard       # the full G1000 dashboard tiles, glareshield, pedestal
 #        PANEL=3 scripts/render.sh         # override panel thickness (mm)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -14,7 +15,20 @@ extra=()
 [[ -n "${PANEL:-}" ]] && extra+=(-D "panel_thickness=${PANEL}")
 
 controls=("$@")
-[[ ${#controls[@]} -eq 0 ]] && controls=($(ls parts) panel)
+[[ ${#controls[@]} -eq 0 ]] && controls=($(ls parts) panel dashboard)
+
+render_dashboard() {
+  local scad=panel/g1000_dashboard.scad out=panel/dashboard
+  mkdir -p "$out/stl" "$out/templates" panel/images
+  openscad "${extra[@]}" -D 'part="splice"' -o /tmp/_dash_check.csg "$scad" 2>&1 | grep -E "WARNING" || true
+  for p in tile_L1 tile_L2 tile_L3 tile_L4 tile_M1 tile_M2 tile_M3 tile_M4 tile_U1 tile_U2 tile_U3 tile_U4 \
+           splice glareshield_1 glareshield_2 glareshield_3 glareshield_4 pedestal_face pedestal_floor; do
+    echo "  dashboard/$p.stl"
+    openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$out/stl/$p.stl" "$scad"
+  done
+  for ext in svg dxf; do openscad -q "${extra[@]}" -D 'part="panel_2d"' -o "$out/templates/dashboard_panel.$ext" "$scad"; done
+  echo "  dashboard/templates/*"
+}
 
 render_panel() {
   local scad=panel/c172_panel.scad
@@ -41,6 +55,7 @@ render_panel() {
 
 for c in "${controls[@]}"; do
   if [[ "$c" == "panel" ]]; then render_panel; continue; fi
+  if [[ "$c" == "dashboard" ]]; then render_dashboard; continue; fi
   dir="parts/$c"
   scad=$(ls "$dir"/*.scad | head -1)
   list=$(grep -E '^part *=' "$scad" | sed -E 's/.*\[(.*)\].*/\1/' | tr -d ' ' | tr ',' ' ')
@@ -53,9 +68,19 @@ for c in "${controls[@]}"; do
           echo "  $c/$p.$ext"
           openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$dir/panel-template/${c//-/_}_cutout.$ext" "$scad"
         done ;;
+      *_cutout)
+        for ext in svg dxf; do
+          echo "  $c/$p.$ext"
+          openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$dir/panel-template/$p.$ext" "$scad"
+        done ;;
       *)
         echo "  $c/$p.stl"
         openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$dir/stl/$p.stl" "$scad" ;;
     esac
   done
 done
+
+# OpenSCAD 2021 writes ASCII STL; convert to binary (about 5x smaller)
+if command -v python3 >/dev/null; then
+  python3 scripts/stl2bin.py $(find parts panel -name '*.stl') >/dev/null
+fi

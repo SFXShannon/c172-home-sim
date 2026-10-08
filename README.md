@@ -1,10 +1,20 @@
 # C172 Home Sim
 
-3D-printable cockpit controls modelled on the Cessna 172, with a printable panel to mount them in. They're built to drive MSFS from a home-built cockpit.
+3D-printable cockpit controls modelled on the Cessna 172, and a full **172S G1000 dashboard** to mount them in. They're built to drive MSFS from a home-built cockpit.
 
-The goal is **parts that look like the real aircraft's, with simple insides**: printed parts, a few screws, and off-the-shelf sensors such as microswitches, slide pots, an encoder and a rotary switch.
+The goal is **parts that look like the real aircraft's, with simple insides**: printed parts, a few screws, and off-the-shelf sensors such as tactile switches, encoders, slide pots, rockers and toggles.
 
-![Panel preview](panel/images/preview.png)
+![G1000 dashboard](panel/images/g1000_dashboard.png)
+
+**The G1000 dashboard** ([`panel/`](panel#g1000-dashboard)) is a 172S NAV III panel at real scale, shortened to about 32" (810 mm):
+
+- **Glass:** working PFD and MFD bezels with every real key and knob, each with a 10.4" screen behind it, and a working GMA 1347 audio panel.
+- **Switches:** the real C-post and lights panels, and the standby instruments.
+- **Lower panel:** ignition key, throttle, mixture, flaps, parking brake and cabin knobs.
+- **Pedestal:** trim wheel and fuel selector.
+- **Yoke:** an opening for the Moza AY210 shaft.
+
+It prints as 12 tiles that fit a 250 mm bed.
 
 ## See them work
 
@@ -44,10 +54,16 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 | [Prop](parts/prop) (optional) | Blue crenellated knob | Same as throttle | 60 mm slide pot |
 | [Elevator trim wheel](parts/trim-wheel) | Black ridged wheel in the pedestal, NOSE DN / T.O. / NOSE UP placard | 608 bearings, 3:1 gear | EC11 encoder |
 | [Fuel selector](parts/fuel-selector) | Pointer handle on a LEFT / BOTH / RIGHT placard | 3:1 gear to rotary switch | 1P12T rotary switch |
-| [Panel](panel) | Lower panel + pedestal face + floor, tiled for printing | — | — |
-| [Firmware](firmware) | — | — | Arduino Pro Micro → one USB joystick |
+| [Flap lever](parts/flap-lever) | White flap handle, UP / 10 / 20 / FULL scale | Slide with 4 detent clicks | 60 mm slide pot |
+| [G1000 PFD / MFD](parts/g1000-gdu) | Garmin GDU 1040 bezel, real size and key layout | Printed caps on tactile switches, 10.4" screen | 32 keys, 9 knobs (EC11 / dual EC11) |
+| [Audio panel](parts/g1000-gma) | Garmin GMA 1347 | Same as the G1000 bezel | 22 keys, 1 knob |
+| [Switch panels](parts/switch-panel) | C-post (STBY BATT, MASTER, AVIONICS) and lights / dimming | Off-the-shelf rockers, toggles and pots | 18 switches, 4 pots |
+| [Standby gauges](parts/standby-gauges) | Airspeed, attitude, altimeter with 172S markings | Printed case, paper face | — (look only) |
+| [Panel extras](parts/panel-extras) | Ignition key, ALT STATIC / CABIN HT / AIR / FUEL SHUTOFF knobs, breakers, yoke boot | | Rotary switch (key) |
+| [Panels](panel) | **G1000 dashboard**, or the simple lower panel + pedestal | Tiled for printing | — |
+| [Firmware](firmware) | Pro Micro joystick sketch + [G1000 wiring and MobiFlight guide](firmware/G1000_WIRING.md) | | Pro Micro + 3 × Arduino Mega |
 
-The Moza AY210 yoke and base already cover the yoke buttons and the switch panel, so those aren't modelled here.
+The Moza AY210 yoke has its own buttons and hats, so those aren't modelled. With the base behind the dashboard, its 13-switch panel is out of reach, so the C-post and lights panels take over.
 
 ## Panel mounting (same for every control)
 
@@ -55,7 +71,9 @@ Every control bolts behind the panel the same way. Four **M3 countersunk screws*
 
 ## Moving the controls
 
-Every control on the printable panel can be moved. The positions are plain numbers in [`panel/c172_panel.scad`](panel/c172_panel.scad). Change them, re-render, and the panel cutouts, countersinks and labels all move with them.
+On the **G1000 dashboard**, every position is a setting near the top of [`panel/g1000_dashboard.scad`](panel/g1000_dashboard.scad); see [its README](panel#changing-the-layout). The guide below is for the **simple lower panel**, which also has the drag-and-drop layout page.
+
+Every control on the simple printable panel can be moved. The positions are plain numbers in [`panel/c172_panel.scad`](panel/c172_panel.scad). Change them, re-render, and the panel cutouts, countersinks and labels all move with them.
 
 ![Layout map](panel/images/layout_map.png)
 
@@ -136,8 +154,9 @@ parts/<control>/
   panel-template/  cutout drawing
   images/          renders
   README.md        parts list, printing, assembly, wiring, MSFS binding
-panel/             printable panel pieces + full-size templates
-firmware/          Arduino Pro Micro sketch
+panel/             g1000_dashboard.scad (full dashboard) + c172_panel.scad (simple lower panel)
+  dashboard/       dashboard tiles, glareshield, pedestal STLs + full-size templates
+firmware/          Arduino Pro Micro sketch, G1000 wiring / MobiFlight guide (G1000_WIRING.md)
 tools/             panel-layout.html: drag-and-drop panel layout page
 scripts/render.sh  regenerate STLs/templates for the controls
 ```
@@ -145,9 +164,10 @@ scripts/render.sh  regenerate STLs/templates for the controls
 ## Rebuilding after changes
 
 ```bash
-scripts/render.sh                  # all controls + the panel
+scripts/render.sh                  # all controls + both panels
 scripts/render.sh throttle         # one control
-scripts/render.sh panel            # just the panel (after moving controls)
+scripts/render.sh dashboard        # the G1000 dashboard tiles, glareshield, pedestal
+scripts/render.sh panel            # the simple lower panel
 PANEL=3 scripts/render.sh          # for a 3 mm panel
 ```
 
@@ -155,7 +175,7 @@ Everything needs OpenSCAD 2021.01 or newer. To re-make the animations above afte
 
 ## Status
 
-Every part has been checked in OpenSCAD for collisions through its full range of movement, but **none have been test-printed yet**. Expect to tune `clearance` for your printer. Dimensions are approximated from photos of real 172 parts, not factory drawings.
+Every moving part has been checked in OpenSCAD for collisions through its full range of movement, but **nothing has been test-printed yet**. Expect to tune `clearance` for your printer. Dimensions are approximated from photos of real 172 parts, not factory drawings.
 
 ## License
 
