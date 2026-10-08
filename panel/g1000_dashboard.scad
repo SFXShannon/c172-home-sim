@@ -33,7 +33,7 @@ use <../parts/panel-extras/panel_extras.scad>
 use <../parts/flap-lever/flap_lever.scad>
 
 /* [What to show] */
-part = "preview"; // [preview, preview_rear, layout_map, tile_L1, tile_L2, tile_L3, tile_L4, tile_M1, tile_M2, tile_M3, tile_M4, tile_U1, tile_U2, tile_U3, tile_U4, splice, glareshield_1, glareshield_2, glareshield_3, glareshield_4, pedestal_face, pedestal_floor, panel_2d, cnc_lower_1, cnc_lower_2, cnc_upper_1, cnc_upper_2, cnc_pedestal_face, cnc_pedestal_floor, cnc_splice]
+part = "preview"; // [preview, preview_rear, layout_map, tile_L1, tile_L2, tile_L3, tile_L4, tile_M1, tile_M2, tile_M3, tile_M4, tile_U1, tile_U2, tile_U3, tile_U4, splice, splice_small, glareshield_1, glareshield_2, glareshield_3, glareshield_4, pedestal_face, pedestal_floor, panel_2d, cnc_lower_1, cnc_lower_2, cnc_upper_1, cnc_upper_2, cnc_pedestal_face, cnc_pedestal_floor, cnc_splice, cnc_splice_small, keepout_2d, outline_2d, seam_info]
 
 /* [Panel size] */
 x_left = -280;
@@ -85,13 +85,14 @@ floor_d = 150;
 // Print bed size (mm). 305 = QIDI Plus4. Each row is split into tiles no wider than this.
 bed = 305;
 // Tile seams (x positions) for each row: lower (black), middle and upper (grey).
-// Seams may run through a bezel or gauge (it screws to both tiles and ties them);
-// anywhere else, put a splice plate across the seam (see `splices`).
+// Splice plates on the back join the tiles: run scripts/place_splices.py after
+// changing the seams or moving things, and it finds room for them (panel/splices.scad).
 lower_splits = [15, 310];
 mid_splits = [-58, 240];
 upper_splits = [-10, 250];
-// Splice plates on the back of the panel: centres [x, y]. Each gets 4 blind pilot holes (+/-10, +/-25).
-splices = [[15, 56], [310, 56], [-58, 160]];
+// Glareshield joints (x). Offset from the upper seams so each glareshield piece screws
+// into the tiles on both sides of a seam and ties the top edge together. [] = halfway along each upper tile.
+glareshield_splits = [];
 
 /* [CNC router] */
 // Cutting the panel from 1/4" sheet on a CNC router instead of printing it:
@@ -110,6 +111,16 @@ cnc_layer = "cut"; // [cut, drill, engrave, countersink, back]
 
 /* [Hidden] */
 t = panel_thickness;
+// Splice plates, written by scripts/place_splices.py: [x, y, kind] for the printed tiles
+// (splices) and the CNC pieces (cnc_splices). kind: "V" 34 x 70 across a vertical seam,
+// "H" 70 x 34 across a horizontal joint, "v" / "h" small 2-screw plates for tight spots.
+include <splices.scad>
+function splice_size(k) = k == "V" ? [34, 70] : k == "H" ? [70, 34] : k == "v" ? [40, 22] : [22, 40];
+function splice_holes(k) = k == "V" ? [[-10, -25], [10, -25], [-10, 25], [10, 25]]
+                         : k == "H" ? [[-25, -10], [-25, 10], [25, -10], [25, 10]]
+                         : k == "v" ? [[-12, 0], [12, 0]] : [[0, -12], [0, 12]];
+module splice_pilots_2d(list) for (c = list, h = splice_holes(c[2])) translate([c[0], c[1]] + h) circle(d = m3_pilot_d);
+splice_t = 4;   // printed splice thickness: M3 x 8 screws (4 mm into the panel's blind holes)
 aircraft_cl = gma_pos[0];
 function top_y(x) = top_centre - top_side_drop * pow((x - aircraft_cl) / (aircraft_cl - x_left), 2);
 function ax(p) = [-p[0], p[1]];                 // layout -> model x (pilot's right = -x)
@@ -161,7 +172,8 @@ module engrave_2d() {
 // Back-side blind pilot holes (front view): G1000 screen cradles + splice strips
 module back_pilots_2d() {
     for (p = [pfd_pos, mfd_pos]) translate(p) gdu_cradle_holes_2d();
-    for (c = splices, dx = [-10, 10], dy = [-25, 25]) translate(c + [dx, dy]) circle(d = m3_pilot_d);
+    splice_pilots_2d(splices);
+    for (i = [0 : len(GS_edges) - 2], x = gs_screws(i)) translate([x, top_y(x) - 18]) circle(d = m3_pilot_d);
 }
 // Countersinks (front view positions + kind)
 cs_list = concat([for (p = [brake_pos, throttle_pos, mixture_pos]) [p, "std"]], [[flap_pos, "flap"]]);
@@ -191,16 +203,21 @@ module panel_body(band = [-1, 9999], xr = [-9999, 9999]) {
 L_edges = concat([x_left], lower_splits, [x_right]);
 M_edges = concat([x_left], mid_splits, [x_right]);
 U_edges = concat([x_left], upper_splits, [x_right]);
+GS_edges = concat([x_left], len(glareshield_splits) > 0 ? glareshield_splits
+                  : [for (i = [0 : len(U_edges) - 2]) (U_edges[i] + U_edges[i + 1]) / 2], [x_right]);
+// glareshield tab screws: near each end, and either side of every upper seam it crosses
+function gs_screws(i) = let(x0 = GS_edges[i], x1 = GS_edges[i + 1])
+    concat([x0 + 20, x1 - 20], [for (u = upper_splits) if (u > x0 + 40 && u < x1 - 40) for (d = [-18, 18]) u + d]);
 module tile(row, i) {
     e = row == "L" ? L_edges : row == "M" ? M_edges : U_edges;
     y0 = row == "L" ? 0 : row == "M" ? lower_h : mid_split;
     y1 = row == "L" ? lower_h : row == "M" ? mid_split : top_centre + 10;
     if (i >= 0 && i < len(e) - 1) translate([0, 0, t]) panel_body([y0, y1], [e[i], e[i + 1]]);
 }
-module splice() {
+module splice(k = "V") {
     difference() {
-        linear_extrude(4) rounded_rect([34, 70], 4);
-        for (dx = [-10, 10], dy = [-25, 25]) translate([dx, dy, -1]) cylinder(d = m3_clear_d, h = 6);
+        linear_extrude(splice_t) rounded_rect(splice_size(k), 3);
+        for (h = splice_holes(k)) translate([h[0], h[1], -1]) cylinder(d = m3_clear_d, h = splice_t + 2);
     }
 }
 
@@ -220,7 +237,7 @@ module gs_slice(x) {
     }
 }
 module glareshield_segment(i) {
-    e = U_edges;
+    e = GS_edges;
     x0 = e[i]; x1 = e[i + 1];
     n = max(2, ceil((x1 - x0) / 15));
     difference() {
@@ -240,13 +257,13 @@ module glareshield_segment(i) {
             }
         // the panel itself passes under the front
         translate([-x1 - 1, 0, -t]) cube([x1 - x0 + 2, top_centre + 5, t]);
-        for (xx = [x0 + 25, (x0 + x1) / 2, x1 - 25]) translate([-xx, top_y(xx) - 18, -1]) cylinder(d = m3_clear_d, h = 6);
+        for (xx = gs_screws(i)) translate([-xx, top_y(xx) - 18, -1]) cylinder(d = m3_clear_d, h = 6);
     }
 }
 
 // Print orientation: standing as it sits on the panel (top up), lowest point on the bed.
-module gs_print(i) if (i < len(U_edges) - 1) {
-    e = U_edges;
+module gs_print(i) if (i < len(GS_edges) - 1) {
+    e = GS_edges;
     ymin = min(top_y(e[i]), top_y(e[i + 1]), top_y(min(max(aircraft_cl, e[i]), e[i + 1]))) - 30;
     translate([0, 0, -ymin]) rotate([90, 0, 0]) glareshield_segment(i);
 }
@@ -287,7 +304,13 @@ module cockpit(rear = false) {
     color([0.55, 0.56, 0.58]) translate([ax(yoke_pos)[0], yoke_pos[1], -160]) cylinder(d = 40, h = 160 + moza_front);
     color([0.93, 0.93, 0.9]) translate([0, 0, -t - 0.2]) linear_extrude(0.2) mirror([1, 0]) engrave_2d();
     // glareshield
-    color([0.13, 0.13, 0.14]) for (i = [0 : len(U_edges) - 2]) glareshield_segment(i);
+    color([0.13, 0.13, 0.14]) for (i = [0 : len(GS_edges) - 2]) glareshield_segment(i);
+    // splice plates on the back
+    color([0.2, 0.55, 0.85]) for (c = splices) translate([ax(c)[0], c[1], 0])
+        linear_extrude(splice_t) difference() {
+            square(splice_size(c[2]), center = true);
+            for (h = splice_holes(c[2])) translate([-h[0], h[1]]) circle(d = m3_clear_d);
+        }
     // G1000
     mod_front(pfd_pos, gdu_face_t()) gdu_mounted(true);
     mod_front(mfd_pos, gdu_face_t()) gdu_mounted(true);
@@ -333,7 +356,7 @@ module layout_map() {
         for (s = lower_splits) translate([s - 0.6, 0]) square([1.2, lower_h]);
         for (s = mid_splits) translate([s - 0.6, lower_h]) square([1.2, mid_split - lower_h]);
         for (s = upper_splits) translate([s - 0.6, mid_split]) square([1.2, top_centre - mid_split]);
-        for (c = splices) translate(c) difference() { square([34, 70], center = true); square([31.6, 67.6], center = true); }
+        for (c = splices) translate([c[0], c[1]]) difference() { square(splice_size(c[2]), center = true); square(splice_size(c[2]) - [2.4, 2.4], center = true); }
         translate([x_left, lower_h - 0.6]) square([x_right - x_left, 1.2]);
         translate([x_left, mid_split - 0.6]) square([x_right - x_left, 1.2]);
     }
@@ -355,14 +378,14 @@ cnc_pieces = [
     ["lower_2", [[cnc_lower_split, -1], [x_right + 1, -1], [x_right + 1, lower_h], [cnc_lower_split, lower_h]], [cnc_lower_split, 0]],
     ["upper_1", [[x_left - 1, lower_h], [us[0], lower_h], [us[0], us[2]], [us[1], us[2]], [us[1], cnc_top], [x_left - 1, cnc_top]], [x_left, lower_h]],
     ["upper_2", [[us[0], lower_h], [x_right + 1, lower_h], [x_right + 1, cnc_top], [us[1], cnc_top], [us[1], us[2]], [us[0], us[2]]], [min(us[0], us[1]), lower_h]]];
-cnc_splices = [[cnc_lower_split, lower_h / 2]];
 module countersinks_2d() for (c = cs_list) translate(c[0]) {
     if (c[1] == "std") projection() mount_panel_countersinks();
     else projection() flap_countersinks();
 }
 module cnc_back_2d() {
     for (p = [pfd_pos, mfd_pos]) translate(p) gdu_cradle_holes_2d();
-    for (c = cnc_splices, dx = [-10, 10], dy = [-25, 25]) translate(c + [dx, dy]) circle(d = m3_pilot_d);
+    splice_pilots_2d(cnc_splices);
+    for (i = [0 : len(GS_edges) - 2], x = gs_screws(i)) translate([x, top_y(x) - 18]) circle(d = m3_pilot_d);
 }
 // split holes into routed openings and small drilled holes
 module routed(r = cnc_drill_max / 2) offset(delta = r) offset(delta = -r) children();
@@ -389,9 +412,9 @@ module cnc_pedestal_face(layer) translate([pedestal_w / 2, pedestal_h]) {
     else if (layer == "countersink") translate([0, -pedestal_h / 2]) mirror([1, 0]) projection() trim_wheel_panel_countersinks();
 }
 // splice plate for the lower seam (same 1/4" sheet), glued and screwed across the back
-module cnc_splice(layer) translate([17, 35]) {
-    if (layer == "cut") square([34, 70], center = true);
-    else if (layer == "drill") for (dx = [-10, 10], dy = [-25, 25]) translate([dx, dy]) circle(d = m3_clear_d);
+module cnc_splice(layer, k = "V") translate(splice_size(k) / 2) {
+    if (layer == "cut") square(splice_size(k), center = true);
+    else if (layer == "drill") for (h = splice_holes(k)) translate(h) circle(d = m3_clear_d);
 }
 module cnc_pedestal_floor(layer) translate([pedestal_w / 2 + 10, floor_d / 2 + 10]) mirror([1, 0]) {
     if (layer == "cut") difference() { translate([-pedestal_w / 2 - 10, -floor_d / 2 - 10]) square([pedestal_w + 20, floor_d]); routed() fuel_selector_panel_cutout(); }
@@ -402,6 +425,22 @@ for (pc = cnc_pieces) let(xs = [for (p = pc[1]) min(max(p[0], x_left), x_right)]
     if (max(xs) - min(xs) > 790 || max(ys) - min(ys) > 390)
         echo(str("WARNING: CNC piece ", pc[0], " is bigger than an 800 x 400 router bed."));
 
+// ------------------------------------------------------------------ keep-out (front view)
+// Everything on the back of the panel a splice plate must stay clear of (scripts/place_splices.py)
+module keepout_2d() {
+    offset(r = 3) holes_2d();
+    for (p = [pfd_pos, mfd_pos]) translate(p) square([310, 206], center = true);       // bezel screws, screen cradles
+    translate(gma_pos) square([40, 202], center = true);
+    for (p = [brake_pos, throttle_pos, mixture_pos]) translate(p) square(mount_flange_size + 6, center = true);
+    translate(flap_pos + [0, 4]) square([50, 142], center = true);                       // flap housing + pot channels
+    translate(ignition_pos) circle(d = 34);                                              // key switch
+    for (p = [alt_static_pos, cabin_heat_pos, cabin_air_pos]) translate(p) circle(d = 26); // knob stems + clips
+    // glareshield tabs along the top edge
+    n = 40;
+    polygon(concat([for (i = [0 : n]) let(x = x_left + (x_right - x_left) * i / n) [x, top_y(x) - 33]],
+                   [[x_right + 5, top_centre + 20], [x_left - 5, top_centre + 20]]));
+}
+
 // ------------------------------------------------------------------ checks
 deep_items = [["parking brake", brake_pos, 75], ["dimming/lights panel", lights_pos, 30], ["PFD", pfd_pos, 30]];
 for (it = deep_items) {
@@ -411,6 +450,8 @@ for (it = deep_items) {
 }
 for (row = [["lower", L_edges], ["middle", M_edges], ["upper", U_edges]]) for (i = [0 : len(row[1]) - 2])
     if (row[1][i + 1] - row[1][i] > bed) echo(str("WARNING: ", row[0], " tile ", i + 1, " is ", row[1][i + 1] - row[1][i], " mm wide, more than your bed."));
+for (i = [0 : len(GS_edges) - 2]) if (GS_edges[i + 1] - GS_edges[i] > bed)
+    echo(str("WARNING: glareshield piece ", i + 1, " is ", GS_edges[i + 1] - GS_edges[i], " mm long, more than your bed - set glareshield_splits."));
 if (top_centre - mid_split > bed) echo("WARNING: the top tile row is taller than your bed - raise mid_split.");
 
 // ------------------------------------------------------------------ output
@@ -418,7 +459,12 @@ if (part == "preview") rotate([90, 0, 0]) cockpit();
 else if (part == "preview_rear") rotate([90, 0, 0]) cockpit(true);
 else if (part == "layout_map") layout_map();
 else if (len(part) == 7 && part[0] == "t") tile(part[5], ord(part[6]) - ord("1"));
-else if (part == "splice") splice();
+else if (part == "splice") splice("V");
+else if (part == "splice_small") splice("v");
+else if (part == "keepout_2d") keepout_2d();
+else if (part == "outline_2d") outline_2d();
+else if (part == "seam_info") echo(str("SEAMS=", [[x_left, x_right, lower_h, mid_split, top_centre], lower_splits, mid_splits, upper_splits,
+    cnc_lower_split, cnc_upper_split]));
 else if (part == "glareshield_1") gs_print(0);
 else if (part == "glareshield_2") gs_print(1);
 else if (part == "glareshield_3") gs_print(2);
@@ -426,9 +472,10 @@ else if (part == "glareshield_4") gs_print(3);
 else if (part == "glareshield_5") gs_print(4);
 else if (part == "pedestal_face") translate([0, 0, t]) pedestal_face();
 else if (part == "pedestal_floor") translate([0, 0, t]) pedestal_floor();
-else if (len(part) > 4 && part[0] == "c" && part[1] == "n" && part[2] == "c" && part != "cnc_pedestal_face" && part != "cnc_pedestal_floor" && part != "cnc_splice")
+else if (len(part) > 4 && part[0] == "c" && part[1] == "n" && part[2] == "c" && part != "cnc_pedestal_face" && part != "cnc_pedestal_floor" && part != "cnc_splice" && part != "cnc_splice_small")
     cnc_piece(str(part[4], part[5], part[6], part[7], part[8], part[9], part[10]), cnc_layer);
 else if (part == "cnc_pedestal_face") cnc_pedestal_face(cnc_layer);
 else if (part == "cnc_pedestal_floor") cnc_pedestal_floor(cnc_layer);
 else if (part == "cnc_splice") cnc_splice(cnc_layer);
+else if (part == "cnc_splice_small") cnc_splice(cnc_layer, "v");
 else if (part == "panel_2d") difference() { outline_2d(); holes_2d(); }   // front view, for laser / CNC

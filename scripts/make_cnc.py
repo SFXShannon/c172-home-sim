@@ -20,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCAD = os.path.join(ROOT, "panel", "g1000_dashboard.scad")
 OUT = os.path.join(ROOT, "panel", "dashboard", "cnc")
-PIECES = ["lower_1", "lower_2", "upper_1", "upper_2", "pedestal_face", "pedestal_floor", "splice"]
+PIECES = ["lower_1", "lower_2", "upper_1", "upper_2", "pedestal_face", "pedestal_floor", "splice", "splice_small"]
 FRONT = ["cut", "drill", "engrave", "countersink"]
 COLORS = {"cut": ("CUT", 7, "#000000"), "drill": ("DRILL", 1, "#d0021b"),
           "engrave": ("ENGRAVE", 5, "#1f5fd6"), "countersink": ("COUNTERSINK", 3, "#2a9d3a"),

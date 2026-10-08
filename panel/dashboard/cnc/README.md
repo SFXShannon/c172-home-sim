@@ -14,9 +14,10 @@ Files for cutting the G1000 dashboard panel from **1/4" (6.35 mm) plywood or MDF
 | `lower_2` | Lower panel, right: alt static, throttle, mixture, flaps, cabin heat / air | 515 × 112 |
 | `pedestal_face` | Pedestal: trim wheel, fuel shutoff | 130 × 170 |
 | `pedestal_floor` | Pedestal floor: fuel selector | 150 × 150 |
-| `splice` | Plate glued across the back of the lower seam | 34 × 70 |
+| `splice` | Joining plate, 34 × 70 (cut 3) | 34 × 70 |
+| `splice_small` | Small joining plate, 40 × 22 (cut 3) | 40 × 22 |
 
-The full panel is 810 mm wide, a little more than the 800 mm X travel, so the lower and upper panels are each cut in two. The upper seam runs through the attitude gauge and the MFD: both bezels screw into both pieces and tie them together. The lower seam gets the splice plate.
+The full panel is 810 mm wide, a little more than the 800 mm X travel, so the lower and upper panels are each cut in two. The upper seam runs through the attitude gauge and the MFD: both bezels screw into both pieces and tie them together. Splice plates on the back join the lower seam and the joint between the lower and upper panels.
 
 ## Files
 
@@ -29,7 +30,7 @@ Each piece has a `.dxf` and an `.svg` with the same content. Use whichever your 
 | `ENGRAVE` | blue | Labels: THROTTLE, MIXTURE, flap scale, ignition positions, and so on | 60° or 90° V-bit, 0.6 mm deep |
 | `COUNTERSINK` | green | Circles the size of an M3 countersunk head (6.4 mm), around the control mounting holes | 90° V-bit plunged 3.2 mm at the centre, or a countersink bit by hand |
 
-`<piece>_back.dxf` / `.svg` hold the **blind pilot holes on the back**, for the G1000 screen cradles and the splice plate. They're mirrored left to right and include the outline, so they line up after you flip the piece. Drill them **4 mm deep, not through**. If you'd rather not flip pieces on the machine, measure them from the outline and drill them by hand with a depth stop.
+`<piece>_back.dxf` / `.svg` hold the **blind pilot holes on the back**, for the G1000 screen cradles, the splice plates and the glareshield. They're mirrored left to right and include the outline, so they line up after you flip the piece. Drill them **4 mm deep, not through**. If you'd rather not flip pieces on the machine, measure them from the outline and drill them by hand with a depth stop.
 
 ## Cutting order (front face up)
 
@@ -43,9 +44,9 @@ Inside corners of the openings come out rounded to the bit radius. That's fine w
 
 ## Putting it together
 
-- **Lower seam:** glue the `splice` plate across the back of the seam, centred on the 4 blind pilot holes (2 on each piece), and add 4 screws (#4 × 1/2" wood screws, or M3 × 10).
-- **Upper seam:** fit the attitude gauge and the MFD bezel; their screws hold the two upper pieces in line. A strip of plywood glued across the back of the seam above the MFD opening makes it stiffer.
-- **Upper to lower panel:** screw both panels to your frame through the frame holes. A batten glued along the back of the joint, between the controls, helps too.
+- **Splice plates:** lay the pieces face down on a flat table. Glue each plate over its blind pilot holes (they show where it goes: 1 across the lower seam, 5 along the lower/upper joint) and screw it down with **#4 × 3/8" wood screws** or **M3 × 10** (any longer and they come through the front).
+- **Upper seam:** fit the attitude gauge and the MFD bezel; their screws hold the two upper pieces in line. The printed glareshield crosses it too and screws into both pieces.
+- **Frame:** screw the panel to your frame through the frame holes along the bottom and sides.
 - **Finish:** paint the lower panel black and the upper panel grey (the 172S colours), then fill the engraved labels with white paint and sand the face lightly.
 - **Screws:** the controls and bezels use the same M3 screws as the printed tiles. In wood, M3 machine screws into the 2.6 mm pilot holes hold well enough, or use #4 wood screws.
 

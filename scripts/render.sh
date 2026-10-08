@@ -20,10 +20,11 @@ controls=("$@")
 render_dashboard() {
   local scad=panel/g1000_dashboard.scad out=panel/dashboard
   mkdir -p "$out/stl" "$out/templates" panel/images
+  python3 scripts/place_splices.py     # find room for the splice plates on the back (writes panel/splices.scad)
   openscad "${extra[@]}" -D 'part="splice"' -o /tmp/_dash_check.csg "$scad" 2>&1 | grep -E "WARNING" || true
   rm -f "$out"/stl/tile_*.stl "$out"/stl/glareshield_*.stl
   # as many tiles / glareshield segments as the seams make (up to 5 per row); missing ones come out empty
-  for p in tile_L{1..5} tile_M{1..5} tile_U{1..5} splice glareshield_{1..5} pedestal_face pedestal_floor; do
+  for p in tile_L{1..5} tile_M{1..5} tile_U{1..5} splice splice_small glareshield_{1..5} pedestal_face pedestal_floor; do
     openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$out/stl/$p.stl" "$scad" 2>/dev/null || true
     if [[ -s "$out/stl/$p.stl" ]] && grep -q facet "$out/stl/$p.stl"; then echo "  dashboard/$p.stl"; else rm -f "$out/stl/$p.stl"; fi
   done

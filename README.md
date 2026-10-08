@@ -181,6 +181,7 @@ firmware/          Arduino Pro Micro sketch, G1000 wiring / MobiFlight guide (G1
 tools/             panel-layout.html: drag-and-drop panel layout page
 scripts/render.sh  regenerate STLs/templates for the controls
 scripts/make_cnc.py  regenerate the CNC router files
+scripts/place_splices.py  find room for the splice plates that join the panel pieces
 ```
 
 ## Rebuilding after changes

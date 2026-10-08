@@ -27,7 +27,7 @@ Laid out from photos of the real 172S NAV III panel and kept at real scale; only
 ### Printing it
 
 - **Tiles:** 9 of them, 3 per row, sized for a 305 × 305 mm bed (QIDI Plus4). Row L (lower) in black; rows M and U in grey. Print them **front face down**. The largest is 298 × 148 mm. For a smaller printer, set `bed` and move the seams in `lower_splits`, `mid_splits` and `upper_splits` (up to 5 tiles per row); OpenSCAD warns if a tile is too wide.
-- **Joining:** the modules (bezels, switch plates, instruments) sit over the seams and screw into the tiles on both sides, which ties the panel together. Where a seam doesn't run under a module, glue and screw a 34 × 70 mm `splice` plate across it on the back. The blind pilot holes are already there, at the spots listed in `splices` (3 of them, outlined in the layout map).
+- **Joining:** see [Joining the pieces](#joining-the-pieces) below.
 - **Or cut it on a CNC router:** [`dashboard/cnc`](dashboard/cnc) has layered DXF / SVG files for cutting the panel from 1/4" plywood or MDF in 4 pieces (plus the pedestal plates), sized for an 800 × 400 mm router like the FoxAlien XE-PRO 8040.
 - **Glareshield:** 4 segments. Print them upside down with tree supports, or use them as formers and cover with foam and vinyl like the real padded one.
 - **Pedestal:** the face and floor plates.
@@ -50,6 +50,25 @@ Every position is a setting near the top of [`g1000_dashboard.scad`](g1000_dashb
 
 ---
 
+
+## Joining the pieces
+
+![Back of the dashboard: splice plates in blue](images/g1000_joining.png)
+
+The tiles (or CNC pieces) butt together and are joined from the back in three ways:
+
+1. **Splice plates** (blue above) straddle the seams and the two row joints. Each screws into **blind pilot holes** already in the back of the pieces, so nothing shows on the front. `scripts/place_splices.py` finds room for them clear of everything mounted behind the panel and writes their positions to [`splices.scad`](splices.scad). For the printed tiles that's:
+   - 6 × `splice` (34 × 70 mm, 4 screws), across the lower seams, the seam beside the yoke, and the two row joints
+   - 2 × `splice_small` (40 × 22 mm, 2 screws), for tight spots on the lower/middle row joint
+
+   Print them flat, 4 mm thick (`panel/dashboard/stl/splice.stl`, `splice_small.stl`). Spread glue on the plate (CA or epoxy for PLA/PETG), press it on over its holes, and drive **M3 × 8** screws (4 mm into the panel; longer ones come through the front). The same plate turns 90° for the horizontal joints.
+2. **The bezels and gauges** cover the seams that have no room for a plate (through the PFD, the MFD and the attitude gauge). Their screws go into the pieces on both sides, so each one acts as a splice.
+3. **The glareshield** is split at different places from the upper tiles (`glareshield_splits`; by default halfway along each tile). Each glareshield piece screws into the tiles on both sides of a seam, which ties the top edge.
+
+**Order:** lay the tiles face down on a flat table and glue and screw the splice plates. Then stand the panel up and fit the bezels, gauges and glareshield. Last, screw the panel to your frame through the frame holes along the bottom and sides.
+
+If you move controls or change the seams, run `python3 scripts/place_splices.py` (needs `pip install shapely`) before re-rendering; `scripts/render.sh dashboard` does it for you. It prints each seam's plates, and says when a seam has no room for one.
+
 ## Simple lower panel
 
 Panel pieces with every control's cutouts, mounting holes and countersinks already in place. The layout follows the 172S lower panel and centre pedestal.
@@ -70,7 +89,7 @@ Panel pieces with every control's cutouts, mounting holes and countersinks alrea
 
 - **Thickness:** all pieces are `panel_thickness` thick (6.35 mm by default, set in `common/sim_common.scad`).
 - **Printing:** print **front face down** for a smooth face; the engraved labels print correctly that way.
-- **Joining the lower panel:** the tiles butt together. Glue the `splice` strip across the seam on the back, plus 4 × M3 × 10 screws into the blind pilot holes.
+- **Joining the lower panel:** the tiles butt together. Glue the `splice` strip across the seam on the back, plus 4 × M3 × 8 screws into the blind pilot holes.
 - **Mounting:** the 4.5 mm holes around the edges are for #8 or M4 screws into your frame.
 - **Cutting from plywood instead:** [`templates/`](templates) has full-size SVG and DXF files (front view) for a laser or CNC, or to print and drill through.
 
