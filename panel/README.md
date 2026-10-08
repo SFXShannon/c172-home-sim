@@ -24,6 +24,10 @@ Panel pieces with every control's cutouts, mounting holes and countersinks alrea
 
 ## Changing the layout
 
+See **[Moving the controls](../README.md#moving-the-controls)** in the main README for the full guide. In short:
+
+![Layout map](images/layout_map.png)
+
 Open `c172_panel.scad` in OpenSCAD and use the Customizer:
 
 - **Control positions:** `brake_pos`, `throttle_pos`, `prop_pos`, `mixture_pos`, in mm right of panel centre and up from the panel bottom.

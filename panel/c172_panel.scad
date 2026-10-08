@@ -23,7 +23,7 @@ use <../parts/trim-wheel/trim_wheel.scad>
 use <../parts/fuel-selector/fuel_selector.scad>
 
 /* [What to show] */
-part = "preview"; // [preview, preview_rear, lower_tile_1, lower_tile_2, lower_tile_3, splice, pedestal, floor, lower_2d, pedestal_2d, floor_2d]
+part = "preview"; // [preview, preview_rear, layout_map, lower_tile_1, lower_tile_2, lower_tile_3, splice, pedestal, floor, lower_2d, pedestal_2d, floor_2d]
 
 /* [Layout - lower panel] (mm, x = to the pilot's right of panel centre, y = up from panel bottom) */
 lower_w = 330;
@@ -33,7 +33,9 @@ has_prop = false;
 brake_pos    = [-140, 45];
 throttle_pos = [0, 70];
 prop_pos     = [55, 70];
-mixture_pos  = has_prop ? [110, 70] : [60, 70];
+mixture_pos  = [60, 70];
+// Mixture position used instead when has_prop = true (throttle, prop, mixture left to right)
+mixture_pos_with_prop = [110, 70];
 // Engrave THROTTLE / MIXTURE / ... under the controls
 labels = true;
 // Optional opening for a yoke shaft: [x, y, width, height] or [] for none
@@ -52,6 +54,7 @@ bed = 250;
 lower_splits = [-75];
 
 /* [Hidden] */
+mix_pos = has_prop ? mixture_pos_with_prop : mixture_pos;
 t = panel_thickness;
 frame_hole_d = 4.5;       // #8 / M4 screws into your frame
 
@@ -78,19 +81,19 @@ module lower_panel() {
             translate(ax(brake_pos)) parking_brake_panel_cutout();
             translate(ax(throttle_pos)) throttle_panel_cutout();
             if (has_prop) translate(ax(prop_pos)) prop_panel_cutout();
-            translate(ax(mixture_pos)) mixture_panel_cutout();
+            translate(ax(mix_pos)) mixture_panel_cutout();
             frame_holes(lower_w, lower_h);
             if (len(yoke_hole) == 4) translate(ax(yoke_hole)) rounded_rect([yoke_hole[2], yoke_hole[3]], 6);
         }
         // splice-strip screw holes either side of each seam (blind, from the back)
         for (s = lower_splits, dx = [-10, 10], y = [25, lower_h - 25]) translate([-(s + dx), y, -t + 2]) cylinder(d = m3_pilot_d, h = t);
-        for (p = has_prop ? [brake_pos, throttle_pos, prop_pos, mixture_pos] : [brake_pos, throttle_pos, mixture_pos])
+        for (p = has_prop ? [brake_pos, throttle_pos, prop_pos, mix_pos] : [brake_pos, throttle_pos, mix_pos])
             translate([ax(p)[0], ax(p)[1], -t]) mount_panel_countersinks();
         if (labels) translate([0, 0, -t - 0.01]) linear_extrude(0.61) {
             lower_label(brake_pos, "PARK BRAKE");
             lower_label(throttle_pos, "THROTTLE");
             if (has_prop) lower_label(prop_pos, "PROP");
-            lower_label(mixture_pos, "MIXTURE");
+            lower_label(mix_pos, "MIXTURE");
         }
     }
 }
@@ -145,7 +148,7 @@ module cockpit(rear = false) {
     translate(ax(brake_pos)) parking_brake_mounted(false);
     translate(ax(throttle_pos)) throttle_mounted(0.2);
     if (has_prop) translate(ax(prop_pos)) prop_mounted(0.3);
-    translate(ax(mixture_pos)) mixture_mounted(0);
+    translate(ax(mix_pos)) mixture_mounted(0);
     // pedestal face with trim wheel
     translate([-pedestal_x, 0, 0]) {
         color([0.27, 0.28, 0.30]) pedestal_panel();
@@ -158,6 +161,40 @@ module cockpit(rear = false) {
     }
 }
 
+// ------------------------------------------------------------------ layout map
+// A flat drawing of the lower panel as the pilot sees it, with the grid and the
+// current position of every control. Used for images/layout_map.png.
+
+module layout_map() {
+    f = "Liberation Sans:style=Bold";
+    // panel + grid (50 mm)
+    color([0.30, 0.31, 0.33]) translate([0, 0, -1]) linear_extrude(1) translate([-lower_w/2, 0]) square([lower_w, lower_h]);
+    color([0.45, 0.46, 0.48]) for (x = [-150 : 50 : 150]) if (abs(x) < lower_w/2) translate([x - 0.3, 0]) square([0.6, lower_h]);
+    color([0.45, 0.46, 0.48]) for (y = [0 : 50 : lower_h]) translate([-lower_w/2, y - 0.3]) square([lower_w, 0.6]);
+    color([0.15, 0.15, 0.15]) {
+        for (x = [-150 : 50 : 150]) if (abs(x) < lower_w/2) translate([x, -7]) text(str(x), size = 5, halign = "center", valign = "center", font = f);
+        for (y = [0 : 50 : lower_h]) translate([-lower_w/2 - 4, y]) text(str(y), size = 5, halign = "right", valign = "center", font = f);
+        translate([0, -18]) text("x  (mm, + = pilot's right)", size = 5, halign = "center", font = f);
+        translate([-lower_w/2 - 22, lower_h/2]) rotate(90) text("y  (mm up)", size = 5, halign = "center", font = f);
+    }
+    // seams
+    color("orange") for (sx = lower_splits) translate([sx - 0.6, -3]) square([1.2, lower_h + 6]);
+    color("orange") for (sx = lower_splits) translate([sx, lower_h + 6]) text("tile seam", size = 4, halign = "center", font = f);
+    // controls: flange footprint + name + position
+    names = has_prop ? ["PARK BRAKE", "THROTTLE", "PROP", "MIXTURE"] : ["PARK BRAKE", "THROTTLE", "MIXTURE"];
+    vars  = has_prop ? ["brake_pos", "throttle_pos", "prop_pos", "mixture_pos_with_prop"] : ["brake_pos", "throttle_pos", "mixture_pos"];
+    cols  = has_prop ? [[0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.1, 0.3, 0.8], [0.8, 0.1, 0.1]] : [[0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.8, 0.1, 0.1]];
+    ps    = has_prop ? [brake_pos, throttle_pos, prop_pos, mix_pos] : [brake_pos, throttle_pos, mix_pos];
+    for (i = [0 : len(ps) - 1]) translate(ps[i]) {
+        color([0.9, 0.6, 0.2, 0.5]) square([mount_flange_size, mount_flange_size], center = true);
+        color(cols[i]) circle(d = 16);
+        color("white") {
+            translate([0, 25]) text(names[i], size = 4.5, halign = "center", font = f);
+            translate([0, -27]) text(str(vars[i], " = [", ps[i][0], ", ", ps[i][1], "]"), size = 3.6, halign = "center", font = f);
+        }
+    }
+}
+
 // ------------------------------------------------------------------ output
 
 n_tiles = len(tile_edges) - 1;
@@ -166,8 +203,28 @@ for (i = [0 : n_tiles - 1]) {
     if (w > bed) echo(str("WARNING: lower panel tile ", i + 1, " is ", w, " mm wide - more than bed = ", bed, ". Add a split in lower_splits."));
 }
 
+// ---- layout checks: run after moving anything (look for WARNING in the console)
+flange_half = mount_flange_size / 2;   // every control's flange is 42 x 42 mm
+min_gap = 4;                           // room between flanges
+ctrl_names = has_prop ? ["parking brake", "throttle", "prop", "mixture"] : ["parking brake", "throttle", "mixture"];
+ctrl_pos   = has_prop ? [brake_pos, throttle_pos, prop_pos, mix_pos] : [brake_pos, throttle_pos, mix_pos];
+for (i = [0 : len(ctrl_pos) - 1]) {
+    p = ctrl_pos[i];
+    if (abs(p[0]) + flange_half > lower_w / 2 || p[1] - flange_half < 0 || p[1] + flange_half > lower_h)
+        echo(str("WARNING: ", ctrl_names[i], " at ", p, " hangs off the edge of the lower panel (its flange is 42 x 42 mm)."));
+    for (s = lower_splits) if (abs(p[0] - s) < flange_half + 2)
+        echo(str("WARNING: the tile seam at x = ", s, " cuts through the ", ctrl_names[i], " at ", p, ". Move the seam (lower_splits) or the control."));
+    for (j = [i + 1 : 1 : len(ctrl_pos) - 1]) {
+        q = ctrl_pos[j];
+        if (abs(p[0] - q[0]) < 2 * flange_half + min_gap && abs(p[1] - q[1]) < 2 * flange_half + min_gap)
+            echo(str("WARNING: ", ctrl_names[i], " and ", ctrl_names[j], " are too close - their flanges overlap behind the panel. Keep them at least ",
+                     2 * flange_half + min_gap, " mm apart."));
+    }
+}
+
 if (part == "preview") rotate([90, 0, 0]) cockpit();
 else if (part == "preview_rear") rotate([90, 0, 0]) cockpit(true);
+else if (part == "layout_map") layout_map();
 else if (part == "lower_tile_1" && n_tiles >= 1) lower_tile(0);
 else if (part == "lower_tile_2" && n_tiles >= 2) lower_tile(1);
 else if (part == "lower_tile_3" && n_tiles >= 3) lower_tile(2);
