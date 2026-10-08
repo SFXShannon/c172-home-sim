@@ -1,58 +1,59 @@
 # C172 Home Sim
 
-3D-printable, parametric cockpit controls modeled on the Cessna 172, built to mount in a home-built dash panel and drive MSFS through a USB button/axis board.
+3D-printable cockpit controls modelled on the Cessna 172, with a printable panel to mount them in. They're built to drive MSFS from a home-built cockpit.
 
-Every part is written in [OpenSCAD](https://openscad.org) so it can be resized for your panel thickness, printer tolerances and fasteners. Ready-to-print STLs are included for the default settings.
+The goal is **parts that look like the real aircraft's, with simple insides**: printed parts, a few screws, and off-the-shelf sensors such as microswitches, slide pots, an encoder and a rotary switch.
 
-![Parking brake](parts/parking-brake/images/assembly_set.png)
+![Panel preview](panel/images/preview.png)
 
 ## Controls
 
-| Control | Status | Sensor |
-|---|---|---|
-| [Parking brake](parts/parking-brake) | ✅ v1 | Microswitch → button |
-| Throttle (push-pull) | Planned | Slide potentiometer → axis |
-| Mixture (push-pull with lock button) | Planned | Slide potentiometer → axis |
-| Carb heat | Planned | Microswitch → button |
-| Elevator trim wheel + indicator | Planned | Rotary encoder |
-| Flap switch | Planned | 3-position switch |
-| Fuel selector (L / BOTH / R / OFF) | Planned | Rotary switch |
-| Fuel shutoff valve | Planned | Microswitch |
-| Magnetos / starter key | Planned | Rotary switch |
-| Master / avionics rocker switches | Planned | Toggle switches |
-| Primer | Planned | Microswitch |
+| Control | Looks like | Inside | Sensor |
+|---|---|---|---|
+| [Parking brake](parts/parking-brake) | Black L-lever; pull and rotate down to set | Spring + bayonet slot | Microswitch |
+| [Throttle](parts/throttle) | Smooth round knob, knurled friction nut | 8 mm rod, O-ring friction | 60 mm slide pot |
+| [Mixture](parts/mixture) | Red ribbed vernier knob with lock button | Same as throttle | 60 mm slide pot |
+| [Prop](parts/prop) (optional) | Blue crenellated knob | Same as throttle | 60 mm slide pot |
+| [Elevator trim wheel](parts/trim-wheel) | Black ridged wheel in the pedestal, NOSE DN / T.O. / NOSE UP placard | 608 bearings, 3:1 gear | EC11 encoder |
+| [Fuel selector](parts/fuel-selector) | Pointer handle on a LEFT / BOTH / RIGHT placard | 3:1 gear to rotary switch | 1P12T rotary switch |
+| [Panel](panel) | Lower panel + pedestal face + floor, tiled for printing | — | — |
+| [Firmware](firmware) | — | — | Arduino Pro Micro → one USB joystick |
 
-## Panel conventions
+The Moza AY210 yoke and base already cover the yoke buttons and the switch panel, so those aren't modelled here.
 
-All controls share [`common/sim_common.scad`](common/sim_common.scad):
+## Panel mounting (same for every control)
 
-- **Panel thickness:** `panel_thickness`, default 6.35 mm (¼" plywood/MDF). Change it once and re-render.
-- **Mounting:** each control bolts through the panel with M3 screws and comes with a cutout template (SVG and DXF) in its `panel-template/` folder.
-- **Fit:** `clearance` tunes all sliding fits for your printer.
-- **Hardware:** M3 throughout. Holes are sized for self-tapping by default. Set `use_heat_set_inserts = true` for inserts.
+Every control bolts behind the panel the same way. Four **M3 countersunk screws** go in from the front, through the control's flange, into **M3 nuts captured in the back of the flange**. The screw heads sit flush, like the real panel. Each control folder has a `panel-template/` (SVG to print 1:1, DXF for laser/CNC) and a `panel_test_plate` STL for test-fitting.
 
 ## Layout
 
 ```
-common/            shared settings and helpers
+common/            shared settings (panel thickness, fit, M3 hardware, mount pattern, gears)
+  push_pull.scad   shared throttle / mixture / prop mechanism
 parts/<control>/
-  <control>.scad   parametric source (Customizer-ready)
-  stl/             print-ready STLs (default settings)
-  panel-template/  cutout drawing: SVG to print 1:1, DXF for laser/CNC
+  <control>.scad   parametric source (OpenSCAD Customizer)
+  stl/             print-ready STLs, already in print orientation
+  panel-template/  cutout drawing
   images/          renders
-  README.md        BOM, print settings, assembly, wiring, sim binding
-scripts/render.sh  regenerate all STLs/templates
+  README.md        parts list, printing, assembly, wiring, MSFS binding
+panel/             printable panel pieces + full-size templates
+firmware/          Arduino Pro Micro sketch
+scripts/render.sh  regenerate STLs/templates for the controls
 ```
 
-## Rebuilding
+## Rebuilding after changes
 
 ```bash
-scripts/render.sh                  # everything
-scripts/render.sh parking-brake    # one control
+scripts/render.sh                  # all controls
+scripts/render.sh throttle         # one control
 PANEL=3 scripts/render.sh          # for a 3 mm panel
 ```
 
-Requires OpenSCAD 2021.01 or newer.
+The panel STLs are rendered from `panel/c172_panel.scad` (see its README). Everything needs OpenSCAD 2021.01 or newer.
+
+## Status
+
+Every part has been checked in OpenSCAD for collisions through its full range of movement, but **none have been test-printed yet**. Expect to tune `clearance` for your printer. Dimensions are approximated from photos of real 172 parts, not factory drawings.
 
 ## License
 

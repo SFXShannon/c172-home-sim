@@ -22,7 +22,7 @@ for c in "${controls[@]}"; do
   mkdir -p "$dir/stl" "$dir/panel-template"
   for p in $list; do
     case "$p" in
-      assembly|exploded|section) continue ;;
+      assembly*|exploded|section) continue ;;
       panel_cutout)
         for ext in svg dxf; do
           echo "  $c/$p.$ext"
