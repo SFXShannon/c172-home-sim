@@ -1,0 +1,17 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='75.6mm' height='75.6mm' viewBox='0 0 75.6 75.6'>
+<title>Attitude: bank scale ring</title>
+<circle cx='37.8' cy='37.8' r='37.8' fill='#0b0b0b'/>
+<line x1='8.70' y1='21.00' x2='5.58' y2='19.20' stroke='#fff' stroke-width='0.8'/>
+<line x1='14.04' y1='14.04' x2='12.63' y2='12.63' stroke='#fff' stroke-width='0.5'/>
+<line x1='21.00' y1='8.70' x2='19.20' y2='5.58' stroke='#fff' stroke-width='0.8'/>
+<line x1='26.31' y1='6.23' x2='25.62' y2='4.35' stroke='#fff' stroke-width='0.5'/>
+<line x1='31.97' y1='4.71' x2='31.62' y2='2.74' stroke='#fff' stroke-width='0.5'/>
+<line x1='37.80' y1='4.20' x2='37.80' y2='0.60' stroke='#fff' stroke-width='0.8'/>
+<line x1='43.63' y1='4.71' x2='43.98' y2='2.74' stroke='#fff' stroke-width='0.5'/>
+<line x1='49.29' y1='6.23' x2='49.98' y2='4.35' stroke='#fff' stroke-width='0.5'/>
+<line x1='54.60' y1='8.70' x2='56.40' y2='5.58' stroke='#fff' stroke-width='0.8'/>
+<line x1='61.56' y1='14.04' x2='62.97' y2='12.63' stroke='#fff' stroke-width='0.5'/>
+<line x1='66.90' y1='21.00' x2='70.02' y2='19.20' stroke='#fff' stroke-width='0.8'/>
+<circle cx='37.8' cy='37.8' r='33.0' fill='#fff' stroke='#999' stroke-width='0.2'/>
+<circle cx='37.8' cy='37.8' r='37.699999999999996' fill='none' stroke='#999' stroke-width='0.2'/>
+</svg>

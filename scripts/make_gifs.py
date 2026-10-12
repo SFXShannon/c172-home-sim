@@ -93,7 +93,8 @@ CONTROLS = {
         captions=[(0.00, 0.18, "COM1 / COM2 - pick the radio to listen to"),
                   (0.18, 0.44, "NAV1, NAV2, ADF and MKR audio"),
                   (0.44, 0.58, "SPKR, PLAY - each key is a tactile switch"),
-                  (0.58, 0.82, "Volume / squelch knob - an EC11 encoder"),
+                  (0.58, 0.70, "Dual knob: the outer ring..."),
+                  (0.70, 0.82, "...and the inner knob turn separately"),
                   (0.82, 1.01, "DISPLAY BACKUP (print this cap red)")]),
     "switch-panel": dict(
         scad="parts/switch-panel/switch_panel.scad", title="C-post and lights panels",
@@ -108,6 +109,15 @@ CONTROLS = {
                   (0.63, 0.70, "FUEL PUMP, PITOT HEAT"),
                   (0.70, 0.92, "Dimmers - 16 mm pots"),
                   (0.92, 1.01, "Shut down")]),
+    "standby-gauges": dict(
+        scad="parts/standby-gauges/standby_gauges.scad", part="assembly_all", title="Standby instruments",
+        labels=(SEAT, "BEHIND THE PANEL (housings cut open)"),
+        front=(0, -230, 470, 0, 0, -12), rear=(290, 265, -265, 15, 0, -45),
+        captions=[(0.00, 0.10, "Power up: all at zero"),
+                  (0.10, 0.40, "Take-off and climb: the X27 and the 28BYJ-48 wind the needles up"),
+                  (0.40, 0.60, "Climbing turn right: the roll servo turns the frame"),
+                  (0.60, 0.90, "Turn left and descend: the pitch servo turns the drum"),
+                  (0.90, 1.01, "Back to zero")]),
     "ignition": dict(
         scad="parts/panel-extras/panel_extras.scad", part="assembly_ignition", title="Ignition key",
         labels=(SEAT, "BEHIND THE PANEL (panel see-through)"),

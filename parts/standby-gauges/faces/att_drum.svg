@@ -1,0 +1,31 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='50.0mm' height='175.93mm' viewBox='0 0 50.0 175.93'>
+<title>Attitude: horizon drum wrap (glue round the drum, sky toward the top, horizon at the front)</title>
+<rect x='0' y='0' width='50.0' height='87.96' fill='#2f74d0'/>
+<rect x='0' y='87.96' width='50.0' height='87.96' fill='#8a5a2b'/>
+<line x1='0' y1='87.96' x2='50.0' y2='87.96' stroke='#fff' stroke-width='0.7'/>
+<line x1='21.50' y1='83.08' x2='28.50' y2='83.08' stroke='#fff' stroke-width='0.45'/>
+<line x1='21.50' y1='92.85' x2='28.50' y2='92.85' stroke='#fff' stroke-width='0.45'/>
+<line x1='18.00' y1='78.19' x2='32.00' y2='78.19' stroke='#fff' stroke-width='0.45'/>
+<text x='14.80' y='78.19' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<text x='35.20' y='78.19' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<line x1='18.00' y1='97.74' x2='32.00' y2='97.74' stroke='#fff' stroke-width='0.45'/>
+<text x='14.80' y='97.74' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<text x='35.20' y='97.74' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>10</text>
+<line x1='21.50' y1='73.30' x2='28.50' y2='73.30' stroke='#fff' stroke-width='0.45'/>
+<line x1='21.50' y1='102.63' x2='28.50' y2='102.63' stroke='#fff' stroke-width='0.45'/>
+<line x1='18.00' y1='68.42' x2='32.00' y2='68.42' stroke='#fff' stroke-width='0.45'/>
+<text x='14.80' y='68.42' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+<text x='35.20' y='68.42' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+<line x1='18.00' y1='107.51' x2='32.00' y2='107.51' stroke='#fff' stroke-width='0.45'/>
+<text x='14.80' y='107.51' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+<text x='35.20' y='107.51' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>20</text>
+<line x1='21.50' y1='63.53' x2='28.50' y2='63.53' stroke='#fff' stroke-width='0.45'/>
+<line x1='21.50' y1='112.40' x2='28.50' y2='112.40' stroke='#fff' stroke-width='0.45'/>
+<line x1='18.00' y1='58.64' x2='32.00' y2='58.64' stroke='#fff' stroke-width='0.45'/>
+<text x='14.80' y='58.64' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>30</text>
+<text x='35.20' y='58.64' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>30</text>
+<line x1='18.00' y1='117.29' x2='32.00' y2='117.29' stroke='#fff' stroke-width='0.45'/>
+<text x='14.80' y='117.29' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>30</text>
+<text x='35.20' y='117.29' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>30</text>
+<rect x='0.1' y='0.1' width='49.8' height='175.73' fill='none' stroke='#999' stroke-width='0.2'/>
+</svg>

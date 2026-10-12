@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Draw printable faces for the standby instruments (SVG, real size in mm).
 
-Print them at 100 % (no "fit to page") on photo paper, cut round, glue to the
-printed face disc.  Markings follow the C172S: airspeed arcs in knots.
+Print them at 100 % (no "fit to page") on photo paper, cut out, glue on the
+printed parts.  Markings follow the C172S: airspeed arcs in knots.
 
-    python3 make_faces.py      ->  faces/airspeed.svg, attitude.svg, altimeter.svg
+    python3 make_faces.py  ->  faces/airspeed.svg     on asi_face_plate (centre hole: the X27 shaft)
+                               faces/altimeter.svg    on alt_front_plate (centre hole: the hand tube)
+                               faces/att_ring.svg     bank scale, on att_ring
+                               faces/att_roll_disc.svg  sky / ground ring with the bank pointer, on the roll frame
+                               faces/att_drum.svg     wraps round the horizon drum (sky toward the top)
 """
 import math, os
 
@@ -53,38 +57,56 @@ def airspeed():
         b.append(text(x, y, v, 5.2))
     b.append(text(C, C - 10, "AIRSPEED", 3.4, "#ddd"))
     b.append(text(C, C + 11, "KNOTS", 3.0, "#ddd"))
-    x, y = pol(R - 16, ang(95))
-    b.append(f"<line x1='{C}' y1='{C}' x2='{x:.2f}' y2='{y:.2f}' stroke='#fff' stroke-width='1.6' stroke-linecap='round'/>")
-    b.append(f"<circle cx='{C}' cy='{C}' r='2.2' fill='#333'/>")
+    b.append(f"<circle cx='{C}' cy='{C}' r='1.5' fill='#fff'/>")      # cut out: shaft hole
     return svg("\n".join(map(str, b)), "Standby airspeed")
 
-# ------------------------------------------------------------------ attitude
-def attitude():
-    b = [f"<clipPath id='c'><circle cx='{C}' cy='{C}' r='{R - 3}'/></clipPath>",
-         f"<g clip-path='url(#c)'>",
-         f"<rect x='0' y='0' width='{D}' height='{C}' fill='#2f74d0'/>",
-         f"<rect x='0' y='{C}' width='{D}' height='{C}' fill='#8a5a2b'/>",
-         f"<line x1='0' y1='{C}' x2='{D}' y2='{C}' stroke='#fff' stroke-width='0.8'/>"]
-    for p in (5, 10, 15, 20):
-        dy = p * 1.1
-        w = 9 if p % 10 == 0 else 5
-        for s in (-1, 1):
-            b.append(f"<line x1='{C - w/2:.2f}' y1='{C + s*dy:.2f}' x2='{C + w/2:.2f}' y2='{C + s*dy:.2f}' stroke='#fff' stroke-width='0.5'/>")
+# ------------------------------------------------------------------ attitude (three pieces)
+def ring_svg(d_out, d_in, body, title):
+    r = d_out / 2
+    return (f"<svg xmlns='http://www.w3.org/2000/svg' width='{d_out}mm' height='{d_out}mm' viewBox='0 0 {d_out} {d_out}'>\n"
+            f"<title>{title}</title>\n{body}\n"
+            f"<circle cx='{r}' cy='{r}' r='{d_in / 2}' fill='#fff' stroke='#999' stroke-width='0.2'/>\n"
+            f"<circle cx='{r}' cy='{r}' r='{r - 0.1}' fill='none' stroke='#999' stroke-width='0.2'/>\n</svg>\n")
+
+def att_ring():          # fixed bank scale, 75.6 / 66 mm
+    d, di = 75.6, 66
+    r = d / 2
+    def p(rr, deg): a = math.radians(deg); return r + rr * math.sin(a), r - rr * math.cos(a)
+    b = [f"<circle cx='{r}' cy='{r}' r='{r}' fill='#0b0b0b'/>"]
+    for a in (-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60):
+        big = a % 30 == 0
+        (x1, y1), (x2, y2) = p(di / 2 + 0.6, a), p(di / 2 + (4.2 if big else 2.6), a)
+        b.append(f"<line x1='{x1:.2f}' y1='{y1:.2f}' x2='{x2:.2f}' y2='{y2:.2f}' stroke='#fff' stroke-width='{0.8 if big else 0.5}'/>")
+    return ring_svg(d, di, "\n".join(b), "Attitude: bank scale ring")
+
+def att_roll_disc():     # turns with the roll frame, 64 / 46 mm
+    d, di = 64.0, 46.0
+    r = d / 2
+    b = [f"<path d='M0,{r} A{r},{r} 0 0 1 {d},{r} Z' fill='#2f74d0'/>",
+         f"<path d='M0,{r} A{r},{r} 0 0 0 {d},{r} Z' fill='#8a5a2b'/>",
+         f"<line x1='0' y1='{r}' x2='{d}' y2='{r}' stroke='#fff' stroke-width='0.6'/>",
+         f"<polygon points='{r},{0.6} {r - 2.2},{4.6} {r + 2.2},{4.6}' fill='#fff'/>"]
+    return ring_svg(d, di, "\n".join(b), "Attitude: roll disc")
+
+def att_drum():          # wraps round the 56 mm drum: 175.9 x 50 mm, horizon across the middle
+    L, W = math.pi * 56, 50.0
+    mm_per_deg = 28 * 2 * math.pi / 180      # the drum turns 2 deg per deg of pitch
+    h = L / 2
+    b = [f"<svg xmlns='http://www.w3.org/2000/svg' width='{W}mm' height='{L:.2f}mm' viewBox='0 0 {W} {L:.2f}'>",
+         "<title>Attitude: horizon drum wrap (glue round the drum, sky toward the top, horizon at the front)</title>",
+         f"<rect x='0' y='0' width='{W}' height='{h:.2f}' fill='#2f74d0'/>",
+         f"<rect x='0' y='{h:.2f}' width='{W}' height='{h:.2f}' fill='#8a5a2b'/>",
+         f"<line x1='0' y1='{h:.2f}' x2='{W}' y2='{h:.2f}' stroke='#fff' stroke-width='0.7'/>"]
+    for p in range(5, 35, 5):
+        for sgn in (-1, 1):
+            y = h + sgn * p * mm_per_deg
+            w = 14 if p % 10 == 0 else 7
+            b.append(f"<line x1='{W/2 - w/2:.2f}' y1='{y:.2f}' x2='{W/2 + w/2:.2f}' y2='{y:.2f}' stroke='#fff' stroke-width='0.45'/>")
             if p % 10 == 0:
-                b.append(text(C - w/2 - 3, C + s * dy, p, 2.6))
-                b.append(text(C + w/2 + 3, C + s * dy, p, 2.6))
-    b.append("</g>")
-    # roll scale
-    b.append(arc(R - 6, -60, 60, 0.5, "#fff"))
-    for a in (-60, -45, -30, -20, -10, 10, 20, 30, 45, 60):
-        b.append(tick(R - 6, R - (2.5 if abs(a) in (30, 60) else 4), a, 0.6))
-    x, y = pol(R - 6.3, 0)
-    b.append(f"<polygon points='{x:.2f},{y:.2f} {x - 2:.2f},{y - 3:.2f} {x + 2:.2f},{y - 3:.2f}' fill='#fff'/>")
-    # fixed aircraft symbol
-    b.append(f"<path d='M{C - 18},{C} h11 l3,3 l3,-3 h11' fill='none' stroke='#ff9a00' stroke-width='1.6' stroke-linejoin='round'/>")
-    b.append(f"<circle cx='{C}' cy='{C}' r='1.1' fill='#ff9a00'/>")
-    b.append(f"<rect x='{C - 3}' y='{D - 9}' width='6' height='4' rx='1' fill='#222' stroke='#888' stroke-width='0.3'/>")
-    return svg("\n".join(b), "Standby attitude")
+                for x in (W/2 - w/2 - 3.2, W/2 + w/2 + 3.2):
+                    b.append(f"<text x='{x:.2f}' y='{y:.2f}' font-size='2.8' fill='#fff' text-anchor='middle' dominant-baseline='middle' {FONT}>{p}</text>")
+    b.append(f"<rect x='0.1' y='0.1' width='{W - 0.2}' height='{L - 0.2:.2f}' fill='none' stroke='#999' stroke-width='0.2'/>")
+    return "\n".join(b) + "\n</svg>\n"
 
 # ------------------------------------------------------------------ altimeter
 def altimeter():
@@ -101,16 +123,16 @@ def altimeter():
     # Kollsman window
     b.append(f"<rect x='{C + 9}' y='{C - 3}' width='15' height='6' fill='#111' stroke='#888' stroke-width='0.3'/>")
     b.append(text(C + 16.5, C + 0.2, "29.92", 3.2))
-    # hands (static at 1,200 ft)
-    for length, width, deg in ((26, 1.6, 72), (17, 2.8, 43), (12, 0.8, 4)):
-        x, y = pol(length, deg)
-        b.append(f"<line x1='{C}' y1='{C}' x2='{x:.2f}' y2='{y:.2f}' stroke='#fff' stroke-width='{width}' stroke-linecap='round'/>")
-    b.append(f"<circle cx='{C}' cy='{C}' r='2.2' fill='#333'/>")
+    b.append(f"<circle cx='{C}' cy='{C}' r='3.4' fill='#fff'/>")      # cut out: hand tube hole
     return svg("\n".join(map(str, b)), "Standby altimeter")
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for name, fn in (("airspeed", airspeed), ("attitude", attitude), ("altimeter", altimeter)):
+    old = os.path.join(OUT, "attitude.svg")
+    if os.path.exists(old):
+        os.remove(old)
+    for name, fn in (("airspeed", airspeed), ("altimeter", altimeter), ("att_ring", att_ring),
+                     ("att_roll_disc", att_roll_disc), ("att_drum", att_drum)):
         with open(os.path.join(OUT, name + ".svg"), "w") as f:
             f.write(fn())
         print("faces/" + name + ".svg")

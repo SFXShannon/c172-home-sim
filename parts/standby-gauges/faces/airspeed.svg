@@ -49,7 +49,6 @@
 <text x='50.75' y='60.08' font-size='5.2' fill='#fff' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>200</text>
 <text x='38.00' y='28.00' font-size='3.4' fill='#ddd' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>AIRSPEED</text>
 <text x='38.00' y='49.00' font-size='3.0' fill='#ddd' text-anchor='middle' dominant-baseline='middle' font-family='Arial Narrow, Liberation Sans Narrow, Arial, sans-serif' font-weight='bold'>KNOTS</text>
-<line x1='38.0' y1='38.0' x2='21.94' y2='22.96' stroke='#fff' stroke-width='1.6' stroke-linecap='round'/>
-<circle cx='38.0' cy='38.0' r='2.2' fill='#333'/>
+<circle cx='38.0' cy='38.0' r='1.5' fill='#fff'/>
 <circle cx='38.0' cy='38.0' r='37.8' fill='none' stroke='#555' stroke-width='0.3'/>
 </svg>

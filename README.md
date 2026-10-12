@@ -9,7 +9,8 @@ The goal is **parts that look like the real aircraft's, with simple insides**: p
 **The G1000 dashboard** ([`panel/`](panel#g1000-dashboard)) is a 172S NAV III panel at real scale, shortened to about 32" (810 mm):
 
 - **Glass:** working PFD and MFD bezels with every real key and knob, each with a 10.4" screen behind it, and a working GMA 1347 audio panel.
-- **Switches:** the real C-post and lights panels, and the standby instruments.
+- **Switches:** the real C-post and lights panels.
+- **Standby instruments:** working mechanical airspeed, attitude and altimeter, driven from the sim.
 - **Lower panel:** ignition key, throttle, mixture, flaps, parking brake and cabin knobs.
 - **Pedestal:** trim wheel and fuel selector.
 - **Moza AY210:** its whole front panel sits flush in a window in front of the pilot, so its 13 switches stay in reach and the yoke comes straight out of the dashboard.
@@ -52,13 +53,17 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 
 ![G1000 bezel working](docs/anim/g1000-gdu.gif)
 
-**GMA 1347 audio panel**: same keys and encoder as the G1000 bezel.
+**GMA 1347 audio panel**: same keys as the G1000 bezel, and the same dual concentric knob.
 
 ![Audio panel working](docs/anim/g1000-gma.gif)
 
 **C-post and lights panels**: off-the-shelf rockers for MASTER and AVIONICS, mini toggles for STBY BATT, lights, fuel pump and pitot heat, and 16 mm pots for the dimmers.
 
 ![Switch panels working](docs/anim/switch-panel.gif)
+
+**Standby instruments**: an X27 gauge stepper turns the airspeed needle. A 28BYJ-48 stepper turns the altimeter's 100-ft hand, and a 10:1 printed gear train turns the 1000-ft hand. In the attitude indicator, one servo rolls the frame and a second, inside the horizon drum, pitches it.
+
+![Standby gauges working](docs/anim/standby-gauges.gif)
 
 **Ignition key**: OFF → R → L → BOTH → START on a rotary switch. The real key springs back from START; this one you turn back to BOTH yourself.
 
@@ -76,9 +81,9 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 | [Fuel selector](parts/fuel-selector) | Pointer handle on a LEFT / BOTH / RIGHT placard | 3:1 gear to rotary switch | 1P12T rotary switch |
 | [Flap lever](parts/flap-lever) | White flap handle, UP / 10 / 20 / FULL scale | Slide with 4 detent clicks | 128 mm slide pot (100 mm travel) |
 | [G1000 PFD / MFD](parts/g1000-gdu) | Garmin GDU 1040 bezel, real size and key layout | Printed caps on tactile switches, 10.4" screen | 32 keys, 9 knobs (EC11 / dual EC11) |
-| [Audio panel](parts/g1000-gma) | Garmin GMA 1347 | Same as the G1000 bezel | 22 keys, 1 knob |
+| [Audio panel](parts/g1000-gma) | Garmin GMA 1347 | Same as the G1000 bezel | 22 keys, 1 dual knob |
 | [Switch panels](parts/switch-panel) | C-post (STBY BATT, MASTER, AVIONICS) and lights / dimming | Off-the-shelf rockers, toggles and pots | 18 switches, 4 pots |
-| [Standby gauges](parts/standby-gauges) | Airspeed, attitude, altimeter with 172S markings | Printed case, paper face | — (look only) |
+| [Standby gauges](parts/standby-gauges) | Airspeed, attitude, altimeter with 172S markings | Working needles and a moving horizon; printed gear train in the altimeter | X27.168 stepper, 28BYJ-48 stepper + hall sensor, 2 × SG90 servos |
 | [Panel extras](parts/panel-extras) | Ignition key in a lock face, ALT STATIC / CABIN HT / AIR / FUEL SHUTOFF knobs, breakers | | Rotary switch (key) |
 | [Panels](panel) | **G1000 dashboard**, or the simple lower panel + pedestal | Tiled for printing | — |
 | [Firmware](firmware) | Pro Micro joystick sketch + [G1000 wiring and MobiFlight guide](firmware/G1000_WIRING.md) | | Pro Micro + 3 × Arduino Mega |

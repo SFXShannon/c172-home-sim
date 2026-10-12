@@ -1,0 +1,9 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='64.0mm' height='64.0mm' viewBox='0 0 64.0 64.0'>
+<title>Attitude: roll disc</title>
+<path d='M0,32.0 A32.0,32.0 0 0 1 64.0,32.0 Z' fill='#2f74d0'/>
+<path d='M0,32.0 A32.0,32.0 0 0 0 64.0,32.0 Z' fill='#8a5a2b'/>
+<line x1='0' y1='32.0' x2='64.0' y2='32.0' stroke='#fff' stroke-width='0.6'/>
+<polygon points='32.0,0.6 29.8,4.6 34.2,4.6' fill='#fff'/>
+<circle cx='32.0' cy='32.0' r='23.0' fill='#fff' stroke='#999' stroke-width='0.2'/>
+<circle cx='32.0' cy='32.0' r='31.9' fill='none' stroke='#999' stroke-width='0.2'/>
+</svg>

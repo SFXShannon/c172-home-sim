@@ -195,7 +195,7 @@ module yoke_boot_screw_holes_2d() for (a = [0, 120, 240]) rotate(a) translate([y
 // demo animation (README GIF): key angle, OFF -60 / R -30 / L 0 / BOTH 30 / START 60 (springs back to BOTH)
 ign_anim = [[0, -60], [0.08, -60], [0.15, -30], [0.25, -30], [0.32, 0], [0.42, 0], [0.49, 30], [0.59, 30],
             [0.65, 60], [0.75, 60], [0.79, 30], [0.88, 30], [0.96, -60], [1, -60]];
-function ign_angle() = anim < 0 ? 0 : lookup(anim, ign_anim);
+function ign_angle() = anim < 0 ? 30 : lookup(anim, ign_anim);   // BOTH when not animating
 module ignition_mounted() {
     color([0.78, 0.79, 0.81]) ignition_escutcheon();
     rotate(-ign_angle()) {
@@ -222,7 +222,7 @@ module ignition_demo() {
 module knob_mounted(kind) {
     c = (kind == "alt" || kind == "fuel") ? [0.75, 0.1, 0.1] : [0.1, 0.1, 0.1];
     color("silver") cylinder(d = 6, h = 4);
-    color(c) translate([0, 0, 4 + 4 + (kind == "fuel" ? 12 : kind == "alt" ? 10 : 9)]) mirror([0, 0, 1]) {
+    color(c) translate([0, 0, 4 + 4 + (kind == "fuel" ? 12 : kind == "alt" ? 10 : 9)]) rotate([0, 180, 0]) {
         if (kind == "alt") knob_alt_static();
         else if (kind == "heat") knob_cabin_heat();
         else if (kind == "air") knob_cabin_air();
@@ -236,7 +236,8 @@ if (part == "assembly") {
     translate([75, 0]) knob_mounted("heat");
     translate([110, 0]) knob_mounted("fuel");
     color([0.15, 0.15, 0.15]) translate([0, -50]) cb_strip();
-    color([0.1, 0.1, 0.1]) translate([120, -60]) yoke_boot();
+    // the key on its own, lying flat
+    translate([70, -75, 0]) rotate(-90) { color([0.8, 0.8, 0.78]) key_metal(); color([0.08, 0.08, 0.09]) key_head(); }
 }
 else if (part == "assembly_ignition") ignition_demo();
 else if (part == "ignition_key") ignition_key();

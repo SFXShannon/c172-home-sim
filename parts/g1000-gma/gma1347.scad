@@ -1,7 +1,7 @@
 // Garmin GMA 1347 audio panel (between the PFD and MFD) - WORKING keys.
 //
 // Real size 34.3 x 195.6 mm (1.35 x 7.7 in). 21 audio keys in two columns,
-// a volume knob (EC11 with push) and the red DISPLAY BACKUP button.
+// a dual concentric knob (ALPS dual-shaft EC11: outer + inner) and the red DISPLAY BACKUP button.
 // Same construction as the G1000 bezels: printed face, T-shaped key caps,
 // 6x6 mm tactile switches on a printed switch plate.
 //
@@ -11,7 +11,7 @@ include <../../common/sim_common.scad>
 include <../../common/avionics_lib.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, front, switch_plate, caps_sheet, knob, panel_cutout]
+part = "assembly"; // [assembly, front, switch_plate, caps_sheet, knob_outer, knob_inner, panel_cutout]
 
 /* [Hidden] */
 W = 34.3; H = 195.6;
@@ -33,7 +33,7 @@ module front_plate() {
             for (p = posts) translate(p) face_post();
         }
         for (k = keys) translate([k[0], k[1]]) key_hole(k[2], k[3]);
-        translate(knob) enc_hole(false);
+        translate(knob) enc_hole(true);
         for (s = screws) translate([s[0], s[1], -face_t - 1]) {
             cylinder(d = m3_clear_d, h = face_t + 2);
             translate([0, 0, face_t + 1 - 1.6]) cylinder(d1 = m3_clear_d, d2 = m3_head_d + 0.4, h = 1.61);
@@ -42,7 +42,7 @@ module front_plate() {
     }
 }
 module face_labels() {
-    translate([0, -47]) face_label("VOL", 2.2);
+    translate([0, -45.5]) face_label("VOL", 2.2);
     translate([0, -69]) face_label("BACKUP", 2);
 }
 
@@ -65,7 +65,7 @@ module panel_cutout() {
 
 // ---- demo animation (README GIF): key presses [t, key index]; key index = row * 2 + column, 22 = DISPLAY BACKUP
 gma_presses = [[0.04, 1], [0.12, 3], [0.20, 13], [0.26, 15], [0.32, 14], [0.38, 10], [0.46, 9], [0.52, 18], [0.86, 22]];
-gma_turn = [0.60, 0.80];   // VOL/SQ knob turning
+gma_turn = [[0.60, 0.70], [0.70, 0.80]];   // outer knob, then inner knob turning
 module assembly() {
     color([0.17, 0.18, 0.19]) front_plate();
     for (i = [0 : len(keys) - 1]) let(k = keys[i], dn = key_down(i, gma_presses, 0.05)) translate([k[0], k[1], dn ? -key_travel : 0]) {
@@ -73,11 +73,12 @@ module assembly() {
         color([0.93, 0.93, 0.9]) translate([0, 0, cap_out - 0.2]) scale([1, 1, 0.3])
             cap_label_geom(k[2], k[4], len(k[4]) > 3 ? 1.6 : 2.0, k[5]);
     }
-    turning = anim_in(gma_turn[0], gma_turn[1]);
-    translate([knob[0], knob[1]]) {
-        rotate(anim < 0 ? 0 : -280 * (min(max(anim, gma_turn[0]), gma_turn[1]) - gma_turn[0]))
-            color([0.1, 0.1, 0.1]) translate([0, 0, 2.5 + 10]) mirror([0, 0, 1]) knob_single(13, 10, 20);
-        if (turning) turn_arrow(6.5, 1, 13);
+    function turn(i) = anim < 0 ? 0 : -280 * (min(max(anim, gma_turn[i][0]), gma_turn[i][1]) - gma_turn[i][0]) * (i == 0 ? 1 : -1);
+    translate([knob[0], knob[1], 2.5]) {
+        rotate(turn(0)) color([0.1, 0.1, 0.1]) translate([0, 0, 7]) mirror([0, 0, 1]) knob_dual_outer(19, 7);
+        rotate(turn(1)) color([0.16, 0.16, 0.16]) translate([0, 0, 7 + 9]) mirror([0, 0, 1]) knob_dual_inner(12, 13);
+        if (anim_in(gma_turn[0][0], gma_turn[0][1])) turn_arrow(9.5, 1, 7.5);
+        if (anim_in(gma_turn[1][0], gma_turn[1][1])) turn_arrow(6, -1, 16.5);
     }
     paint_fill() face_labels();
     color("darkorange", ghost_a()) switch_plate();
@@ -91,7 +92,8 @@ if (part == "assembly") assembly();
 else if (part == "front") rotate([180, 0, 0]) front_plate();
 else if (part == "switch_plate") translate([0, 0, sw_z + sw_t]) switch_plate();
 else if (part == "caps_sheet") caps_sheet();
-else if (part == "knob") knob_single(13, 10, 20);
+else if (part == "knob_outer") knob_dual_outer(19, 7);
+else if (part == "knob_inner") knob_dual_inner(12, 13);
 else if (part == "panel_cutout") panel_cutout();
 
-echo(str("GMA 1347: ", len(keys), " keys + 1 EC11 (with push); panel opening 30 x 180 mm, 2x M3 screws at 0, +/-94"));
+echo(str("GMA 1347: ", len(keys), " keys + 1 dual-shaft EC11; panel opening 30 x 180 mm, 2x M3 screws at 0, +/-94"));

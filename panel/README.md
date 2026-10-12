@@ -19,7 +19,7 @@ Laid out from photos of the real 172S NAV III panel and kept at real scale; only
 
 | Area | What's there |
 |---|---|
-| Upper (grey) | C-post switches, PFD, GMA 1347 audio panel, MFD, dimming/lights panel, standby airspeed / attitude / altimeter |
+| Upper (grey) | C-post switches, PFD, GMA 1347 audio panel, MFD, dimming/lights panel, working standby airspeed / attitude / altimeter |
 | Lower (black) | Ignition key, circuit breakers (look only), parking brake, **window for the Moza AY210's front panel**, ALT STATIC AIR, throttle, mixture, flap lever, cabin heat / cabin air |
 | Pedestal | Elevator trim wheel, fuel shutoff knob, floor plate with the fuel selector |
 | Top | Glareshield in 4 segments |

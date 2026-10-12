@@ -19,9 +19,15 @@ def assign(items):
             rows.append((name, "Analog input", "see note"))
         elif kind == "output":
             rows.append((name, "LED output", next(pins)))
+        elif kind == "stepper":
+            rows.append((name, "Stepper", ", ".join(f"{next(pins)} ({i})" for i in range(1, 5))))
+        elif kind == "servo":
+            rows.append((name, "Servo", next(pins)))
+        elif kind == "homing":
+            rows.append((name, "Stepper zero (homing) input", next(pins)))
         else:
             rows.append((name, "Button / switch", next(pins)))
-    used = sum(2 if k == "encoder" else 0 if k == "analog" else 1 for _, k in items)
+    used = sum(2 if k == "encoder" else 4 if k == "stepper" else 0 if k == "analog" else 1 for _, k in items)
     return rows, used
 
 def gdu(unit):
@@ -47,12 +53,16 @@ def panel3():
     gma = ["COM1 MIC", "COM1", "COM2 MIC", "COM2", "COM3 MIC", "COM3", "COM1/2", "TEL", "PA", "SPKR", "MKR/MUTE",
            "HI SENS", "DME", "NAV1", "ADF", "NAV2", "AUX", "MAN SQ", "PLAY", "PILOT", "COPLT"]
     it += [(f"GMA {k}", "button") for k in gma]
-    it += [("GMA volume knob", "encoder"), ("GMA volume push", "button"), ("GMA DISPLAY BACKUP", "button")]
+    it += [("GMA knob outer", "encoder"), ("GMA knob inner", "encoder"), ("GMA DISPLAY BACKUP", "button")]
     it += [("STBY BATT ON", "button"), ("STBY BATT TEST", "button"), ("STBY BATT test light", "output"),
            ("MASTER ALT", "button"), ("MASTER BAT", "button"), ("AVIONICS BUS 1", "button"), ("AVIONICS BUS 2", "button")]
     it += [(f"{k} light", "button") for k in ["BEACON", "LAND", "TAXI", "NAV", "STROBE"]]
     it += [("FUEL PUMP", "button"), ("PITOT HEAT", "button"), ("CABIN PWR 12V", "button")]
     it += [(f"Ignition {k}", "button") for k in ["OFF", "R", "L", "BOTH", "START"]]
+    it += [("Standby airspeed (X27.168)", "stepper"),
+           ("Standby altimeter (28BYJ-48 via ULN2003 IN1-IN4)", "stepper"), ("Standby altimeter zero (hall sensor)", "homing"),
+           ("Standby altimeter baro knob", "encoder"),
+           ("Standby attitude roll servo", "servo"), ("Standby attitude pitch servo", "servo")]
     return it
 
 def table(title, items, note):
@@ -68,8 +78,8 @@ if __name__ == "__main__":
         "One Arduino Mega 2560 behind the PFD. 32 keys + 9 knobs (5 of them dual)."))
     doc.append(table("Board 2: MFD bezel", gdu("MFD"),
         "Identical to board 1, for the MFD. Name it differently in MobiFlight (e.g. \"MFD\")."))
-    doc.append(table("Board 3: audio panel, switch panels, ignition", panel3(),
-        "One Mega for everything else that is a switch. The four dimmer pots go to A12-A15 "
+    doc.append(table("Board 3: audio panel, switch panels, ignition, standby gauges", panel3(),
+        "One Mega for everything else. The four dimmer pots go to A12-A15 "
         "as MobiFlight analog inputs (pin numbers shown above stop before them)."))
     with open(os.path.join(os.path.dirname(__file__), "G1000_WIRING.md"), "w") as f:
         f.write("\n".join(doc))

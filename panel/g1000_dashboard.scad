@@ -198,7 +198,9 @@ module holes_2d() {
     at(gma_pos) gma_cutout_2d();
     at(cpost_pos) upper_cutout();
     at(lights_pos) lower_cutout();
-    for (g = [gauge_asi, gauge_att, gauge_alt]) at(g) gauge_cutout_2d();
+    at(gauge_asi) gauge_cutout_2d("airspeed");
+    at(gauge_att) gauge_cutout_2d("attitude");
+    at(gauge_alt) gauge_cutout_2d("altimeter");
     moza_window_2d();
     for (h = moza_frame_screws) translate([moza_x, moza_bottom] + h) circle(d = m3_clear_d);
     at(ignition_pos) circle(d = 10);
@@ -513,6 +515,7 @@ module keepout_2d() {
     offset(r = 3) holes_2d();
     for (p = [pfd_pos, mfd_pos]) translate(p) square([310, 206], center = true);       // bezel screws, screen cradles
     translate(gma_pos) square([40, 202], center = true);
+    for (g = [gauge_asi, gauge_att, gauge_alt]) translate(g) square(90, center = true);   // gauge housing flanges
     for (p = [brake_pos, throttle_pos, mixture_pos]) translate(p) square(mount_flange_size + 6, center = true);
     translate(flap_pos + [0, 4]) square([50, 142], center = true);                       // flap housing + pot channels
     translate(ignition_pos) circle(d = 34);                                              // key switch
