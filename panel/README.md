@@ -11,7 +11,7 @@ There are two panel options:
 
 ![G1000 dashboard](images/g1000_dashboard.png)
 
-| Behind the panel (AY210 base shown as a grey box) | Layout and print tiles |
+| Behind the panel (AY210 base see-through) | Layout and print tiles |
 |---|---|
 | ![](images/g1000_dashboard_rear.png) | ![](images/g1000_layout_map.png) |
 
@@ -19,14 +19,14 @@ Laid out from photos of the real 172S NAV III panel and kept at real scale; only
 
 | Area | What's there |
 |---|---|
-| Upper (grey) | C-post switches, PFD, GMA 1347 audio panel, MFD, dimming/lights panel, yoke shaft opening, standby airspeed / attitude / altimeter |
-| Lower (black) | Ignition key, circuit breakers (look only), parking brake, ALT STATIC AIR, throttle, mixture, flap lever, cabin heat / cabin air |
+| Upper (grey) | C-post switches, PFD, GMA 1347 audio panel, MFD, dimming/lights panel, standby airspeed / attitude / altimeter |
+| Lower (black) | Ignition key, circuit breakers (look only), parking brake, **window for the Moza AY210's front panel**, ALT STATIC AIR, throttle, mixture, flap lever, cabin heat / cabin air |
 | Pedestal | Elevator trim wheel, fuel shutoff knob, floor plate with the fuel selector |
 | Top | Glareshield in 4 segments |
 
 ### Printing it
 
-- **Tiles:** 9 of them, 3 per row, sized for a 305 × 305 mm bed (QIDI Plus4). Row L (lower) in black; rows M and U in grey. Print them **front face down**. The largest is 298 × 148 mm. For a smaller printer, set `bed` and move the seams in `lower_splits`, `mid_splits` and `upper_splits` (up to 5 tiles per row); OpenSCAD warns if a tile is too wide.
+- **Tiles:** 9 of them, 3 per row, sized for a 305 × 305 mm bed (QIDI Plus4). Row L (lower) in black; rows M and U in grey. Print them **front face down**. The largest is 298 × 147 mm. For a smaller printer, set `bed` and move the seams in `lower_splits`, `mid_splits` and `upper_splits` (up to 5 tiles per row); OpenSCAD warns if a tile is too wide.
 - **Joining:** see [Joining the pieces](#joining-the-pieces) below.
 - **Or cut it on a CNC router:** [`dashboard/cnc`](dashboard/cnc) has layered DXF / SVG files for cutting the panel from 1/4" plywood or MDF in 4 pieces (plus the pedestal plates), sized for an 800 × 400 mm router like the FoxAlien XE-PRO 8040.
 - **Glareshield:** 4 segments. Print them upside down with tree supports, or use them as formers and cover with foam and vinyl like the real padded one.
@@ -38,15 +38,17 @@ STLs are in [`dashboard/stl/`](dashboard/stl). After changing anything, regenera
 
 ### Fitting it to your Moza AY210
 
-The yoke shaft comes through a 60 mm hole in front of the pilot (`yoke_pos`, default 160 mm up from the panel bottom), with a printed boot ring round it.
+The AY210's whole front panel (its toggles, buttons, rotary, gear and flap levers and the yoke shaft) sits **flush in a window in the lower panel**, in front of the pilot. So all its switches stay in reach, and the yoke comes straight out of the dashboard.
 
-- **Shaft height:** set `moza_shaft_h` to the height of the AY210 shaft above the bottom of its base. Measure yours: Moza doesn't publish it, and the default 150 mm is a guess. Then set the panel height so the hole lines up with the shaft.
-- **Clearance:** the base sits behind the panel. `moza_front` is the gap from the panel back to the base's front face; keep it above about 80 mm so the parking brake and the PFD screen clear it. The file warns if they'd collide.
-- **Base switches:** the AY210's own 13-switch panel will be out of reach behind the dashboard, so the C-post and lights panel take over.
+- **The window** follows the base's front face from Moza's drawing: the 243 mm foot plate across the bottom, the 215.8 mm body above it, and the chamfered top corners, 111.3 mm tall, with a 1.5 mm gap all round (`moza_gap`). By default the base stands on the same surface as the dashboard (`moza_bottom = 0`), so the window opens through the bottom edge.
+- **Trim frame:** print `moza_frame` (3 mm thick, 6 mm lip) and screw it on round the window with 6 × M3 countersunk screws and nuts behind. It hides the gap and also ties the lower panel pieces either side of the window to the panel above.
+- **Sliding the base in:** push the base forward through the window until its face is flush with the panel at the yoke shaft. The face leans back about 12°, so the bottom row of switches ends up a little proud and the top a little behind; that's normal.
+- **Yoke height:** the shaft centre is 66 mm above the bottom of the base (`moza_shaft_h`, read off Moza's drawing). If you put the base on a riser, set `moza_bottom` to its height and the window moves up with it.
+- **Clearance:** nothing else on the panel may overlap the window or the frame; the file warns if something does. The parking brake, ignition and breakers moved left of it, and ALT STATIC AIR and the second breaker strip moved right.
 
 ### Changing the layout
 
-Every position is a setting near the top of [`g1000_dashboard.scad`](g1000_dashboard.scad), in mm from the pilot's centre line (`x`, + = right) and up from the panel bottom (`y`): `pfd_pos`, `gma_pos`, `mfd_pos`, `cpost_pos`, `lights_pos`, `gauge_*`, `yoke_pos`, `ignition_pos`, `brake_pos`, `throttle_pos`, `mixture_pos`, `flap_pos`, and so on. You can also change the panel width (`x_left`, `x_right`), the top arch, the tile seams and your `bed` size. OpenSCAD warns if a tile won't fit your printer.
+Every position is a setting near the top of [`g1000_dashboard.scad`](g1000_dashboard.scad), in mm from the pilot's centre line (`x`, + = right) and up from the panel bottom (`y`): `pfd_pos`, `gma_pos`, `mfd_pos`, `cpost_pos`, `lights_pos`, `gauge_*`, `moza_x` / `moza_bottom` (the AY210 window), `ignition_pos`, `brake_pos`, `throttle_pos`, `mixture_pos`, `flap_pos`, and so on. You can also change the panel width (`x_left`, `x_right`), the top arch, the tile seams and your `bed` size. OpenSCAD warns if a tile won't fit your printer.
 
 ---
 
@@ -58,11 +60,11 @@ Every position is a setting near the top of [`g1000_dashboard.scad`](g1000_dashb
 The tiles (or CNC pieces) butt together and are joined from the back in three ways:
 
 1. **Splice plates** (blue above) straddle the seams and the two row joints. Each screws into **blind pilot holes** already in the back of the pieces, so nothing shows on the front. `scripts/place_splices.py` finds room for them clear of everything mounted behind the panel and writes their positions to [`splices.scad`](splices.scad). For the printed tiles that's:
-   - 6 × `splice` (34 × 70 mm, 4 screws), across the lower seams, the seam beside the yoke, and the two row joints
-   - 2 × `splice_small` (40 × 22 mm, 2 screws), for tight spots on the lower/middle row joint
+   - 4 × `splice` (34 × 70 mm, 4 screws), across the right-hand lower seam, the middle-row seam and the two row joints
+   - 1 × `splice_small` (40 × 22 mm, 2 screws) and 1 × `splice_narrow` (44 × 12 mm, 2 screws), for tight spots on the lower/middle row joint
 
-   Print them flat, 4 mm thick (`panel/dashboard/stl/splice.stl`, `splice_small.stl`). Spread glue on the plate (CA or epoxy for PLA/PETG), press it on over its holes, and drive **M3 × 8** screws (4 mm into the panel; longer ones come through the front). The same plate turns 90° for the horizontal joints.
-2. **The bezels and gauges** cover the seams that have no room for a plate (through the PFD, the MFD and the attitude gauge). Their screws go into the pieces on both sides, so each one acts as a splice.
+   Print them flat, 4 mm thick (`panel/dashboard/stl/splice.stl`, `splice_small.stl`, `splice_narrow.stl`). Spread glue on the plate (CA or epoxy for PLA/PETG), press it on over its holes, and drive **M3 × 8** screws (4 mm into the panel; longer ones come through the front). The same plate turns 90° for the horizontal joints.
+2. **The bezels, gauges and the AY210 trim frame** cover the seams that have no room for a plate (through the PFD, the MFD, the attitude gauge and the AY210 window). Their screws go into the pieces on both sides, so each one acts as a splice. The trim frame is what holds the lower-left piece (ignition, parking brake) to the rest.
 3. **The glareshield** is split at different places from the upper tiles (`glareshield_splits`; by default halfway along each tile). Each glareshield piece screws into the tiles on both sides of a seam, which ties the top edge.
 
 **Order:** lay the tiles face down on a flat table and glue and screw the splice plates. Then stand the panel up and fit the bezels, gauges and glareshield. Last, screw the panel to your frame through the frame holes along the bottom and sides.
@@ -111,4 +113,4 @@ The positions are approximate 172S proportions taken from photos, not from facto
 
 ## Not included (already on your Moza AY210)
 
-The AY210 base has its own 13-switch panel, and the yoke has the buttons and hats. So master, avionics, lights and magneto switches aren't modelled here.
+The yoke has its own buttons and hats, so those aren't modelled. The AY210 base's 13 switches sit in the dashboard's window, so you can bind them to whatever you like alongside the C-post and lights panels.

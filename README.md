@@ -12,7 +12,7 @@ The goal is **parts that look like the real aircraft's, with simple insides**: p
 - **Switches:** the real C-post and lights panels, and the standby instruments.
 - **Lower panel:** ignition key, throttle, mixture, flaps, parking brake and cabin knobs.
 - **Pedestal:** trim wheel and fuel selector.
-- **Yoke:** an opening for the Moza AY210 shaft.
+- **Moza AY210:** its whole front panel sits flush in a window in front of the pilot, so its 13 switches stay in reach and the yoke comes straight out of the dashboard.
 
 It prints as 9 tiles sized for a 305 mm bed (QIDI Plus4). On a smaller printer, change `bed` and the seams; OpenSCAD warns if a tile won't fit. Or [cut it on a CNC router](panel/dashboard/cnc) from 1/4" plywood in 4 pieces (fits an 800 × 400 mm router such as the FoxAlien XE-PRO 8040).
 
@@ -79,11 +79,11 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 | [Audio panel](parts/g1000-gma) | Garmin GMA 1347 | Same as the G1000 bezel | 22 keys, 1 knob |
 | [Switch panels](parts/switch-panel) | C-post (STBY BATT, MASTER, AVIONICS) and lights / dimming | Off-the-shelf rockers, toggles and pots | 18 switches, 4 pots |
 | [Standby gauges](parts/standby-gauges) | Airspeed, attitude, altimeter with 172S markings | Printed case, paper face | — (look only) |
-| [Panel extras](parts/panel-extras) | Ignition key, ALT STATIC / CABIN HT / AIR / FUEL SHUTOFF knobs, breakers, yoke boot | | Rotary switch (key) |
+| [Panel extras](parts/panel-extras) | Ignition key in a lock face, ALT STATIC / CABIN HT / AIR / FUEL SHUTOFF knobs, breakers | | Rotary switch (key) |
 | [Panels](panel) | **G1000 dashboard**, or the simple lower panel + pedestal | Tiled for printing | — |
 | [Firmware](firmware) | Pro Micro joystick sketch + [G1000 wiring and MobiFlight guide](firmware/G1000_WIRING.md) | | Pro Micro + 3 × Arduino Mega |
 
-The Moza AY210 yoke has its own buttons and hats, so those aren't modelled. With the base behind the dashboard, its 13-switch panel is out of reach, so the C-post and lights panels take over.
+The Moza AY210 yoke has its own buttons and hats, so those aren't modelled. The base's 13-switch front panel sits in a window in the dashboard, so it stays usable next to the C-post and lights panels.
 
 ## Panel mounting (same for every control)
 

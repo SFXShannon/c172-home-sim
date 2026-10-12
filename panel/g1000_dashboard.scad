@@ -2,10 +2,11 @@
 //
 // Everything from the left switch panel to just past the MFD, at real scale:
 //   upper (grey):  C-post switch panel, PFD, GMA 1347 audio panel, MFD,
-//                  dimming/lights panel, yoke shaft opening (Moza AY210),
-//                  standby airspeed / attitude / altimeter
+//                  dimming/lights panel, standby airspeed / attitude / altimeter
 //   lower (black): ignition key, circuit breakers (look only), parking brake,
-//                  ALT STATIC AIR, throttle, mixture, flap lever, cabin heat/air
+//                  ALT STATIC AIR, throttle, mixture, flap lever, cabin heat/air,
+//                  and a window for the Moza AY210 base: its front panel sits
+//                  flush in the dashboard, with a printed trim frame round it
 //   pedestal:      elevator trim wheel, fuel shutoff, floor with fuel selector
 //   glareshield over the top
 //
@@ -33,7 +34,7 @@ use <../parts/panel-extras/panel_extras.scad>
 use <../parts/flap-lever/flap_lever.scad>
 
 /* [What to show] */
-part = "preview"; // [preview, preview_rear, layout_map, tile_L1, tile_L2, tile_L3, tile_L4, tile_M1, tile_M2, tile_M3, tile_M4, tile_U1, tile_U2, tile_U3, tile_U4, splice, splice_small, glareshield_1, glareshield_2, glareshield_3, glareshield_4, pedestal_face, pedestal_floor, panel_2d, cnc_lower_1, cnc_lower_2, cnc_upper_1, cnc_upper_2, cnc_pedestal_face, cnc_pedestal_floor, cnc_splice, cnc_splice_small, keepout_2d, outline_2d, seam_info]
+part = "preview"; // [preview, preview_rear, layout_map, tile_L1, tile_L2, tile_L3, tile_L4, tile_M1, tile_M2, tile_M3, tile_M4, tile_U1, tile_U2, tile_U3, tile_U4, splice, splice_small, splice_narrow, moza_frame, glareshield_1, glareshield_2, glareshield_3, glareshield_4, pedestal_face, pedestal_floor, panel_2d, cnc_lower_1, cnc_lower_2, cnc_upper_1, cnc_upper_2, cnc_pedestal_face, cnc_pedestal_floor, cnc_splice, cnc_splice_small, cnc_splice_narrow, keepout_2d, outline_2d, seam_info]
 
 /* [Panel size] */
 x_left = -280;
@@ -42,7 +43,7 @@ x_right = 530;
 top_centre = 440;
 top_side_drop = 20;
 // Height of the black lower panel
-lower_h = 112;
+lower_h = 113;
 // Height where the grey upper panel is split into two rows of tiles
 mid_split = 260;
 
@@ -51,24 +52,32 @@ pfd_pos = [0, 308];
 gma_pos = [175, 308];
 mfd_pos = [350, 308];
 cpost_pos = [-219, 337];
-lights_pos = [-165, 161];
+lights_pos = [-170, 164];
 gauge_asi = [160, 160];
 gauge_att = [248, 160];
 gauge_alt = [336, 160];
 
-/* [Yoke (Moza AY210)] */
-yoke_pos = [0, 160];
-// Distance from the panel back to the front of the AY210 base (keep things behind the panel shallower than this)
-moza_front = 110;
-// Height of the yoke shaft above the bottom of the AY210 base (measure yours)
-moza_shaft_h = 150;
+/* [Moza AY210 base] */
+// The base's front panel sits flush in a window in the lower panel, centred on the pilot.
+// x of the base centre, and the height of its bottom above the panel's bottom edge
+// (0 = the base and the panel stand on the same surface).
+moza_x = 0;
+moza_bottom = 0;
+// Front face from Moza's drawing: body width, foot plate width, total height, yoke shaft centre height
+moza_body_w = 215.8;
+moza_foot_w = 243;
+moza_h = 111.28;
+moza_shaft_h = 66;
+// Gap round the base in the window, and width of the printed trim frame's lip
+moza_gap = 1.5;
+moza_lip = 6;
 
 /* [Lower panel] */
-ignition_pos = [-245, 55];
-cb1_pos = [-175, 75];
-cb2_pos = [-35, 75];
-brake_pos = [-117, 25];
-alt_static_pos = [98, 50];
+ignition_pos = [-245, 88];
+cb1_pos = [-176, 95];
+cb2_pos = [232, 95];
+brake_pos = [-232, 30];
+alt_static_pos = [152, 88];
 throttle_pos = [197, 38];
 mixture_pos = [266, 38];
 flap_pos = [380, 60];
@@ -87,7 +96,7 @@ bed = 305;
 // Tile seams (x positions) for each row: lower (black), middle and upper (grey).
 // Splice plates on the back join the tiles: run scripts/place_splices.py after
 // changing the seams or moving things, and it finds room for them (panel/splices.scad).
-lower_splits = [15, 310];
+lower_splits = [0, 310];
 mid_splits = [-58, 240];
 upper_splits = [-10, 250];
 // Glareshield joints (x). Offset from the upper seams so each glareshield piece screws
@@ -97,7 +106,7 @@ glareshield_splits = [];
 /* [CNC router] */
 // Cutting the panel from 1/4" sheet on a CNC router instead of printing it:
 // the lower (black) and upper (grey) panels are each cut in 2 pieces. Lower split at this x:
-cnc_lower_split = 15;
+cnc_lower_split = 0;
 // Upper split: [x below the jog, x above it, jog height y]. The default is a straight seam
 // through the attitude gauge and the MFD: both bezels screw to both pieces and tie them.
 cnc_upper_split = [248, 248, 207];
@@ -111,14 +120,18 @@ cnc_layer = "cut"; // [cut, drill, engrave, countersink, back]
 
 /* [Hidden] */
 t = panel_thickness;
+yoke_pos = [moza_x, moza_bottom + moza_shaft_h];   // yoke shaft centre on the panel
 // Splice plates, written by scripts/place_splices.py: [x, y, kind] for the printed tiles
 // (splices) and the CNC pieces (cnc_splices). kind: "V" 34 x 70 across a vertical seam,
-// "H" 70 x 34 across a horizontal joint, "v" / "h" small 2-screw plates for tight spots.
+// "H" 70 x 34 across a horizontal joint, "v" / "h" small 2-screw plates for tight spots,
+// "N" / "n" narrow 12 mm wide 2-screw strips for the tightest.
 include <splices.scad>
-function splice_size(k) = k == "V" ? [34, 70] : k == "H" ? [70, 34] : k == "v" ? [40, 22] : [22, 40];
+function splice_size(k) = k == "V" ? [34, 70] : k == "H" ? [70, 34] : k == "v" ? [40, 22] : k == "h" ? [22, 40]
+                        : k == "N" ? [44, 12] : [12, 44];
 function splice_holes(k) = k == "V" ? [[-10, -25], [10, -25], [-10, 25], [10, 25]]
                          : k == "H" ? [[-25, -10], [-25, 10], [25, -10], [25, 10]]
-                         : k == "v" ? [[-12, 0], [12, 0]] : [[0, -12], [0, 12]];
+                         : k == "v" ? [[-12, 0], [12, 0]] : k == "h" ? [[0, -12], [0, 12]]
+                         : k == "N" ? [[-14, 0], [14, 0]] : [[0, -14], [0, 14]];
 module splice_pilots_2d(list) for (c = list, h = splice_holes(c[2])) translate([c[0], c[1]] + h) circle(d = m3_pilot_d);
 splice_t = 4;   // printed splice thickness: M3 x 8 screws (4 mm into the panel's blind holes)
 aircraft_cl = gma_pos[0];
@@ -134,6 +147,49 @@ module outline_2d() {
     offset(r = 6) offset(delta = -6) polygon(pts);
 }
 
+// ------------------------------------------------------------------ Moza AY210 window (front view)
+// Front face outline, relative to the base's bottom centre (from Moza's drawing): a foot
+// plate across the bottom and the body above it with chamfered top corners.
+moza_plate_h = 13;
+moza_chamfer = [79.5, 89.5];   // half-width of the top edge, height where the chamfer starts
+module moza_outline_2d() {
+    translate([-moza_foot_w / 2, 0]) square([moza_foot_w, moza_plate_h]);
+    polygon([[-moza_body_w / 2, moza_plate_h - 0.01], [moza_body_w / 2, moza_plate_h - 0.01],
+             [moza_body_w / 2, moza_chamfer[1]], [moza_chamfer[0], moza_h], [-moza_chamfer[0], moza_h],
+             [-moza_body_w / 2, moza_chamfer[1]]]);
+}
+module moza_window_core_2d() translate([moza_x, moza_bottom]) offset(delta = moza_gap) moza_outline_2d();
+module moza_window_2d() {
+    moza_window_core_2d();
+    // run out through the panel's bottom edge when the base stands on the same surface
+    if (moza_bottom < 5) translate([moza_x - moza_foot_w / 2 - moza_gap, -5]) square([moza_foot_w + 2 * moza_gap, moza_bottom + 6]);
+    // no thin strip left above the base under the row joint
+    top = moza_bottom + moza_h + moza_gap;
+    if (lower_h > top && lower_h - top < 4) translate([moza_x - moza_chamfer[0] - moza_gap, top - 1]) square([2 * (moza_chamfer[0] + moza_gap), lower_h - top + 1.01]);
+}
+// trim frame lip on the panel face round the window (open at the bottom if the window is)
+module moza_frame_2d() intersection() {
+    difference() { offset(delta = moza_lip) moza_window_core_2d(); moza_window_2d(); }
+    translate([x_left, 0]) square([x_right - x_left, 999]);
+}
+// frame screws (M3 countersunk through the frame and the panel, nut behind), relative to the base bottom centre
+moza_frame_screws = [for (sx = [-1, 1]) each [
+    [sx * (moza_foot_w / 2 + moza_gap + moza_lip / 2), moza_plate_h / 2],
+    [sx * (moza_body_w / 2 + moza_gap + moza_lip / 2), moza_chamfer[1] - 30],
+    [sx * 45, moza_h + moza_gap + moza_lip / 2]]];
+module moza_frame() {   // printable, face down
+    frame_t = 3;
+    difference() {
+        translate([-moza_x, -moza_bottom]) linear_extrude(frame_t) moza_frame_2d();
+        // rounded inner edge on the visible face
+        translate([-moza_x, -moza_bottom, -0.01]) linear_extrude(0.8, scale = 1) offset(delta = -0.01) difference() {
+            offset(delta = 0.8) moza_window_2d(); moza_window_2d();
+        }
+        for (h = moza_frame_screws) translate([h[0], h[1], -0.01]) cylinder(d1 = m3_head_d + 0.4, d2 = m3_clear_d, h = (m3_head_d + 0.4 - m3_clear_d) / 2);
+        for (h = moza_frame_screws) translate([h[0], h[1], -1]) cylinder(d = m3_clear_d, h = frame_t + 2);
+    }
+}
+
 // All cut-outs, front view
 module holes_2d() {
     module at(p) translate(p) children();
@@ -143,7 +199,8 @@ module holes_2d() {
     at(cpost_pos) upper_cutout();
     at(lights_pos) lower_cutout();
     for (g = [gauge_asi, gauge_att, gauge_alt]) at(g) gauge_cutout_2d();
-    at(yoke_pos) { circle(d = 60); yoke_boot_screw_holes_2d(); }
+    moza_window_2d();
+    for (h = moza_frame_screws) translate([moza_x, moza_bottom] + h) circle(d = m3_clear_d);
     at(ignition_pos) circle(d = 10);
     for (p = [alt_static_pos, cabin_heat_pos, cabin_air_pos]) at(p) circle(d = 8.5);
     at(brake_pos) parking_brake_panel_cutout();
@@ -291,17 +348,44 @@ module pedestal_floor() {   // fuel-selector coordinates (cabin side = -z, +y fo
 module mod_front(p, face_thickness) {      // face-up module onto the panel face
     translate([ax(p)[0], ax(p)[1], -t - face_thickness]) rotate([0, 180, 0]) children();
 }
-module moza_dummy() {
-    color([0.2, 0.2, 0.22], 0.5) translate([ax(yoke_pos)[0] - 243 / 2, yoke_pos[1] - moza_shaft_h, moza_front]) cube([243, 216, 403]);
-    color("silver") translate([ax(yoke_pos)[0], yoke_pos[1], -120]) cylinder(d = 40, h = moza_front + 120);
+// The AY210, its front face flush with the panel face at the shaft (the face leans back
+// about 12 degrees, so the bottom sits a little proud and the top a little behind).
+moza_lean = 0.221;
+moza_controls = [   // front view, from its bottom centre: [x, y, kind]
+    [-82.8, 69.8, "toggle"], [-61.1, 69.8, "toggle"], [-39.2, 69.8, "toggle"],
+    [-87.3, 33.6, "toggle"], [-64.9, 33.6, "toggle"], [-42.9, 33.6, "toggle"],
+    [29.5, 87.3, "key"], [51.5, 87.3, "key"], [29.5, 68.3, "key"], [51.5, 68.3, "key"],
+    [84.3, 77.2, "gear"], [84.3, 41.4, "flaps"], [84.3, 20.6, "power"], [44.8, 31.3, "rotary"]];
+function moza_face_z(y) = -t + (y - moza_shaft_h) * moza_lean;   // model z of the face at height y above its bottom
+module moza_dummy(alpha = 1) {
+    translate([ax([moza_x, 0])[0], moza_bottom, 0]) {
+        color([0.17, 0.17, 0.18], alpha) multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, moza_lean, 1, -t - moza_lean * moza_shaft_h], [0, 0, 0, 1]])
+            linear_extrude(403) mirror([1, 0]) moza_outline_2d();
+        for (c = moza_controls) translate([-c[0], c[1], moza_face_z(c[1])]) {
+            if (c[2] == "toggle") { color("silver") { translate([0, 0, -3]) cylinder(d = 12, h = 3); rotate([-12, 0, 0]) translate([0, 0, -16]) cylinder(d = 3, h = 16); } }
+            else if (c[2] == "key") color([0.85, 0.85, 0.85]) translate([-6.7, -4.9, -4]) cube([13.4, 9.8, 4]);
+            else if (c[2] == "gear") { color([0.3, 0.3, 0.32]) translate([-5.5, -16.5, -2]) cube([11, 33, 2]);
+                                       color("silver") translate([0, 12, -2]) rotate([90, 0, 0]) cylinder(d = 3, h = 10);
+                                       color([0.9, 0.9, 0.9]) translate([0, 10, -24]) rotate([0, 90, 0]) cylinder(d = 14, h = 6, center = true); }
+            else if (c[2] == "flaps") color([0.25, 0.25, 0.27]) translate([-9, -10, -12]) cube([18, 20, 12]);
+            else if (c[2] == "power") color([0.1, 0.1, 0.1]) translate([0, 0, -3]) cylinder(d = 9, h = 3);
+            else if (c[2] == "rotary") color([0.12, 0.12, 0.13]) translate([0, 0, -14]) cylinder(d = 24.6, h = 14);
+        }
+        // yoke shaft hub and the shaft coming out toward the pilot
+        translate([0, moza_shaft_h, moza_face_z(moza_shaft_h)]) {
+            color([0.25, 0.25, 0.27]) translate([0, 0, -8]) cylinder(d = 30, h = 8);
+            color([0.55, 0.56, 0.58]) translate([0, 0, -160]) cylinder(d = 32, h = 152);
+        }
+    }
 }
 
 module cockpit(rear = false) {
     // panel tiles, grey upper / black lower
     color([0.36, 0.37, 0.39]) panel_body([lower_h, 9999]);
     color([0.11, 0.11, 0.12]) panel_body([-1, lower_h]);
-    // the yoke shaft coming through
-    color([0.55, 0.56, 0.58]) translate([ax(yoke_pos)[0], yoke_pos[1], -160]) cylinder(d = 40, h = 160 + moza_front);
+    // the Moza AY210 in its window, with the trim frame
+    moza_dummy(rear ? 0.45 : 1);
+    color([0.16, 0.16, 0.17]) translate([ax([moza_x, 0])[0], moza_bottom, -t]) mirror([1, 0, 0]) mirror([0, 0, 1]) moza_frame();
     color([0.93, 0.93, 0.9]) translate([0, 0, -t - 0.2]) linear_extrude(0.2) mirror([1, 0]) engrave_2d();
     // glareshield
     color([0.13, 0.13, 0.14]) for (i = [0 : len(GS_edges) - 2]) glareshield_segment(i);
@@ -322,8 +406,7 @@ module cockpit(rear = false) {
     mod_front(gauge_asi, gauge_bezel_t()) instrument_mounted("airspeed");
     mod_front(gauge_att, gauge_bezel_t()) instrument_mounted("attitude");
     mod_front(gauge_alt, gauge_bezel_t()) instrument_mounted("altimeter");
-    // yoke boot, key, look-only knobs, breakers
-    mod_front(yoke_pos, 0) color([0.08, 0.08, 0.08]) yoke_boot();
+    // key, look-only knobs, breakers
     mod_front(ignition_pos, 0) ignition_mounted();
     mod_front(alt_static_pos, 0) knob_mounted("alt");
     mod_front(cabin_heat_pos, 0) knob_mounted("heat");
@@ -344,7 +427,6 @@ module cockpit(rear = false) {
             fuel_selector_mounted();
         }
     }
-    if (rear) moza_dummy();
 }
 
 // ------------------------------------------------------------------ layout map
@@ -364,7 +446,7 @@ module layout_map() {
     color("white") translate([0, 0, 2.5]) linear_extrude(0.5) {
         tag(pfd_pos, "PFD"); tag(mfd_pos, "MFD"); tag(gma_pos + [0, 105], "GMA");
         tag(cpost_pos, "C-POST"); tag(lights_pos + [0, -52], "DIMMING / LIGHTS");
-        tag(yoke_pos, "YOKE"); tag(throttle_pos + [0, 30], "THR"); tag(mixture_pos + [0, 30], "MIX");
+        tag([moza_x, moza_bottom + 50], "AY210"); tag(throttle_pos + [0, 30], "THR"); tag(mixture_pos + [0, 30], "MIX");
         tag(flap_pos + [0, 60], "FLAP"); tag(brake_pos + [0, 30], "PARK BRK");
     }
 }
@@ -442,14 +524,22 @@ module keepout_2d() {
 }
 
 // ------------------------------------------------------------------ checks
-deep_items = [["parking brake", brake_pos, 75], ["dimming/lights panel", lights_pos, 30], ["PFD", pfd_pos, 30]];
-for (it = deep_items) {
-    p = it[1];
-    if (abs(p[0] - yoke_pos[0]) < 121.5 + 30 && p[1] > yoke_pos[1] - moza_shaft_h - 10 && it[2] > moza_front)
-        echo(str("WARNING: the ", it[0], " sticks out ", it[2], " mm behind the panel - more than moza_front (", moza_front, " mm). Move the AY210 back."));
-}
+// things that must stay clear of the AY210 window and its frame: [name, position, half-size x, half-size y]
+moza_clear = [["parking brake", brake_pos, 21, 21], ["parking brake handle", brake_pos + [50, 0], 50, 12], ["throttle", throttle_pos, 21, 21], ["mixture", mixture_pos, 21, 21],
+    ["flap lever", flap_pos, 25, 70], ["ignition key", ignition_pos, 15, 15], ["ALT STATIC AIR knob", alt_static_pos, 12, 12],
+    ["breakers (left)", cb1_pos, 40.5, 18.5], ["breakers (right)", cb2_pos, 40.5, 18.5], ["dimming/lights panel", lights_pos, 85, 45],
+    ["airspeed gauge", gauge_asi, 42, 42], ["PFD", pfd_pos, 150, 98]];
+// (the window + frame as two boxes: full width up to the chamfers, narrower above)
+for (it = moza_clear) let(p = it[1], m = moza_gap + moza_lip,
+        boxes = [[moza_foot_w / 2 + m, moza_bottom + moza_chamfer[1] + m], [moza_chamfer[0] + m + 3, moza_bottom + moza_h + m]])
+    if (len([for (b = boxes) if (abs(p[0] - moza_x) < b[0] + it[2] && p[1] - it[3] < b[1] && p[1] + it[3] > moza_bottom) 1]) > 0)
+        echo(str("WARNING: the ", it[0], " overlaps the AY210 window or its frame - move it."));
+// tile width; in the lower row the AY210 window takes a bite out of the tile it falls in
+function tile_w(row, e, i) = let(x0 = e[i], x1 = e[i + 1], w0 = moza_x - moza_foot_w / 2 - moza_gap, w1 = moza_x + moza_foot_w / 2 + moza_gap,
+        cuts = row == "lower" && moza_bottom < 5)
+    !cuts ? x1 - x0 : (x0 >= w0 && x0 <= w1) ? x1 - max(x0, w1) : (x1 >= w0 && x1 <= w1) ? min(x1, w0) - x0 : x1 - x0;
 for (row = [["lower", L_edges], ["middle", M_edges], ["upper", U_edges]]) for (i = [0 : len(row[1]) - 2])
-    if (row[1][i + 1] - row[1][i] > bed) echo(str("WARNING: ", row[0], " tile ", i + 1, " is ", row[1][i + 1] - row[1][i], " mm wide, more than your bed."));
+    if (tile_w(row[0], row[1], i) > bed) echo(str("WARNING: ", row[0], " tile ", i + 1, " is ", tile_w(row[0], row[1], i), " mm wide, more than your bed."));
 for (i = [0 : len(GS_edges) - 2]) if (GS_edges[i + 1] - GS_edges[i] > bed)
     echo(str("WARNING: glareshield piece ", i + 1, " is ", GS_edges[i + 1] - GS_edges[i], " mm long, more than your bed - set glareshield_splits."));
 if (top_centre - mid_split > bed) echo("WARNING: the top tile row is taller than your bed - raise mid_split.");
@@ -461,6 +551,8 @@ else if (part == "layout_map") layout_map();
 else if (len(part) == 7 && part[0] == "t") tile(part[5], ord(part[6]) - ord("1"));
 else if (part == "splice") splice("V");
 else if (part == "splice_small") splice("v");
+else if (part == "splice_narrow") splice("N");
+else if (part == "moza_frame") moza_frame();
 else if (part == "keepout_2d") keepout_2d();
 else if (part == "outline_2d") outline_2d();
 else if (part == "seam_info") echo(str("SEAMS=", [[x_left, x_right, lower_h, mid_split, top_centre], lower_splits, mid_splits, upper_splits,
@@ -472,10 +564,11 @@ else if (part == "glareshield_4") gs_print(3);
 else if (part == "glareshield_5") gs_print(4);
 else if (part == "pedestal_face") translate([0, 0, t]) pedestal_face();
 else if (part == "pedestal_floor") translate([0, 0, t]) pedestal_floor();
-else if (len(part) > 4 && part[0] == "c" && part[1] == "n" && part[2] == "c" && part != "cnc_pedestal_face" && part != "cnc_pedestal_floor" && part != "cnc_splice" && part != "cnc_splice_small")
+else if (len(part) > 4 && part[0] == "c" && part[1] == "n" && part[2] == "c" && part != "cnc_pedestal_face" && part != "cnc_pedestal_floor" && part != "cnc_splice" && part != "cnc_splice_small" && part != "cnc_splice_narrow")
     cnc_piece(str(part[4], part[5], part[6], part[7], part[8], part[9], part[10]), cnc_layer);
 else if (part == "cnc_pedestal_face") cnc_pedestal_face(cnc_layer);
 else if (part == "cnc_pedestal_floor") cnc_pedestal_floor(cnc_layer);
 else if (part == "cnc_splice") cnc_splice(cnc_layer);
 else if (part == "cnc_splice_small") cnc_splice(cnc_layer, "v");
+else if (part == "cnc_splice_narrow") cnc_splice(cnc_layer, "N");
 else if (part == "panel_2d") difference() { outline_2d(); holes_2d(); }   // front view, for laser / CNC

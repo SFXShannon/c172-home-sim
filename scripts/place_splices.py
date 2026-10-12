@@ -24,9 +24,9 @@ SCAD = os.path.join(ROOT, "panel", "g1000_dashboard.scad")
 OUT = os.path.join(ROOT, "panel", "splices.scad")
 
 # plate size (x, y) and screw holes, as in g1000_dashboard.scad
-SIZE = {"V": (34, 70), "H": (70, 34), "v": (40, 22), "h": (22, 40)}
+SIZE = {"V": (34, 70), "H": (70, 34), "v": (40, 22), "h": (22, 40), "N": (44, 12), "n": (12, 44)}
 HOLES = {"V": [(-10, -25), (10, -25), (-10, 25), (10, 25)], "H": [(-25, -10), (-25, 10), (25, -10), (25, 10)],
-         "v": [(-12, 0), (12, 0)], "h": [(0, -12), (0, 12)]}
+         "v": [(-12, 0), (12, 0)], "h": [(0, -12), (0, 12)], "N": [(-14, 0), (14, 0)], "n": [(0, -14), (0, 14)]}
 EDGE = 2.5          # plate stays this far inside the panel outline
 SPACING = 140       # aim for a plate about this often along a long joint
 
@@ -58,12 +58,12 @@ def plate(kind, x, y):
     return box(x - w / 2, y - h / 2, x + w / 2, y + h / 2)
 
 
-def place(seg, kind_big, kind_small, free, placed, n_target):
+def place(seg, kinds, free, placed, n_target):
     """seg: ('v', x, y0, y1) or ('h', y, x0, x1). Spread n_target plates along it,
     each a full-size plate where it fits, otherwise a small one. Returns [(x, y, kind)]."""
     axis, c, a0, a1 = seg
     feasible = {}
-    for kind in (kind_big, kind_small):
+    for kind in kinds:
         w, h = SIZE[kind]
         half = (h if axis == "v" else w) / 2
         ok = []
@@ -77,7 +77,7 @@ def place(seg, kind_big, kind_small, free, placed, n_target):
     L = a1 - a0
     for k in range(n_target):
         tg = a0 + L * (k + 0.5) / n_target
-        for kind in (kind_big, kind_small):
+        for kind in kinds:
             best = None
             for t in sorted(feasible[kind], key=lambda t: abs(t - tg)):
                 if abs(t - tg) > L / n_target / 2 + 40:
@@ -112,9 +112,9 @@ def main():
                 f = free
                 for sx in seams_v:
                     f = f.difference(box(sx - 3, c - 30, sx + 3, c + 30))
-                got = place(seg, "H", "h", f, placed, max(1, round((a1 - a0) / SPACING)))
+                got = place(seg, "Hhn", f, placed, max(1, round((a1 - a0) / SPACING)))
             else:
-                got = place(seg, "V", "v", free, placed, max(1, round((a1 - a0) / 110)))
+                got = place(seg, "VvN", free, placed, max(1, round((a1 - a0) / 110)))
             out += got
             report.append((seg, got))
         return out, report
@@ -144,8 +144,8 @@ def main():
             kinds = ", ".join(f"{k} at ({x:g}, {y:g})" for x, y, k in got) or "none - no room (a bezel or gauge must tie it)"
             print(f"  {where}: {kinds}")
         lst = tiles if name.startswith("Printed") else cnc
-        big = sum(1 for _, _, k in lst if k in "VH"); small = len(lst) - big
-        print(f"  -> {big} splice + {small} splice_small")
+        big = sum(1 for _, _, k in lst if k in "VH"); small = sum(1 for _, _, k in lst if k in "vh")
+        print(f"  -> {big} splice + {small} splice_small + {len(lst) - big - small} splice_narrow")
 
 
 if __name__ == "__main__":

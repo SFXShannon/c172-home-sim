@@ -8,16 +8,17 @@ Files for cutting the G1000 dashboard panel from **1/4" (6.35 mm) plywood or MDF
 
 | File | Piece | Size (mm) |
 |---|---|---|
-| `upper_1` | Upper (grey) panel, left: C-post, PFD, audio panel, lights panel, yoke, airspeed + half the attitude gauge | 528 × 328 |
-| `upper_2` | Upper panel, right: MFD, other half of the attitude gauge, altimeter | 282 × 327 |
-| `lower_1` | Lower (black) panel, left: ignition, parking brake | 295 × 112 |
-| `lower_2` | Lower panel, right: alt static, throttle, mixture, flaps, cabin heat / air | 515 × 112 |
+| `upper_1` | Upper (grey) panel, left: C-post, PFD, audio panel, lights panel, airspeed + half the attitude gauge | 528 × 327 |
+| `upper_2` | Upper panel, right: MFD, other half of the attitude gauge, altimeter | 282 × 326 |
+| `lower_1` | Lower (black) panel, left of the AY210 window: ignition, parking brake | 200 × 113 |
+| `lower_2` | Lower panel, right of the AY210 window: alt static, throttle, mixture, flaps, cabin heat / air | 450 × 113 |
 | `pedestal_face` | Pedestal: trim wheel, fuel shutoff | 130 × 170 |
 | `pedestal_floor` | Pedestal floor: fuel selector | 150 × 150 |
-| `splice` | Joining plate, 34 × 70 (cut 3) | 34 × 70 |
-| `splice_small` | Small joining plate, 40 × 22 (cut 3) | 40 × 22 |
+| `splice` | Joining plate (cut 1) | 34 × 70 |
+| `splice_small` | Small joining plate (cut 1) | 40 × 22 |
+| `splice_narrow` | Narrow joining strip (cut 1) | 44 × 12 |
 
-The full panel is 810 mm wide, a little more than the 800 mm X travel, so the lower and upper panels are each cut in two. The upper seam runs through the attitude gauge and the MFD: both bezels screw into both pieces and tie them together. Splice plates on the back join the lower seam and the joint between the lower and upper panels.
+The full panel is 810 mm wide, a little more than the 800 mm X travel, so the lower and upper panels are each cut in two. The upper seam runs through the attitude gauge and the MFD: both bezels screw into both pieces and tie them together. The two lower pieces sit either side of the window for the Moza AY210's front panel. The printed AY210 trim frame screws onto both of them and the upper panel, and splice plates on the back join the lower/upper joint.
 
 ## Files
 
@@ -44,7 +45,7 @@ Inside corners of the openings come out rounded to the bit radius. That's fine w
 
 ## Putting it together
 
-- **Splice plates:** lay the pieces face down on a flat table. Glue each plate over its blind pilot holes (they show where it goes: 1 across the lower seam, 5 along the lower/upper joint) and screw it down with **#4 × 3/8" wood screws** or **M3 × 10** (any longer and they come through the front).
+- **Splice plates:** lay the pieces face down on a flat table. Glue each plate over its blind pilot holes (they show where it goes: 3 along the lower/upper joint) and screw it down with **#4 × 3/8" wood screws** or **M3 × 10** (any longer and they come through the front).
 - **Upper seam:** fit the attitude gauge and the MFD bezel; their screws hold the two upper pieces in line. The printed glareshield crosses it too and screws into both pieces.
 - **Frame:** screw the panel to your frame through the frame holes along the bottom and sides.
 - **Finish:** paint the lower panel black and the upper panel grey (the 172S colours), then fill the engraved labels with white paint and sand the face lightly.

@@ -1,8 +1,8 @@
 // Smaller C172S panel parts.
 //
-//   ignition    key-shaped knob + chrome escutcheon on a 1-pole 12-position rotary
-//               switch (OFF R L BOTH START engraved on the panel round it).
-//               Set the switch's stop washer to 5 positions.
+//   ignition    a key in a lock face with a chrome-look bezel, on a 1-pole
+//               12-position rotary switch (OFF R L BOTH START engraved on the
+//               panel round it). Set the switch's stop washer to 5 positions.
 //   knob_*      look-only push-pull knobs: ALT STATIC AIR (red), CABIN HT,
 //               CABIN AIR, FUEL SHUTOFF (red, on the pedestal). A printed stem
 //               goes through an 8.5 mm panel hole; a clip ring behind holds it.
@@ -14,7 +14,7 @@
 include <../../common/sim_common.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, assembly_ignition, ignition_key, ignition_escutcheon, knob_alt_static, knob_cabin_heat, knob_cabin_air, knob_fuel_shutoff, knob_stem, stem_clip, cb_strip, yoke_boot]
+part = "assembly"; // [assembly, assembly_ignition, ignition_key, ignition_cylinder, ignition_escutcheon, knob_alt_static, knob_cabin_heat, knob_cabin_air, knob_fuel_shutoff, knob_stem, stem_clip, cb_strip, yoke_boot]
 
 /* [Yoke opening] */
 // Diameter of the hole the yoke shaft passes through
@@ -29,28 +29,90 @@ f = "Liberation Sans:style=Bold";
 ign_positions = [["OFF", -60], ["R", -30], ["L", 0], ["BOTH", 30], ["START", 60]];
 
 // ------------------------------------------------------------------ ignition
-// Key head on a hub that presses onto the switch's 6 mm (knurled) shaft. Printed flat.
-module ignition_key() {
+// A real-looking key in a lock face, on a 1P12T rotary switch (stop washer set to 5 positions).
+//   ignition_escutcheon  chrome-look bezel round the lock, fixed: it hides the switch nut
+//   ignition_cylinder    the lock face with its keyway; presses onto the switch shaft and turns
+//   ignition_key         key with a black head; its tip pushes into the keyway (and pulls out again)
+// Cut the switch shaft so it ends 9 mm in front of the panel face.
+
+ign_esc_h   = 14;                   // bezel height off the panel
+ign_cyl_d   = 16.6;                 // lock face diameter
+ign_cyl_z0  = 4.5;                  // lock bottom, clear of the switch bushing + nut
+ign_cyl_top = ign_esc_h + 0.4;      // lock face, just proud of the bezel
+ign_insert  = 4.6;                  // how far the key goes into the keyway
+key_w = 8; key_t = 2.4;             // blade width / thickness
+key_tip = 5; key_blade = 17; key_neck = 19; key_len = 48;   // y stations along the key
+
+// key, printed flat: x across the blade, y along it (tip at y = 0), z thickness (blade on the bed)
+module key_head_2d() hull() {
+    translate([0, key_neck + 2]) square([17, 4], center = true);
+    translate([0, key_len - 14]) circle(d = 28, $fn = 96);
+}
+module key_metal() difference() {
+    linear_extrude(key_t) union() {
+        hull() {                                                  // tip that goes into the lock
+            translate([0, 1]) square([key_w - 4, 2], center = true);
+            translate([0, key_tip - 0.5]) square([key_w, 1], center = true);
+        }
+        difference() {                                            // blade with the cuts along one edge
+            translate([-key_w / 2, key_tip - 1]) square([key_w, key_blade - key_tip + 1.01]);
+            for (c = [[8, 1.6], [11, 2.4], [14, 1.2]]) translate([key_w / 2, c[0]]) rotate(45) square(c[1] * 1.414, center = true);
+        }
+        translate([-5.5, key_blade]) square([11, key_neck - key_blade + 3]);   // shoulder, runs into the head
+    }
+    translate([-1.6, 3, key_t - 0.45]) cube([1.2, key_blade - 3, 1]);           // milled groove
+}
+module key_head() difference() {
+    union() {
+        linear_extrude(4.2) key_head_2d();
+        translate([0, 0, 4.19]) linear_extrude(0.6, scale = 0.94) offset(-1.2) key_head_2d();
+    }
+    translate([0, key_len - 6, -1]) cylinder(d = 6, h = 8);                      // key-ring hole
+    translate([0, key_len - 18, 4.2]) scale([1, 0.65, 1]) cylinder(d = 15, h = 2); // grip recess
+}
+// print flat, as modelled (one colour, or swap to black at the head with a colour change at 2.4 mm)
+module ignition_key() union() { key_metal(); key_head(); }
+
+// lock face: keyway on top, D-bore for the switch shaft underneath. Prints as modelled.
+module ignition_cylinder() {
+    h = ign_cyl_top - ign_cyl_z0;
     difference() {
         union() {
-            cylinder(d = 11, h = 9);
-            hull() {                                   // the key bow
-                translate([0, 0, 0]) cylinder(d = 11, h = 3.5);
-                translate([0, 15, 0]) scale([1, 0.75, 1]) cylinder(d = 24, h = 3.5);
-            }
+            cylinder(d = ign_cyl_d, h = h - 0.6);
+            translate([0, 0, h - 0.61]) cylinder(d1 = ign_cyl_d, d2 = ign_cyl_d - 1.2, h = 0.61);
         }
-        translate([0, 0, 2]) cylinder(d = 5.9, h = 10);
-        translate([0, 17, -1]) cylinder(d = 7, h = 6);   // key-ring hole
+        // switch shaft: 6 mm with a flat (4.6 mm across)
+        translate([0, 0, -0.01]) linear_extrude(h - ign_insert - 0.6) intersection() {
+            circle(d = 6.15, $fn = 48);
+            translate([-4, -3.2]) square([8, 1.6 + 4.6]);
+        }
+        // keyway: a snug fit for the key tip
+        translate([0, 0, h - ign_insert]) linear_extrude(ign_insert + 1) square([key_t + 0.25, key_w + 0.25], center = true);
+        translate([0, 0, h - 0.6]) linear_extrude(1, scale = 1.3) square([key_t + 0.25, key_w + 0.25], center = true);
+        // face ring
+        translate([0, 0, h - 0.3]) difference() { cylinder(d = ign_cyl_d - 3, h = 1); cylinder(d = ign_cyl_d - 3.8, h = 1); }
     }
 }
-module ignition_escutcheon() {   // hides the switch nut, sits on the panel
+
+module ignition_escutcheon() {   // fixed bezel round the lock; hides the switch nut
     difference() {
-        union() { cylinder(d = 26, h = 4); translate([0, 0, 4]) cylinder(d1 = 26, d2 = 22, h = 2); }
-        translate([0, 0, -1]) cylinder(d = 15, h = 3.6);        // nut pocket
-        translate([0, 0, -1]) cylinder(d = 7, h = 10);          // shaft
-        translate([-1.2, 7, 5]) cube([2.4, 5, 2]);               // keyway look
+        union() {
+            cylinder(d = 30, h = 2.5);
+            translate([0, 0, 2.49]) cylinder(d1 = 27, d2 = 22.5, h = ign_esc_h - 2.49 - 1);
+            translate([0, 0, ign_esc_h - 1.01]) cylinder(d1 = 22.5, d2 = 21, h = 1.01);
+        }
+        translate([0, 0, -1]) cylinder(d = 15, h = 4.6);                    // nut pocket
+        translate([0, 0, -1]) cylinder(d = 10.4, h = ign_esc_h + 2);       // switch bushing
+        translate([0, 0, ign_cyl_z0 - 0.6]) cylinder(d = ign_cyl_d + 0.5, h = ign_esc_h);   // the lock turns in here
     }
 }
+
+// key in the lock, in panel coordinates (key width points at the position label)
+module ignition_key_in_lock() {
+    translate([0, 0, ign_cyl_top - ign_insert]) multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])
+        translate([0, 0, -key_t / 2]) children();
+}
+
 // 2D: OFF R L BOTH START round the key (engrave into the panel)
 module ignition_labels_2d() {
     for (p = ign_positions) rotate(-p[1]) translate([0, 23]) text(p[0], size = 2.6, font = f, halign = "center", valign = "center");
@@ -135,8 +197,13 @@ ign_anim = [[0, -60], [0.08, -60], [0.15, -30], [0.25, -30], [0.32, 0], [0.42, 0
             [0.65, 60], [0.75, 60], [0.79, 30], [0.88, 30], [0.96, -60], [1, -60]];
 function ign_angle() = anim < 0 ? 0 : lookup(anim, ign_anim);
 module ignition_mounted() {
-    color([0.75, 0.76, 0.78]) ignition_escutcheon();
-    color([0.75, 0.76, 0.78]) rotate(-ign_angle()) translate([0, 0, 15]) mirror([0, 0, 1]) ignition_key();
+    color([0.78, 0.79, 0.81]) ignition_escutcheon();
+    rotate(-ign_angle()) {
+        color([0.62, 0.63, 0.65]) translate([0, 0, ign_cyl_z0]) ignition_cylinder();
+        // blade silver, head black
+        color([0.8, 0.8, 0.78]) ignition_key_in_lock() key_metal();
+        color([0.08, 0.08, 0.09]) ignition_key_in_lock() key_head();
+    }
 }
 // key switch behind the panel (look only): 5-position rotary switch, white mark on the rotor
 module ignition_switch_dummy(t = panel_thickness) {
@@ -173,6 +240,7 @@ if (part == "assembly") {
 }
 else if (part == "assembly_ignition") ignition_demo();
 else if (part == "ignition_key") ignition_key();
+else if (part == "ignition_cylinder") ignition_cylinder();
 else if (part == "ignition_escutcheon") ignition_escutcheon();
 else if (part == "knob_alt_static") knob_alt_static();
 else if (part == "knob_cabin_heat") knob_cabin_heat();

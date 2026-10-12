@@ -20,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCAD = os.path.join(ROOT, "panel", "g1000_dashboard.scad")
 OUT = os.path.join(ROOT, "panel", "dashboard", "cnc")
-PIECES = ["lower_1", "lower_2", "upper_1", "upper_2", "pedestal_face", "pedestal_floor", "splice", "splice_small"]
+PIECES = ["lower_1", "lower_2", "upper_1", "upper_2", "pedestal_face", "pedestal_floor", "splice", "splice_small", "splice_narrow"]
 FRONT = ["cut", "drill", "engrave", "countersink"]
 COLORS = {"cut": ("CUT", 7, "#000000"), "drill": ("DRILL", 1, "#d0021b"),
           "engrave": ("ENGRAVE", 5, "#1f5fd6"), "countersink": ("COUNTERSINK", 3, "#2a9d3a"),
@@ -101,12 +101,15 @@ def main():
     for p in PIECES:
         cut = loops(got[(p, "cut")])
         xs = [x for lp in cut for x, _ in lp]; ys = [y for lp in cut for _, y in lp]
-        W, H = max(xs), max(ys)
-        front = [(COLORS[l][0], COLORS[l][1], loops(got[(p, l)]), l in ("drill", "countersink"), COLORS[l][2]) for l in FRONT]
+        x0, y0 = min(xs), min(ys)          # put the material's corner (not the piece's) at 0,0
+        W, H = max(xs) - x0, max(ys) - y0
+        sh = lambda lps, dx, dy: [[(x - dx, y - dy) for x, y in lp] for lp in lps]
+        cut = sh(cut, x0, y0)
+        front = [(COLORS[l][0], COLORS[l][1], sh(loops(got[(p, l)]), x0, y0), l in ("drill", "countersink"), COLORS[l][2]) for l in FRONT]
         front = [f for f in front if f[2]]
         dxf(os.path.join(OUT, f"{p}.dxf"), [f[:4] for f in front])
         svg(os.path.join(OUT, f"{p}.svg"), front, W, H)
-        back = [[(x + W, y) for x, y in lp] for lp in loops(got[(p, "back")])]   # scad mirrors about x = 0
+        back = [[(x + W + x0, y - y0) for x, y in lp] for lp in loops(got[(p, "back")])]   # scad mirrors about x = 0
         for ext in ("dxf", "svg"):
             f = os.path.join(OUT, f"{p}_back.{ext}")
             if os.path.exists(f):
