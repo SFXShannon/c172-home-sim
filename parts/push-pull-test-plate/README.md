@@ -10,11 +10,11 @@ A bench plate that holds the **throttle, prop and mixture** side by side, in the
 
 ## What it is
 
-- **Size:** 211 × 87 mm, 6.35 mm thick (same as `panel_thickness`, so the controls use the same M3 × 14 screws as on the real panel).
+- **Size:** 231 × 107 mm, 6.35 mm thick (same as `panel_thickness`, so the controls use the same M3 × 14 screws as on the real panel).
 - **Controls:** 69 mm apart, the same spacing as the dashboard. Each spot has the 14 mm centre hole and the 4 countersunk M3 holes on the 28 mm square. THROTTLE / PROP / MIXTURE are engraved under the knobs.
-- **Extrusion mount:** four 8 mm bolt holes, two along the top edge and two down the right edge (as seen from the pilot's side), on the centre line of a 20 mm extrusion. The strips they're in are kept clear of the control housings, so the extrusion can run along the back of both edges and the housings hang free below and to the left of it.
+- **Extrusion mount:** four 8 mm bolt holes, two along the top edge and two down the right edge (as seen from the pilot's side), centred on 40 mm extrusion (4040). The 40 mm strips they're in are kept 3 mm clear of the control flanges and housings, so the extrusion runs along the back of both edges without touching the slide-pot housings.
   - Holes are drawn 8.4 mm so an M8 or 5/16" bolt drops through after printing. Set `bolt_hole_d = 8` if you want them exactly 8 mm.
-  - For wider extrusion (1" 10-series, 4040), set `rail_w`; the plate grows to keep the housings clear.
+  - For other extrusion (2020, 1" 10-series), set `rail_w` (20, 25.4); the plate resizes and the holes stay centred.
 
 ## Printing
 

@@ -20,7 +20,7 @@ part = "assembly"; // [assembly, plate]
 
 /* [Extrusion mount] */
 // Extrusion width (20 = 20-series / 2020, 25.4 = 1" 10-series, 40 = 4040)
-rail_w = 20;
+rail_w = 40;
 // Bolt holes (8.4 = clearance for an M8 or 5/16" bolt; set 8 for exact 8 mm)
 bolt_hole_d = 8.4;
 // Gap between a control's mounting flange and the extrusion
