@@ -1,5 +1,7 @@
 # Throttle (and the shared push-pull mechanism)
 
+**Download:** [throttle_files.zip](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/throttle/throttle_files.zip) (STLs, panel template, source) · or [all three + test plate](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/push-pull-test-plate/throttle_mixture_prop_all.zip)
+
 Throttle, mixture and prop all use the same simple mechanism. Only the knob and the panel nut change:
 
 | Control | Knob | Panel nut | Folder |

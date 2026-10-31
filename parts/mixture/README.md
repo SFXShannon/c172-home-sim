@@ -1,5 +1,7 @@
 # Mixture
 
+**Download:** [mixture_files.zip](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/mixture/mixture_files.zip) (STLs, panel template, source) · or [all three + test plate](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/push-pull-test-plate/throttle_mixture_prop_all.zip)
+
 Red ribbed vernier-style knob with the centre lock button, on a hex bushing nut.
 
 ![mixture working](../../docs/anim/mixture.gif)

@@ -87,3 +87,6 @@ done
 if command -v python3 >/dev/null; then
   python3 scripts/stl2bin.py $(find parts panel -name '*.stl') >/dev/null
 fi
+
+# one-click downloads for the throttle / mixture / prop
+python3 scripts/make_zips.py

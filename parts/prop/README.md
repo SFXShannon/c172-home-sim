@@ -1,5 +1,7 @@
 # Prop (constant-speed)
 
+**Download:** [prop_files.zip](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/prop/prop_files.zip) (STLs, panel template, source) · or [all three + test plate](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/push-pull-test-plate/throttle_mixture_prop_all.zip)
+
 The 172 has a fixed-pitch prop, so the standard 172 doesn't have this control. Build it if you also fly constant-speed aircraft like the 172RG, 182 or Comanche. The knob is blue with a crenellated edge, on a hex bushing nut.
 
 ![prop working](../../docs/anim/prop.gif)

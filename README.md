@@ -89,6 +89,8 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 | [Panels](panel) | **G1000 dashboard**, or the simple lower panel + pedestal | Tiled for printing | — |
 | [Firmware](firmware) | Pro Micro joystick sketch + [G1000 wiring and MobiFlight guide](firmware/G1000_WIRING.md) | | Pro Micro + 3 × Arduino Mega |
 
+**One-click download** of the throttle, mixture, prop and test plate: [throttle_mixture_prop_all.zip](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/push-pull-test-plate/throttle_mixture_prop_all.zip). Each control folder also has its own zip.
+
 The Moza AY210 yoke has its own buttons and hats, so those aren't modelled. The base's 13-switch front panel sits in a window in the dashboard, so it stays usable next to the C-post and lights panels.
 
 ## Panel mounting (same for every control)

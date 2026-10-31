@@ -1,5 +1,7 @@
 # Push-pull test plate
 
+**Download:** [throttle_mixture_prop_all.zip](https://github.com/SFXShannon/c172-home-sim/raw/main/parts/push-pull-test-plate/throttle_mixture_prop_all.zip): this plate plus every throttle, mixture and prop file in one zip.
+
 A bench plate that holds the **throttle, prop and mixture** side by side, in the real 172 order (left to right from the seat). Use it to build, wire and calibrate the three controls before the dashboard is printed.
 
 ![Test plate from the pilot's seat](images/front.png)
