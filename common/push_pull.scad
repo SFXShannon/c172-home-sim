@@ -2,7 +2,7 @@
 //
 // Outside: the knob and panel hardware are shaped like the real aircraft parts.
 // Inside (kept simple):
-//   - an 8 mm smooth steel rod (the same rod 3D printers use) is the shaft
+//   - a 5/16" (7.94 mm) smooth steel rod is the shaft (set rod_d = 8 for 8 mm rod)
 //   - it slides through a printed U-channel housing bolted behind the panel
 //   - an O-ring in the front bushing gives the friction that holds it in place
 //   - a printed carriage clamped to the rod drives a slide potentiometer
@@ -26,8 +26,13 @@ pot_h = 6.9;
 // How far the lever sticks up above the pot body (measure yours)
 pot_lever_h = 5;
 
+/* [Rod] */
+// Rod diameter (mm). 5/16" = 7.9375; use 8 for 8 mm printer rod
+rod_d = 25.4 * 5 / 16;
+// O-ring cross-section (mm). 1.78 = US size 011 (0.301" ID x 0.070"); 2 = metric 8 x 2
+oring_cs = 1.78;
+
 /* [Hidden] */
-rod_d        = 8;
 bore_d       = rod_d + 0.4;
 travel       = min(control_travel, pot_travel);
 knob_gap     = 2;          // knob back to escutcheon when pushed fully in
@@ -187,8 +192,8 @@ module housing() {
         // rod bore
         translate([0, 0, -1]) cylinder(d = bore_d, h = z_end + 2);
         translate([0, 0, -0.01]) cylinder(d1 = bore_d + 2, d2 = bore_d, h = 1);
-        // O-ring groove (8 mm ID x 2 mm O-ring) for friction
-        translate([0, 0, oring_z - 1.2]) cylinder(d = rod_d + 3.2, h = 2.4);
+        // O-ring groove for friction: about 15 % squeeze on the O-ring
+        translate([0, 0, oring_z - 1.2]) cylinder(d = rod_d + 2 * 0.85 * oring_cs, h = oring_cs + 0.6);
         mount_flange_holes();
         // zip-tie slots to hold the pot down, plus a wire exit at the back
         for (z = [pot_z0() + 12, pot_z0() + pot_len - 16]) for (s = [-1, 1])
@@ -315,7 +320,7 @@ module push_pull_output() {
     else if (part == "panel_cutout") panel_cutout();
 }
 
-echo(str(control, ": 8 mm smooth rod, cut to ", ceil(rod_len), " mm"));
+echo(str(control, ": ", rod_d, " mm smooth rod, cut to ", ceil(rod_len), " mm (", round(rod_len / 25.4 * 8) / 8, " in)"));
 echo(str(control, ": uses ", round(use_from * 100), "% to ", round(use_to * 100), "% of the pot's travel; reaches ", ceil(z_floor_end), " mm behind the panel"));
 echo(str(control, ": panel screws 4x M3 x ", mount_screw_len(panel_thickness), " countersunk + 4x M3 nuts"));
 echo(str(control, ": panel hole ", panel_hole_d, " mm + standard 4-hole mount"));

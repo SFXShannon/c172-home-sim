@@ -25,7 +25,7 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 
 ![Parking brake working](docs/anim/parking-brake.gif)
 
-**Throttle**: the 8 mm rod slides through the housing and the carriage moves the slide pot. The mixture and prop work the same way.
+**Throttle**: the 5/16" rod slides through the housing and the carriage moves the slide pot. The mixture and prop work the same way.
 
 ![Throttle working](docs/anim/throttle.gif)
 
@@ -74,9 +74,10 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 | Control | Looks like | Inside | Sensor |
 |---|---|---|---|
 | [Parking brake](parts/parking-brake) | Black L-lever; pull and rotate down to set | Spring + bayonet slot | Microswitch |
-| [Throttle](parts/throttle) | Smooth round knob, knurled friction nut | 8 mm rod, O-ring friction | 128 mm slide pot (100 mm travel) |
+| [Throttle](parts/throttle) | Smooth round knob, knurled friction nut | 5/16" rod, O-ring friction | 128 mm slide pot (100 mm travel) |
 | [Mixture](parts/mixture) | Red ribbed vernier knob with lock button | Same as throttle | 128 mm slide pot (100 mm travel) |
 | [Prop](parts/prop) (optional) | Blue crenellated knob | Same as throttle | 128 mm slide pot (100 mm travel) |
+| [Push-pull test plate](parts/push-pull-test-plate) | Throttle, prop and mixture side by side on one plate | Bolts to 8020 extrusion (4 × 8 mm holes) | For bench testing |
 | [Elevator trim wheel](parts/trim-wheel) | Black ridged wheel in the pedestal, NOSE DN / T.O. / NOSE UP placard | 608 bearings, 3:1 gear | EC11 encoder |
 | [Fuel selector](parts/fuel-selector) | Pointer handle on a LEFT / BOTH / RIGHT placard | 3:1 gear to rotary switch | 1P12T rotary switch |
 | [Flap lever](parts/flap-lever) | White flap handle, UP / 10 / 20 / FULL scale | Slide with 4 detent clicks | 128 mm slide pot (100 mm travel) |
