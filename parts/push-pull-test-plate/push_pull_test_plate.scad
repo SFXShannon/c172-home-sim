@@ -34,7 +34,7 @@ labels = true;
 
 /* [Hidden] */
 flange_half = mount_flange_size / 2;   // 21
-flange_bot  = 27;                       // housing flange runs this far below the rod
+flange_bot  = 29;                       // housing flange runs this far below the rod
 xs = [0, pitch, 2 * pitch];
 names = ["THROTTLE", "PROP", "MIXTURE"];
 

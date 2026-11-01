@@ -3,11 +3,12 @@
 // Outside: the knob and panel hardware are shaped like the real aircraft parts.
 // Inside (kept simple):
 //   - a 5/16" (7.94 mm) smooth steel rod is the shaft (set rod_d = 8 for 8 mm rod)
-//   - it slides through a printed U-channel housing bolted behind the panel
+//   - it slides through a printed channel housing bolted behind the panel
 //   - an O-ring in the front bushing gives the friction that holds it in place
-//   - a printed carriage clamped to the rod drives a slide potentiometer
-//     (default: the common 128 mm long / 100 mm travel fader, e.g. Fielect 10K
-//     linear; the control only uses 60 mm of its travel)
+//   - the slide pot drops into a printed tray that slides into the housing
+//     from the back (open bottom, pins and tabs hang free, no zip ties)
+//   - a printed carriage clamped to the rod drives the pot's arm, using the
+//     pot's full travel (default: Fielect 10K 128 mm fader, 100 mm travel)
 //
 // Do not use this file directly: open parts/throttle, parts/mixture or parts/prop.
 // Those files set `control` and `part` and then include this one.
@@ -15,16 +16,19 @@
 include <sim_common.scad>
 
 /* [Slide potentiometer] */
-// How far the knob moves, pushed in to pulled out (mm)
-control_travel = 60;
+// How far the knob moves, pushed in to pulled out (mm). Limited to the pot's travel minus 4 mm.
+control_travel = 96;
 // Your slide pot: travel, then body length / width / height (without the lever).
 // Defaults: Fielect 128 mm fader (128 x 15.7 x 6.9 mm). Measure yours.
 pot_travel = 100;
 pot_len = 128;
 pot_w = 15.7;
 pot_h = 6.9;
-// How far the lever sticks up above the pot body (measure yours)
-pot_lever_h = 5;
+// The pot's arm: how far it sticks up above the body, its length along the
+// travel, and its thickness (Fielect 128 mm: 9 x 8 x 1)
+pot_lever_h = 9;
+pot_lever_len = 8;
+pot_lever_t = 1;
 
 /* [Rod] */
 // Rod diameter (mm). 5/16" = 7.9375; use 8 for 8 mm printer rod
@@ -34,7 +38,7 @@ oring_cs = 1.78;
 
 /* [Hidden] */
 bore_d       = rod_d + 0.4;
-travel       = min(control_travel, pot_travel);
+travel       = min(control_travel, pot_travel - 4);
 knob_gap     = 2;          // knob back to escutcheon when pushed fully in
 socket_depth = 15;         // rod goes this far into the knob
 
@@ -49,20 +53,44 @@ carr_len   = 14;
 rear_len   = 12;
 z_rear     = bush_len + travel + carr_len;   // front face of rear bushing block
 z_end      = z_rear + rear_len;
-z_floor_end = max(z_end, pot_z0() + pot_len + 3);   // the floor runs on under a long pot
-wall_in    = max(8.5, pot_w / 2 + 3.5);   // channel inner half-width (room for zip ties beside the pot)
-wall_t     = 3;
-carr_half  = 8;
-y_wall_top = 6;
-y_carr_bot = -15;
-y_lever_tip = y_carr_bot + min(6, pot_lever_h - 1);   // pot lever tip, engaged in the carriage slot
-y_carr_top = 12;
-y_pot_top  = y_lever_tip - pot_lever_h;
-y_floor_top = y_pot_top - pot_h;
-floor_t    = 4;
-y_floor_bot = y_floor_top - floor_t;
-y_block_bot = -12;         // bushing blocks only come down this far (pot body passes under)
 oring_z    = 15;           // O-ring groove position in the front bushing
+
+// Vertical layout (y): rod centre at 0
+y_slot_top  = -rod_d / 2 - 2;               // top of the arm slot in the carriage
+y_lever_tip = y_slot_top - 0.5;             // pot arm tip
+y_pot_top   = y_lever_tip - pot_lever_h;    // top of the pot body
+y_pot_bot   = y_pot_top - pot_h;
+y_carr_bot  = y_pot_top + 1.2;              // carriage clears the pot body
+y_carr_top  = 12;
+carr_half   = 8;
+y_block_bot = y_pot_top + 0.3;              // bushing blocks hold the pot down
+y_wall_top  = 6;
+
+// Tray (holds the pot; slides into the housing from the back)
+tray_wall   = 1.6;
+tray_rib_h  = 1.4;          // pot rests on ribs, tabs on the pot's lower edge hang beside them
+tray_floor  = 1.6;
+tray_in     = pot_w / 2 + 0.3;              // inner half-width
+tray_out    = tray_in + tray_wall;
+tray_end    = 2;            // end bars
+y_tray_bot  = y_pot_bot - tray_rib_h - tray_floor;
+y_tray_top  = y_pot_top - 1;
+
+// Housing walls / ledges
+wall_in     = tray_out + 0.4;               // inner half-width of the channel
+wall_t      = 3;
+ledge_w     = 2;            // ledges the tray slides on (outside the pot, so pins hang free)
+ledge_t     = 2.5;
+y_ledge_top = y_tray_bot - 0.3;
+y_floor_bot = y_ledge_top - ledge_t;        // bottom of the housing
+
+// Pot body start (z): its travel centre lines up with the carriage's travel centre
+function pot_z0() = bush_len + (travel + carr_len) / 2 - pot_len / 2;
+z_tray0     = pot_z0() - 0.3 - tray_end;
+z_tray1     = pot_z0() + pot_len + 0.3 + tray_end;
+z_floor_end = z_tray1 + 7;
+// M3 keeper screw across the housing, just behind the tray's back end bar
+keeper = [(y_pot_bot + 3 + y_tray_top) / 2, z_tray1 + 2.2];   // [y, z]
 
 z_knob_back = -(panel_thickness + esc_h + knob_gap);
 rod_front   = z_knob_back - socket_depth + 1;
@@ -161,7 +189,7 @@ module escutcheon() {
     }
 }
 
-// ------------------------------------------------------------------ housing (U-channel)
+// ------------------------------------------------------------------ housing (channel)
 
 module housing() {
     flange_y0 = y_floor_bot;
@@ -172,12 +200,13 @@ module housing() {
             translate([-mount_flange_size/2, flange_y0, 0])
                 linear_extrude(flange_t) translate([mount_flange_size/2, (flange_y1 - flange_y0)/2])
                     rounded_rect([mount_flange_size, flange_y1 - flange_y0], 5);
-            // floor
-            translate([-(wall_in + wall_t), y_floor_bot, 0]) cube([2 * (wall_in + wall_t), floor_t, z_floor_end]);
-            // side walls (full height along the carriage, low beside the rest of the pot)
-            for (s = [-1, 1]) translate([s > 0 ? wall_in : -wall_in - wall_t, y_floor_bot, 0]) {
-                cube([wall_t, y_wall_top - y_floor_bot, z_end]);
-                cube([wall_t, y_floor_top - y_floor_bot + pot_h, z_floor_end]);
+            for (s = [-1, 1]) {
+                // side walls
+                translate([s > 0 ? wall_in : -wall_in - wall_t, y_floor_bot, 0]) cube([wall_t, y_wall_top - y_floor_bot, z_floor_end]);
+                // ledges the tray slides on
+                translate([s > 0 ? wall_in - ledge_w : -wall_in, y_floor_bot, 0]) cube([ledge_w + 0.01, ledge_t, z_floor_end]);
+                // front stops for the tray
+                translate([s > 0 ? wall_in - ledge_w : -wall_in, y_ledge_top - 0.01, z_tray0 - 3]) cube([ledge_w + 0.01, 3, 3]);
             }
             // front bushing block + round boss
             translate([-wall_in, y_block_bot, 0]) cube([2 * wall_in, y_wall_top - y_block_bot, bush_len]);
@@ -185,9 +214,6 @@ module housing() {
             // rear bushing block
             translate([-wall_in, y_block_bot, z_rear]) cube([2 * wall_in, y_wall_top - y_block_bot, rear_len]);
             translate([0, 0, z_rear]) cylinder(d = 18, h = rear_len);
-            // pot end stops
-            for (z = [pot_z0() - 2.5, pot_z0() + pot_len + 0.5])
-                translate([-pot_w/2 - 2, y_floor_top - 0.01, z]) cube([pot_w + 4, 2, 2]);
         }
         // rod bore
         translate([0, 0, -1]) cylinder(d = bore_d, h = z_end + 2);
@@ -195,28 +221,53 @@ module housing() {
         // O-ring groove for friction: about 15 % squeeze on the O-ring
         translate([0, 0, oring_z - 1.2]) cylinder(d = rod_d + 2 * 0.85 * oring_cs, h = oring_cs + 0.6);
         mount_flange_holes();
-        // zip-tie slots to hold the pot down, plus a wire exit at the back
-        for (z = [pot_z0() + 12, pot_z0() + pot_len - 16]) for (s = [-1, 1])
-            translate([s * (pot_w/2 + 1.5) - 1, y_floor_bot - 1, z]) cube([2, floor_t + 2, 4]);
-        translate([-4, y_floor_bot - 1, pot_z0() + pot_len - 6]) cube([8, floor_t + 2, 5]);
+        // room to drop the lower nuts in from behind and get a spanner on them
+        for (s = [-1, 1]) translate([s * mount_pitch / 2, -mount_pitch / 2, flange_t - m3_nut_t - 0.6])
+            cylinder(d = m3_nut_af / cos(30) + 1, h = 14, $fn = 6);
+        // slot in the rear block so the pot's arm passes through when the tray slides in
+        translate([-pot_lever_t / 2 - 0.5, y_block_bot - 1, z_rear - 1]) cube([pot_lever_t + 1, y_lever_tip + 0.7 - y_block_bot + 1, rear_len + 2]);
+        // keeper screw across both walls (head one side, nut pocket the other)
+        translate([-wall_in - wall_t - 1, keeper[0], keeper[1]]) rotate([0, 90, 0]) cylinder(d = m3_clear_d, h = 2 * (wall_in + wall_t) + 2);
+        translate([wall_in + wall_t - m3_nut_t - 0.4, keeper[0], keeper[1]]) rotate([0, 90, 0]) rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 1);
         // "UP" mark
         translate([0, mount_flange_size/2 - 4, flange_t - 0.6]) linear_extrude(1)
             text("UP", size = 3.5, halign = "center", valign = "center", font = "Liberation Sans:style=Bold");
     }
 }
 
-// Pot body start (z): its travel centre lines up with the carriage's, unless
-// that would put the pot into the flange - then it moves back a little.
-function pot_z0() = max(bush_len + (travel + carr_len) / 2 - pot_len / 2, flange_t + 3);
+// ------------------------------------------------------------------ tray (holds the pot)
+// The pot drops in from the top; the ends are open underneath so its pins hang
+// free, and it rests on two ribs so the little tabs on its lower edge hang
+// beside them. Built in assembly coords (tray sits in the housing).
+
+module tray() {
+    difference() {
+        union() {
+            // side walls
+            for (s = [-1, 1]) translate([s > 0 ? tray_in : -tray_out, y_tray_bot, z_tray0]) cube([tray_wall, y_tray_top - y_tray_bot, z_tray1 - z_tray0]);
+            // floor strips + ribs along each side, with cross bars clear of the pin ends
+            for (s = [-1, 1]) {
+                translate([s > 0 ? pot_w / 2 - 3.5 : -tray_in, y_tray_bot, z_tray0]) cube([3.5 + 0.3, tray_floor, z_tray1 - z_tray0]);
+                translate([s > 0 ? pot_w / 2 - 3.5 : -pot_w / 2 + 1.5, y_tray_bot, z_tray0]) cube([2, tray_floor + tray_rib_h, z_tray1 - z_tray0]);
+            }
+            for (z = [pot_z0() + 18, pot_z0() + pot_len / 2 - 1, pot_z0() + pot_len - 20])
+                translate([-tray_in, y_tray_bot, z]) cube([2 * tray_in, tray_floor, 3]);
+            // end bars across the upper half of the pot's ends (pins come out lower down)
+            for (z = [z_tray0, z_tray1 - tray_end])
+                translate([-tray_out, y_pot_bot + 3, z]) cube([2 * tray_out, y_tray_top - (y_pot_bot + 3), tray_end]);
+        }
+    }
+}
+
 // Part of the pot's travel the carriage uses (0 = pot's front end), for the firmware
 pot_mid = pot_z0() + pot_len / 2;
-lever_in = z_carr_in + carr_len / 2;
+lever_in = z_rear - carr_len / 2;
 use_from = 0.5 + (lever_in - travel - pot_mid) / pot_travel;
 use_to = 0.5 + (lever_in - pot_mid) / pot_travel;
 if (use_from < 0 || use_to > 1) echo(str("WARNING: ", control, ": the carriage runs past the end of the pot's travel - use a longer pot or less control_travel"));
 
 // ------------------------------------------------------------------ carriage
-// Clamped to the rod with an M3 set screw; the pot lever sits in the cross slot.
+// Clamped to the rod with an M3 set screw; the pot's arm sits in the slot underneath.
 
 module carriage() {
     difference() {
@@ -228,9 +279,11 @@ module carriage() {
             rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
             translate([carr_half + 2, 0, 0]) rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
         }
-        // cross-shaped slot fits a flat pot lever either way round
-        for (sz = [[5.4, 2.0], [2.0, 5.4]])
-            translate([-sz[0]/2, y_carr_bot - 1, carr_len/2 - sz[1]/2]) cube([sz[0], y_lever_tip - y_carr_bot + 1 + 0.5, sz[1]]);
+        // slot for the pot's flat arm (long way along the travel), with a lead-in
+        translate([-(pot_lever_t + 0.5) / 2, y_carr_bot - 1, carr_len / 2 - (pot_lever_len + 0.6) / 2])
+            cube([pot_lever_t + 0.5, y_slot_top - y_carr_bot + 1, pot_lever_len + 0.6]);
+        translate([0, y_carr_bot - 0.01, carr_len / 2]) rotate([-90, 0, 0]) linear_extrude(1.2, scale = [0.4, 0.85])
+            square([pot_lever_t + 3, pot_lever_len + 2.6], center = true);
     }
 }
 
@@ -270,8 +323,11 @@ module panel_slab() {
 }
 
 module pot_dummy(pos) {   // pos 0 = in, 1 = out
-    color("dimgray") translate([-pot_w/2, y_floor_top, pot_z0()]) cube([pot_w, pot_h, pot_len]);
-    color("silver") translate([-2.5, y_pot_top, z_carr_in + carr_len/2 - 0.6 - pos * travel]) cube([5, pot_lever_h + 0.5, 1.2]);
+    color([0.12, 0.12, 0.12]) translate([-pot_w/2, y_pot_bot, pot_z0()]) cube([pot_w, pot_h, pot_len]);
+    color("silver") translate([-pot_lever_t/2, y_pot_top - 0.01, z_carr_in + carr_len/2 - pot_lever_len/2 - pos * travel])
+        cube([pot_lever_t, pot_lever_h, pot_lever_len]);
+    // pins at both ends
+    color("silver") for (z = [pot_z0() + 2, pot_z0() + pot_len - 2], x = [-3, 3]) translate([x, y_pot_bot - 3.5, z]) cube([0.6, 3.6, 0.6]);
 }
 
 module moving(pos) {
@@ -287,6 +343,8 @@ module assembly(pos = 0.4, slab = true) {
     if (slab) panel_slab();
     color([0.6, 0.6, 0.62]) escutcheon();
     color("darkorange", ghost_a()) housing();
+    color("seagreen", ghost_a()) tray();
+    color("silver") translate([-wall_in - wall_t - 1.6, keeper[0], keeper[1]]) rotate([0, 90, 0]) cylinder(d = 3, h = 2 * (wall_in + wall_t) + 2);
     mount_hardware_dummy(panel_thickness);
     pot_dummy(pos);
     moving(pos);
@@ -298,6 +356,7 @@ module exploded() {
     translate([0, 0, -70]) mount_hardware_dummy(panel_thickness);
     color("darkorange") translate([0, 0, 30]) housing();
     color("goldenrod") translate([0, 40, 30 + z_carr_in]) carriage();
+    color("seagreen") translate([0, -40, 30]) tray();
     color("silver") translate([0, 80, rod_front]) cylinder(d = rod_d, h = rod_len);
     color(knob_color) translate([0, 0, z_knob_back - 60]) knob();
 }
@@ -315,6 +374,7 @@ module push_pull_output() {
     else if (part == "knob") { if (control == "throttle") translate([0, 0, knob_len]) knob(); else rotate([180, 0, 0]) knob(); }
     else if (part == "housing") translate([0, 0, -y_floor_bot]) rotate([90, 0, 0]) housing();
     else if (part == "carriage") translate([0, 0, 0]) carriage();
+    else if (part == "tray") translate([0, 0, -y_tray_bot]) rotate([90, 0, 0]) tray();
     else if (part == "escutcheon") translate([0, 0, panel_thickness + esc_h]) escutcheon();
     else if (part == "panel_test_plate") panel_test_plate();
     else if (part == "panel_cutout") panel_cutout();
@@ -322,5 +382,6 @@ module push_pull_output() {
 
 echo(str(control, ": ", rod_d, " mm smooth rod, cut to ", ceil(rod_len), " mm (", round(rod_len / 25.4 * 8) / 8, " in)"));
 echo(str(control, ": uses ", round(use_from * 100), "% to ", round(use_to * 100), "% of the pot's travel; reaches ", ceil(z_floor_end), " mm behind the panel"));
+echo(str(control, ": tray keeper 1x M3 x ", [for (l = [25, 30, 35]) if (l >= 2 * (wall_in + wall_t)) l][0], " + nut across the back of the housing"));
 echo(str(control, ": panel screws 4x M3 x ", mount_screw_len(panel_thickness), " countersunk + 4x M3 nuts"));
 echo(str(control, ": panel hole ", panel_hole_d, " mm + standard 4-hole mount"));

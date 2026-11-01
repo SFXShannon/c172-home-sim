@@ -21,7 +21,7 @@ Pots: wire the two ends to VCC and GND, and the wiper to the pin.
 1. Install the Arduino IDE.
 2. Add the **Joystick** library by Matthew Heironimus: download https://github.com/MHeironimus/ArduinoJoystickLibrary as a ZIP, then use *Sketch → Include Library → Add .ZIP Library*.
 3. Open `c172_panel.ino`, choose the board **Arduino Leonardo** (this works for the Pro Micro too) and upload.
-4. **Calibrate:** move the throttle, mixture, prop and flap lever end to end once. The levers only use about 60 mm of the 128 mm pots' 100 mm travel, so the sketch learns where each one stops and stretches that to the full axis. It saves the ranges in EEPROM, so you only do this once. To start over, set `RESET_CALIBRATION = true`, upload, set it back to `false` and upload again.
+4. **Calibrate:** move the throttle, mixture, prop and flap lever end to end once. The throttle, mixture and prop use nearly all of the pots' travel, and the flap lever about 60 mm of it; either way the sketch learns where each one stops and stretches that to the full axis. It saves the ranges in EEPROM, so you only do this once. To start over, set `RESET_CALIBRATION = true`, upload, set it back to `false` and upload again.
 5. In Windows, open *Set up USB game controllers* to check the axes and buttons.
 
 The settings at the top of the sketch reverse axes or the trim direction, and set the number of encoder steps per click.
