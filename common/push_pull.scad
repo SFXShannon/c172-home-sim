@@ -73,6 +73,7 @@ tray_floor  = 1.6;
 tray_in     = pot_w / 2 + 0.3;              // inner half-width
 tray_out    = tray_in + tray_wall;
 tray_end    = 2;            // end bars
+pin_zone    = 12;           // open (no floor) this far in from each end of the pot, for the pins
 y_tray_bot  = y_pot_bot - tray_rib_h - tray_floor;
 y_tray_top  = y_pot_top - 1;
 
@@ -245,10 +246,11 @@ module tray() {
         union() {
             // side walls
             for (s = [-1, 1]) translate([s > 0 ? tray_in : -tray_out, y_tray_bot, z_tray0]) cube([tray_wall, y_tray_top - y_tray_bot, z_tray1 - z_tray0]);
-            // floor strips + ribs along each side, with cross bars clear of the pin ends
+            // floor strips + ribs along each side; they stop short of both ends so
+            // the pins (wherever they are across the end) hang into open space
             for (s = [-1, 1]) {
-                translate([s > 0 ? pot_w / 2 - 3.5 : -tray_in, y_tray_bot, z_tray0]) cube([3.5 + 0.3, tray_floor, z_tray1 - z_tray0]);
-                translate([s > 0 ? pot_w / 2 - 3.5 : -pot_w / 2 + 1.5, y_tray_bot, z_tray0]) cube([2, tray_floor + tray_rib_h, z_tray1 - z_tray0]);
+                translate([s > 0 ? pot_w / 2 - 3.5 : -tray_in, y_tray_bot, pot_z0() + pin_zone]) cube([3.5 + 0.3, tray_floor, pot_len - 2 * pin_zone]);
+                translate([s > 0 ? pot_w / 2 - 3.5 : -pot_w / 2 + 1.5, y_tray_bot, pot_z0() + pin_zone]) cube([2, tray_floor + tray_rib_h, pot_len - 2 * pin_zone]);
             }
             for (z = [pot_z0() + 18, pot_z0() + pot_len / 2 - 1, pot_z0() + pot_len - 20])
                 translate([-tray_in, y_tray_bot, z]) cube([2 * tray_in, tray_floor, 3]);
