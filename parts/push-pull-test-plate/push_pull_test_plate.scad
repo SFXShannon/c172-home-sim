@@ -78,14 +78,14 @@ trim_p     = [0, -95];
 brake_p    = [pitch, -62];
 fuel_p     = [146, -153];   // outside the parking brake handle's swing (stowed -> set)
 box_p      = [95, -145];
-ign_p      = [-40, 2];      // ignition key, left of the throttle
+ign_p      = [-56, 2];      // ignition key, left of the throttle
 
 box_out = [box_in[0] + 2 * box_wall, box_in[1] + 2 * box_wall, box_in[2] + box_wall];
 box_screws = [for (x = [-1, 1], y = [-1, 1]) [x * (box_out[0] / 2 - 4), y * (box_out[1] / 2 - 4)]];
 box_screw_len = [for (l = [12, 14, 16, 18, 20]) if (l >= panel_thickness + 8) l][0];
 
 // plate outline
-x0 = -68;                                             // room for the key labels and the trim placard on the left
+x0 = -84;                                             // room for the key labels and the trim placard on the left
 y0 = -176;
 x1 = mixture_p[0] + flange_half + rail_gap + rail_w;  // right edge
 y1 = flange_half + rail_gap + rail_w;                 // top edge
