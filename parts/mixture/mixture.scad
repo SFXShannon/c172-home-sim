@@ -4,7 +4,7 @@
 
 control = "mixture";
 /* [What to show] */
-part = "assembly"; // [assembly, assembly_in, assembly_out, exploded, knob, housing, tray, carriage, lid, escutcheon, panel_test_plate, panel_cutout]
+part = "assembly"; // [assembly, assembly_in, assembly_out, exploded, knob, housing, tray, carriage, carriage_cap, lid, escutcheon, panel_test_plate, panel_cutout]
 
 include <../../common/push_pull.scad>
 push_pull_output();

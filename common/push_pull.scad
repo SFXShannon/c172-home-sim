@@ -68,7 +68,7 @@ y_pot_bot   = y_pot_top - pot_h;
 y_carr_bot  = y_pot_top + 1.2;              // carriage underside clears the pot body
 y_carr_mid  = y_pot_top + 1.2;              // carriage underside clears the pot body
 y_carr_top  = rod_through ? 12 : 9;
-carr_half   = rod_through ? 8 : 6;          // short rod: small carriage, guided by the lid
+carr_half   = rod_through ? 8 : pot_w / 2 + 1.9;   // short rod: split clamp carriage, 0.4 mm inside the walls
 y_block_bot = y_pot_top + 0.3;              // bushing blocks hold the pot down
 y_wall_top  = rod_through ? 6 : 9.2;
 // Short rod: a lid screws on top of the housing; a dovetail tongue on the
@@ -306,24 +306,70 @@ if (use_from < 0 || use_to > 1) echo(str("WARNING: ", control, ": the carriage r
 // ------------------------------------------------------------------ carriage
 // Clamped to the rod with an M3 set screw; the pot's arm sits in the slot underneath.
 
+// Long rod (rod_through): one-piece carriage with a set screw from the top.
+// Short rod: split clamp. The lower half (carriage) carries the arm slot; the
+// top half (carriage_cap) carries the tongue. Two M3 socket-head screws, one
+// each side of the tongue, go down through the cap into nuts slid into the
+// lower half and clamp the rod between the halves. The screw heads sink into
+// counterbores below the lid, so nothing sticks up into the groove.
+split_gap = 0.5;            // gap between the halves, so the screws squeeze the rod
+cap_x     = 6.5;            // screws this far each side of the rod
+cap_head  = [5.5, 3];       // M3 socket head: diameter, height
+cap_seat  = y_carr_top - cap_head[1] - 0.4;   // head sits here, its top 0.4 mm below the cap top
+cap_nut_y = -6.5;           // nut centre in the lower half
+cap_screw = [for (l = [10, 12, 14, 16]) if (l >= cap_seat - (cap_nut_y - m3_nut_t / 2) + 0.5) l][0];
+
 module carriage() {
     difference() {
         union() {
-            translate([-carr_half, y_carr_bot, 0]) cube([2 * carr_half, y_carr_top - y_carr_bot, carr_len]);
-            if (!rod_through) linear_extrude(carr_len) polygon(dt_tongue());
+            translate([-carr_half, y_carr_bot, 0]) cube([2 * carr_half, (rod_through ? y_carr_top : -split_gap / 2) - y_carr_bot, carr_len]);
+            if (rod_through) linear_extrude(carr_len) polygon(dt_tongue());
         }
-        translate([0, 0, -1]) cylinder(d = rod_d + 0.3, h = carr_len + 2);
-        // set screw from the top + nut slid in from the side
-        translate([0, 0, carr_len / 2]) rotate([-90, 0, 0]) cylinder(d = m3_clear_d, h = y_wall_top + dt_h + 1);
-        translate([0, rod_d/2 + 1.2 + (m3_nut_t + 0.4)/2, carr_len / 2]) rotate([90, 0, 0]) hull() {
-            rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
-            translate([carr_half + 2, 0, 0]) rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
+        translate([0, 0, -1]) cylinder(d = rod_d + (rod_through ? 0.3 : 0.1), h = carr_len + 2);
+        if (rod_through) {
+            // set screw from the top + nut slid in from the side
+            translate([0, 0, carr_len / 2]) rotate([-90, 0, 0]) cylinder(d = m3_clear_d, h = y_carr_top + 1);
+            translate([0, rod_d/2 + 1.2 + (m3_nut_t + 0.4)/2, carr_len / 2]) rotate([90, 0, 0]) hull() {
+                rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
+                translate([carr_half + 2, 0, 0]) rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
+            }
+        } else for (s = [-1, 1]) {
+            // clamp screw holes + nuts slid in from the outside faces
+            translate([s * cap_x, 1, carr_len / 2]) rotate([90, 0, 0]) cylinder(d = m3_clear_d, h = 1 - cap_nut_y + 4.5);
+            translate([s * cap_x, cap_nut_y - (m3_nut_t + 0.4) / 2, carr_len / 2]) rotate([-90, 0, 0]) hull() {
+                m3_nut_pocket(m3_nut_t + 0.4);
+                translate([s * 6, 0, 0]) m3_nut_pocket(m3_nut_t + 0.4);
+            }
         }
         // slot for the pot's flat arm (long way along the travel), with a lead-in
         translate([-(pot_lever_t + 0.5) / 2, y_carr_bot - 1, carr_len / 2 - (pot_lever_len + 0.6) / 2])
             cube([pot_lever_t + 0.5, y_slot_top - y_carr_bot + 1, pot_lever_len + 0.6]);
         translate([0, y_carr_mid - 0.01, carr_len / 2]) rotate([-90, 0, 0]) linear_extrude(1.2, scale = [0.4, 0.85])
             square([pot_lever_t + 3, pot_lever_len + 2.6], center = true);
+    }
+}
+
+module carriage_cap() if (!rod_through) {
+    difference() {
+        union() {
+            translate([-carr_half, split_gap / 2, 0]) cube([2 * carr_half, y_carr_top - split_gap / 2, carr_len]);
+            linear_extrude(carr_len) polygon(dt_tongue());
+        }
+        translate([0, 0, -1]) cylinder(d = rod_d + 0.1, h = carr_len + 2);
+        for (s = [-1, 1]) {
+            translate([s * cap_x, -1, carr_len / 2]) rotate([-90, 0, 0]) cylinder(d = m3_clear_d, h = y_carr_top + 2);
+            translate([s * cap_x, cap_seat, carr_len / 2]) rotate([-90, 0, 0]) cylinder(d = cap_head[0] + 0.5, h = y_carr_top);
+        }
+    }
+}
+
+// both halves + screw heads, in carriage coords (for the views)
+module carriage_assembled() {
+    color("goldenrod") carriage();
+    color([0.85, 0.65, 0.15]) carriage_cap();
+    if (!rod_through) color([0.2, 0.2, 0.22]) for (s = [-1, 1]) translate([s * cap_x, cap_seat, carr_len / 2]) rotate([-90, 0, 0]) {
+        cylinder(d = cap_head[0], h = cap_head[1]);
+        translate([0, 0, -cap_screw]) cylinder(d = 3, h = cap_screw);
     }
 }
 
@@ -375,7 +421,7 @@ module moving(pos) {
     translate([0, 0, dz]) {
         color("silver") translate([0, 0, rod_front]) cylinder(d = rod_d, h = rod_len);
         color(knob_color) translate([0, 0, z_knob_back]) knob();
-        color("goldenrod") translate([0, 0, z_carr_in]) carriage();
+        translate([0, 0, z_carr_in]) carriage_assembled();
     }
 }
 
@@ -397,6 +443,7 @@ module exploded() {
     translate([0, 0, -70]) mount_hardware_dummy(panel_thickness);
     color("darkorange") translate([0, 0, 30]) housing();
     color("goldenrod") translate([0, 40, 30 + z_carr_in]) carriage();
+    if (!rod_through) color([0.85, 0.65, 0.15]) translate([0, 60, 30 + z_carr_in]) carriage_cap();
     color("seagreen") translate([0, -40, 30]) tray();
     if (!rod_through) color("tan") translate([0, 45, 0]) lid();
     color("silver") translate([0, 80, rod_front]) cylinder(d = rod_d, h = rod_len);
@@ -415,7 +462,8 @@ module push_pull_output() {
     // throttle prints face-down, mixture/prop print back-down
     else if (part == "knob") { if (control == "throttle") translate([0, 0, knob_len]) knob(); else rotate([180, 0, 0]) knob(); }
     else if (part == "housing") translate([0, 0, -y_floor_bot]) rotate([90, 0, 0]) housing();
-    else if (part == "carriage") translate([0, 0, 0]) carriage();
+    else if (part == "carriage") carriage();
+    else if (part == "carriage_cap") carriage_cap();
     else if (part == "tray") translate([0, 0, -y_tray_bot]) rotate([90, 0, 0]) tray();
     else if (part == "lid") translate([0, 0, y_wall_top + lid_t]) mirror([0, 0, 1]) rotate([90, 0, 0]) lid();
     else if (part == "escutcheon") translate([0, 0, panel_thickness + esc_h]) escutcheon();
@@ -425,7 +473,8 @@ module push_pull_output() {
 
 echo(str(control, ": ", rod_d, " mm smooth rod, cut to ", ceil(rod_len), " mm (", round(rod_len / 25.4 * 8) / 8, " in)"));
 echo(str(control, ": uses ", round(use_from * 100), "% to ", round(use_to * 100), "% of the pot's travel; reaches ", ceil(z_floor_end), " mm behind the panel"));
-if (!rod_through) echo(str(control, ": carriage set screw M3 x 6 (sits below the top of the tongue); lid 4x M3 x 10 screws"));
+if (!rod_through) echo(str(control, ": carriage clamp 2x M3 x ", cap_screw, " socket head + 2x M3 nuts; lid 4x M3 x 10 screws"));
+else echo(str(control, ": carriage set screw M3 x 8"));
 echo(str(control, ": tray keeper 1x M3 x ", [for (l = [25, 30, 35]) if (l >= 2 * (wall_in + wall_t)) l][0], " + nut across the back of the housing"));
 echo(str(control, ": panel screws 4x M3 x ", mount_screw_len(panel_thickness), " countersunk + 4x M3 nuts"));
 echo(str(control, ": panel hole ", panel_hole_d, " mm + standard 4-hole mount"));
