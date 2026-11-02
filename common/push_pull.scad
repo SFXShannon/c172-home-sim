@@ -36,6 +36,11 @@ rod_d = 25.4 * 5 / 16;
 // O-ring cross-section (mm). 1.78 = US size 011 (0.301" ID x 0.070"); 2 = metric 8 x 2
 oring_cs = 1.78;
 
+/* [Rod length] */
+// false = short rod that stops in the carriage (the carriage slides on the housing walls
+// and the tray); true = old long rod that also runs through the rear bushing
+rod_through = false;
+
 /* [Hidden] */
 bore_d       = rod_d + 0.4;
 travel       = min(control_travel, pot_travel - 4);
@@ -60,9 +65,10 @@ y_slot_top  = -rod_d / 2 - 2;               // top of the arm slot in the carria
 y_lever_tip = y_slot_top - 0.5;             // pot arm tip
 y_pot_top   = y_lever_tip - pot_lever_h;    // top of the pot body
 y_pot_bot   = y_pot_top - pot_h;
-y_carr_bot  = y_pot_top + 1.2;              // carriage clears the pot body
+y_carr_bot  = rod_through ? y_pot_top + 1.2 : y_pot_top - 1 + 0.25;   // short rod: skids sit on the tray walls
+y_carr_mid  = y_pot_top + 1.2;              // carriage underside clears the pot body
 y_carr_top  = 12;
-carr_half   = 8;
+carr_half   = rod_through ? 8 : (pot_w / 2 + 0.3 + 1.6 + 0.4) - 0.35;   // short rod: housing walls guide the carriage
 y_block_bot = y_pot_top + 0.3;              // bushing blocks hold the pot down
 y_wall_top  = 6;
 
@@ -95,7 +101,7 @@ keeper = [(y_pot_bot + 3 + y_tray_top) / 2, z_tray1 + 2.2];   // [y, z]
 
 z_knob_back = -(panel_thickness + esc_h + knob_gap);
 rod_front   = z_knob_back - socket_depth + 1;
-rod_back    = z_end + travel + 5;
+rod_back    = rod_through ? z_end + travel + 5 : z_rear - 1;   // short rod ends 1 mm inside the carriage
 rod_len     = rod_back - rod_front;
 // carriage position: "in" = rod pushed fully in = carriage against rear block
 z_carr_in   = z_rear - carr_len;
@@ -216,8 +222,9 @@ module housing() {
             translate([-wall_in, y_block_bot, z_rear]) cube([2 * wall_in, y_wall_top - y_block_bot, rear_len]);
             translate([0, 0, z_rear]) cylinder(d = 18, h = rear_len);
         }
-        // rod bore
-        translate([0, 0, -1]) cylinder(d = bore_d, h = z_end + 2);
+        // rod bore (front bushing; also the rear one for the long rod)
+        translate([0, 0, -1]) cylinder(d = bore_d, h = (rod_through ? z_end : bush_len) + 2);
+        if (!rod_through) translate([0, 0, z_rear - 1]) cylinder(d = bore_d, h = 4);   // shallow pocket: clearance for the rod end
         translate([0, 0, -0.01]) cylinder(d1 = bore_d + 2, d2 = bore_d, h = 1);
         // O-ring groove for friction: about 15 % squeeze on the O-ring
         translate([0, 0, oring_z - 1.2]) cylinder(d = rod_d + 2 * 0.85 * oring_cs, h = oring_cs + 0.6);
@@ -281,10 +288,12 @@ module carriage() {
             rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
             translate([carr_half + 2, 0, 0]) rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
         }
+        // short rod: skids ride on the tray walls; cut away the middle so they clear the pot
+        if (!rod_through) translate([-tray_in, y_carr_bot - 1, -1]) cube([2 * tray_in, y_carr_mid - y_carr_bot + 1, carr_len + 2]);
         // slot for the pot's flat arm (long way along the travel), with a lead-in
         translate([-(pot_lever_t + 0.5) / 2, y_carr_bot - 1, carr_len / 2 - (pot_lever_len + 0.6) / 2])
             cube([pot_lever_t + 0.5, y_slot_top - y_carr_bot + 1, pot_lever_len + 0.6]);
-        translate([0, y_carr_bot - 0.01, carr_len / 2]) rotate([-90, 0, 0]) linear_extrude(1.2, scale = [0.4, 0.85])
+        translate([0, y_carr_mid - 0.01, carr_len / 2]) rotate([-90, 0, 0]) linear_extrude(1.2, scale = [0.4, 0.85])
             square([pot_lever_t + 3, pot_lever_len + 2.6], center = true);
     }
 }
