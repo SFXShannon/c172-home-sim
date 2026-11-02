@@ -39,5 +39,6 @@ for c in ["throttle", "mixture", "prop"]:
     write(f"parts/{c}/{c}_files.zip", entries + [(p, p) for p in COMMON])
 
 tp = "parts/push-pull-test-plate"
-every += [(f"{tp}/{f}", f"test-plate/{f}") for f in ["stl/plate.stl", "README.md", "push_pull_test_plate.scad"]]
+every += [(f"{tp}/stl/{f}", f"test-plate/stl/{f}") for f in sorted(os.listdir(f"{tp}/stl"))]
+every += [(f"{tp}/{f}", f"test-plate/{f}") for f in ["README.md", "push_pull_test_plate.scad"]]
 write(f"{tp}/throttle_mixture_prop_all.zip", every + [(p, p) for p in COMMON])
