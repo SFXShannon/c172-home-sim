@@ -17,7 +17,7 @@
 include <../../common/sim_common.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, exploded, section, housing, shaft, handle, escutcheon, rear_cap, panel_test_plate, panel_cutout]
+part = "assembly"; // [assembly, exploded, section, housing, shaft, handle, handle_plug, escutcheon, rear_cap, panel_test_plate, panel_cutout]
 // Assembly view only: show the brake released or set
 brake_state = "set"; // [released, set]
 
@@ -68,8 +68,10 @@ esc_t        = 2.5;
 socket_depth = 12;
 flat_depth   = 1;         // D-flat that keys the handle to the shaft
 screw_cb_d   = m3_head_d + 0.6;   // counterbore for the handle screw head (socket or pan head)
-screw_cb_depth = 3.5;              // head sits 0.5 mm below the handle face
-screw_seat_v = grip_root_w - screw_cb_depth;   // underside of the head, from the handle back face
+plug_d       = 7.4;               // pocket for the cover plug, a step wider than the counterbore
+plug_t       = 2;                 // plug thickness at the centre (its top follows the handle shape)
+plug_v       = grip_root_w - plug_t;          // ledge the plug sits on
+screw_seat_v = plug_v - 3.5;                  // underside of the screw head (3 mm head + 0.5 mm)
 lug_w        = 4;
 lug_h        = 4;
 lug_r_in     = collar_d / 2 - 1;
@@ -265,13 +267,31 @@ module handle_local() {
         // and threads into the end of the shaft
         translate([0, 0, -1]) cylinder(d = m3_clear_d, h = grip_root_w + 2);
         translate([0, 0, screw_seat_v]) cylinder(d = screw_cb_d, h = grip_root_w);
+        // pocket for the press-in cover plug
+        translate([0, 0, plug_v]) cylinder(d = plug_d, h = grip_root_w);
+    }
+}
+
+// Press-in plug that hides the screw head. Its top is cut from the handle shape
+// so it sits flush. Snug fit; a drop of glue if it's loose, sand it if it's tight.
+module handle_plug_local() {
+    intersection() {
+        handle_raw();
+        difference() {
+            translate([0, 0, plug_v]) cylinder(d = plug_d - 0.15, h = plug_t + 2);
+            // small lead-in chamfer on the bottom edge
+            translate([0, 0, plug_v - 0.01]) difference() {
+                cylinder(d = plug_d + 1, h = 0.5);
+                cylinder(d1 = plug_d - 1.15, d2 = plug_d - 0.15, h = 0.5);
+            }
+        }
     }
 }
 
 // In assembly coordinates, brake released: grip horizontal toward stowed_side.
 module mounted_handle() {
     translate([0, 0, z_handle_back]) rotate([0, 180, 0])
-        mirror([stowed_side == "right" ? 0 : 1, 0, 0]) handle_local();
+        mirror([stowed_side == "right" ? 0 : 1, 0, 0]) { handle_local(); handle_plug_local(); }
 }
 
 // ------------------------------------------------------------------ panel bits
@@ -358,6 +378,7 @@ else if (part == "exploded") rotate([90, 0, 0]) exploded();
 else if (part == "housing") housing();
 else if (part == "shaft") translate([0, 0, -z_nose]) shaft();
 else if (part == "handle") translate([0, 0, grip_t/2]) rotate([90, 0, 0]) handle_local();
+else if (part == "handle_plug") translate([0, 0, -plug_v]) handle_plug_local();
 else if (part == "escutcheon") translate([0, 0, panel_thickness + esc_t]) escutcheon();
 else if (part == "rear_cap") translate([0, 0, -z_top]) rear_cap();
 else if (part == "panel_test_plate") panel_test_plate();

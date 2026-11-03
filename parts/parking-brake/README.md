@@ -36,7 +36,7 @@ All controls in this repo mount the same way. Four M3 countersunk screws go in f
 
 | Qty | Item | Notes |
 |---|---|---|
-| 1 each | Printed: `housing`, `shaft`, `handle`, `escutcheon`, `rear_cap` | [`stl/`](stl) |
+| 1 each | Printed: `housing`, `shaft`, `handle`, `handle_plug`, `escutcheon`, `rear_cap` | [`stl/`](stl) |
 | 1 | Compression spring, OD ≤ 17 mm, ID ≥ 11 mm, ~44 mm long | Must compress below 13 mm. A 1.0 × 14 × 45 mm spring from an assortment works. |
 | 1 | M3 × 20 socket or pan head screw | Holds the handle on. Anything from 16 to 30 mm fits; set `handle_screw_len` if yours isn't 20. |
 | 4 + 4 | M3 × 14 countersunk screws + M3 nuts | Panel mount (6.35 mm panel) |
@@ -46,7 +46,7 @@ All controls in this repo mount the same way. Four M3 countersunk screws go in f
 
 ## Printing
 
-No supports are needed for any part; each STL is already in its print orientation. Use PLA or PETG at 0.2 mm layers, with 4 walls for the shaft and handle. Print the handle in black.
+No supports are needed for any part; each STL is already in its print orientation. Use PLA or PETG at 0.2 mm layers, with 4 walls for the shaft and handle. Print the handle and plug in black; the plug prints flat side down.
 
 ## Assembly
 
@@ -54,7 +54,7 @@ No supports are needed for any part; each STL is already in its print orientatio
 2. Screw on the rear cap and check that the handle pulls, twists and locks. If it binds, sand the slot or raise `clearance`.
 3. Mount the microswitch on the cap. The plate has slots so you can slide the switch until it clicks with the handle fully in.
 4. Bolt the housing behind the panel with "UP" at the top, then push the escutcheon into the hole from the front.
-5. Push the handle onto the D-flat with the grip pointing right (brake off). Drive the M3 screw in from the face of the handle until it's snug; it cuts its own thread in the shaft. Don't overtighten.
+5. Push the handle onto the D-flat with the grip pointing right (brake off). Drive the M3 screw in from the face of the handle until it's snug; it cuts its own thread in the shaft. Don't overtighten. Press `handle_plug` into the pocket over the screw head; it sits flush. Pop it out with a pick if you ever need the screw.
 
 ## Wiring and sim
 
