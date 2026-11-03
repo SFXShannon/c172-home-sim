@@ -14,6 +14,6 @@
 
 Print the knobs face down; their label is engraved in the face, so fill it with white paint.
 
-**Ignition key:** the lock face (`ignition_cylinder`) presses onto the rotary switch's 6 mm shaft and turns with it; the bezel (`ignition_escutcheon`) sits over the switch nut and stays still. **Cut the switch shaft so it ends 9 mm in front of the panel face**, so it reaches into the lock. The key's tip is a snug push fit in the keyway, and pulls out like a real key. Print the key flat in silver and change to black filament at 2.4 mm for the head (or paint the head). Print the lock face in grey and the bezel in silver.
+**Ignition key:** the lock face (`ignition_cylinder`) presses onto the rotary switch's 6 mm shaft and turns with it (knurled shaft by default, as on the common RS26-type 1-pole 12-position switch; set `ign_shaft = "d"` for a shaft with a flat); the bezel (`ignition_escutcheon`) sits over the switch nut and stays still. **Cut the switch shaft so it ends 9 mm in front of the panel face**, so it reaches into the lock. The key's tip is a snug push fit in the keyway, and pulls out like a real key. Print the key flat in silver and change to black filament at 2.4 mm for the head (or paint the head). Print the lock face in grey and the bezel in silver.
 
 ![Extras](images/front.png)

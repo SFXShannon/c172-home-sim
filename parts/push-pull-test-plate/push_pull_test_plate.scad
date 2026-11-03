@@ -4,10 +4,9 @@
 //   - the ELEVATOR TRIM WHEEL under the throttle
 //   - the PARKING BRAKE under the prop (handle stows pointing right)
 //   - a 12.5 mm hole for a FUEL selector switch
-//   - the IGNITION KEY (panel-extras key, lock face and bezel) on an EC11
-//     rotary encoder, with OFF R L BOTH START engraved round it; a pocket in
-//     the back thins the plate to 2 mm there so the encoder's short bushing
-//     reaches through
+//   - the IGNITION KEY (panel-extras key, lock face and bezel) on a 1-pole
+//     12-position rotary switch (RS26 type, stop washer set to 5 positions),
+//     with OFF R L BOTH START engraved round it
 //   - 4 countersunk holes for the Pro Micro box (part "pro_micro_box"), which
 //     screws on behind the plate
 // so you can build, wire and test everything before the dashboard exists.
@@ -52,13 +51,9 @@ fuel_body = [26, 25];
 // Engrave labels on the front
 labels = true;
 
-/* [Ignition key encoder] */
-// EC11 bushing hole (M7 thread)
-enc_hole_d = 7.2;
-// Pocket in the back for the encoder body (EC11 is about 12 x 12.4 mm)
-enc_pocket = 13.6;
-// Plate left in front of the encoder (its bushing is only about 5 mm long)
-enc_skin = 2;
+/* [Ignition key switch] */
+// Hole for the rotary switch's threaded bushing (M9 / 3/8"; the bezel covers the edge)
+ign_hole_d = 10;
 
 /* [Pro Micro box] */
 // Inside of the box (a Type-C Pro Micro is about 35 x 18 mm; the rest is room for wires and pins pointing up)
@@ -113,7 +108,7 @@ module plate() mirror([1, 0, 0]) {
             translate(brake_p) parking_brake_panel_cutout();
             translate(trim_p) trim_wheel_panel_cutout();
             translate(fuel_p) circle(d = fuel_hole_d);
-            translate(ign_p) circle(d = enc_hole_d);
+            translate(ign_p) circle(d = ign_hole_d);
             for (s = box_screws) translate(box_p + s) circle(d = m3_clear_d);
             for (h = holes) translate(h) circle(d = bolt_hole_d);
         }
@@ -121,8 +116,6 @@ module plate() mirror([1, 0, 0]) {
         translate(brake_p) parking_brake_panel_countersinks();
         translate(trim_p) trim_wheel_panel_countersinks();
         for (s = box_screws) translate(box_p + s) m3_csk();
-        // encoder pocket in the back
-        translate([ign_p[0] - enc_pocket / 2, ign_p[1] - enc_pocket / 2, enc_skin]) cube([enc_pocket, enc_pocket, panel_thickness]);
         if (labels) translate([ign_p[0], ign_p[1], -0.01]) linear_extrude(0.61) ignition_labels_2d();
         // (the plate is mirrored, so plain text reads correctly from the front)
         label(throttle_p, "THROTTLE", -36); label(prop_p, "PROP", -36); label(mixture_p, "MIXTURE", -36);
@@ -258,11 +251,10 @@ module fuel_dummy() translate(m(fuel_p)) {
     color("dimgray") cylinder(d = fuel_body[0], h = fuel_body[1]);
 }
 
-// key, lock and bezel in front; EC11 encoder sitting in its pocket behind
-module ignition_placed() translate(m(ign_p)) {
-    translate([0, 0, -panel_thickness]) rotate([0, 180, 0]) ignition_mounted();
-    color("dimgray") translate([-6.2, -6, -panel_thickness + enc_skin]) cube([12.4, 12, 6.5]);
-    color("silver") for (x = [-2.5, 0, 2.5]) translate([x, -7.5, -panel_thickness + enc_skin + 3]) cube([0.6, 0.6, 9]);
+// key, lock and bezel in front; the rotary switch behind
+module ignition_placed() translate(m(ign_p)) translate([0, 0, -panel_thickness]) rotate([0, 180, 0]) {
+    ignition_mounted();
+    ignition_switch_dummy(panel_thickness);
 }
 
 module rails() mirror([1, 0, 0]) {
@@ -288,5 +280,5 @@ else if (part == "assembly") rotate([90, 0, 0]) assembly();
 echo(str("test panel: ", round(W), " x ", round(H), " mm, ", panel_thickness, " mm thick"));
 echo(str("test panel: 8 mm holes at ", [for (h = holes) [round(h[0] - x0), round(h[1] - y0)]], " from the bottom-left corner (front view)"));
 echo(str("fuel hole is ", round(norm(fuel_p - brake_p)), " mm from the brake; handle swing + knob radius = ", 95 + fuel_knob[0] / 2, " mm"));
-echo(str("ignition: EC11 encoder; cut its shaft to ", 9 + enc_skin, " mm from the mounting face (ends 9 mm in front of the panel)"));
+echo(str("ignition: rotary switch; cut its shaft to ", 9 + panel_thickness, " mm from the mounting face (ends 9 mm in front of the panel)"));
 echo(str("Pro Micro box: ", box_out, " mm outside; 4x M3 x ", box_screw_len, " countersunk screws from the front"));

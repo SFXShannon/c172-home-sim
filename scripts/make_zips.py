@@ -41,4 +41,5 @@ for c in ["throttle", "mixture", "prop"]:
 tp = "parts/push-pull-test-plate"
 every += [(f"{tp}/stl/{f}", f"test-plate/stl/{f}") for f in sorted(os.listdir(f"{tp}/stl"))]
 every += [(f"{tp}/{f}", f"test-plate/{f}") for f in ["README.md", "push_pull_test_plate.scad"]]
+every += [(f"{tp}/firmware/test_panel/test_panel.ino", "test-plate/firmware/test_panel/test_panel.ino")]
 write(f"{tp}/throttle_mixture_prop_all.zip", every + [(p, p) for p in COMMON])

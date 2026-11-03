@@ -16,6 +16,10 @@ include <../../common/sim_common.scad>
 /* [What to show] */
 part = "assembly"; // [assembly, assembly_ignition, ignition_key, ignition_cylinder, ignition_escutcheon, knob_alt_static, knob_cabin_heat, knob_cabin_air, knob_fuel_shutoff, knob_stem, stem_clip, cb_strip, yoke_boot]
 
+/* [Ignition switch] */
+// Shaft of your rotary switch: "knurled" = 6 mm knurled split shaft (RS26-type 1P12T), "d" = 6 mm with a flat
+ign_shaft = "knurled"; // [knurled, d]
+
 /* [Yoke opening] */
 // Diameter of the hole the yoke shaft passes through
 yoke_hole_d = 60;
@@ -73,7 +77,7 @@ module key_head() difference() {
 // print flat, as modelled (one colour, or swap to black at the head with a colour change at 2.4 mm)
 module ignition_key() union() { key_metal(); key_head(); }
 
-// lock face: keyway on top, D-bore for the switch shaft underneath. Prints as modelled.
+// lock face: keyway on top, bore for the switch shaft underneath. Prints as modelled.
 module ignition_cylinder() {
     h = ign_cyl_top - ign_cyl_z0;
     difference() {
@@ -81,11 +85,15 @@ module ignition_cylinder() {
             cylinder(d = ign_cyl_d, h = h - 0.6);
             translate([0, 0, h - 0.61]) cylinder(d1 = ign_cyl_d, d2 = ign_cyl_d - 1.2, h = 0.61);
         }
-        // switch shaft: 6 mm with a flat (4.6 mm across)
-        translate([0, 0, -0.01]) linear_extrude(h - ign_insert - 0.6) intersection() {
-            circle(d = 6.15, $fn = 48);
-            translate([-4, -3.2]) square([8, 1.6 + 4.6]);
-        }
+        // switch shaft. Knurled: a plain 5.9 mm bore; the knurl bites into the plastic
+        // as you press it on. D: 6 mm with a flat (4.6 mm across).
+        translate([0, 0, -0.01]) linear_extrude(h - ign_insert - 0.6)
+            if (ign_shaft == "knurled") circle(d = 5.9, $fn = 48);
+            else intersection() {
+                circle(d = 6.15, $fn = 48);
+                translate([-4, -3.2]) square([8, 1.6 + 4.6]);
+            }
+        translate([0, 0, -0.01]) cylinder(d1 = 6.8, d2 = 5.9, h = 0.5);   // lead-in so it starts straight
         // keyway: a snug fit for the key tip
         translate([0, 0, h - ign_insert]) linear_extrude(ign_insert + 1) square([key_t + 0.25, key_w + 0.25], center = true);
         translate([0, 0, h - 0.6]) linear_extrude(1, scale = 1.3) square([key_t + 0.25, key_w + 0.25], center = true);

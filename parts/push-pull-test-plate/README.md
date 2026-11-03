@@ -14,7 +14,7 @@ A flat bench panel for building, wiring and testing the controls before the dash
 
 | Spot | What | Hole |
 |---|---|---|
-| Top left | **Ignition key** on an EC11 rotary encoder, with OFF / R / L / BOTH / START engraved round it | 7.2 mm hole; a 13.6 mm square pocket in the back thins the plate to 2 mm so the encoder's short bushing reaches through |
+| Top left | **Ignition key** on a 1-pole 12-position rotary switch (RS26 type), with OFF / R / L / BOTH / START engraved round it | 10 mm hole for the switch's threaded bushing |
 | Top row | **Throttle, prop, mixture**, 69 mm apart (same as the dashboard) | 14 mm + 4 countersunk M3 on a 28 mm square |
 | Under the throttle | **Elevator trim wheel** | 26 × 104 mm slot + 4 countersunk M3 at ±27 / ±55 mm. Glue the placard on the pilot's left of the slot |
 | Under the prop | **Parking brake**, handle stows pointing right | 16 mm + 4 countersunk M3 on a 28 mm square |
@@ -31,11 +31,12 @@ Four 8 mm bolt holes, two along the top edge and two down the right edge, centre
 
 ## Ignition key
 
-Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ignition_key`, `ignition_cylinder`, `ignition_escutcheon`). The lock face presses onto the encoder's 6 mm D shaft, the same as the rotary switch it was drawn for.
+Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ignition_key`, `ignition_cylinder`, `ignition_escutcheon`) on a **1-pole 12-position rotary switch** (the RS26 type with a knurled 6 mm shaft and a threaded bushing).
 
-- Mount the EC11 from behind in the pocket, nut on the front. The bezel covers the nut.
-- **Cut the encoder shaft to 11 mm from its mounting face.** It then ends 9 mm in front of the panel and reaches into the lock.
-- An encoder turns all the way round with no end stops. The OFF / R / L / BOTH / START marks are just a guide.
+- **Set the stop washer to 5 positions.** Lift the washer under the nut and drop its tab into the hole marked 5, so the switch only turns OFF → START.
+- Mount the switch from behind through the 10 mm hole, lock washer and nut on the front. The bezel covers the nut. If the switch has a small locating tab that stops it sitting flat against the back of the panel, snip it off; the nut holds it.
+- **Cut the shaft to about 15.5 mm from the switch's mounting face.** It then ends 9 mm in front of the panel and reaches into the lock.
+- Turn the shaft fully anticlockwise (OFF), then press the lock face on with its keyway pointing at OFF. The knurl bites into the 5.9 mm bore. If you have a switch with a D shaft instead, set `ign_shaft = "d"` in `panel_extras.scad`.
 
 ## Pro Micro box
 
@@ -57,7 +58,28 @@ Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ig
 - `stl/pro_micro_clamp.stl`: flat side down, as exported.
 - See the throttle, trim wheel and parking brake folders for their parts.
 
-## Wiring (Pro Micro sketch in [`/firmware`](../../firmware))
+## Firmware
+
+[`firmware/test_panel/test_panel.ino`](firmware/test_panel/test_panel.ino) runs everything on this panel from the one Pro Micro. Windows and MSFS see it as a joystick with 3 axes and 14 buttons:
+
+| Control | Shows up as |
+|---|---|
+| Throttle / mixture / prop | X / Y / Z axis |
+| Parking brake | Button 1 held while set; 2 = "just set" pulse; 3 = "just released" pulse |
+| Fuel selector LEFT / BOTH / RIGHT / OFF | Buttons 4 / 5 / 6 / 7, held |
+| Trim wheel | Button 8 pulse per click nose down, 9 nose up |
+| Ignition OFF / R / L / BOTH / START | Buttons 10 / 11 / 12 / 13 / 14, held |
+
+Buttons 1–9 match the full-panel sketch in [`/firmware`](../../firmware), so your bindings carry over.
+
+1. Install the Arduino IDE, and the **Joystick** library by Matthew Heironimus: download https://github.com/MHeironimus/ArduinoJoystickLibrary as a ZIP, then *Sketch → Include Library → Add .ZIP Library*.
+2. Open `test_panel.ino`, choose the board **Arduino Leonardo** (works for the Pro Micro) and upload.
+3. Move the throttle, mixture and prop end to end once. The sketch learns each lever's range and saves it.
+4. Check everything in Windows under *Set up USB game controllers*. Settings at the top of the sketch reverse the levers, the trim direction or the ignition.
+
+The sketch compiles for the Pro Micro but hasn't been tested on real hardware yet.
+
+## Wiring
 
 | Control | Pin |
 |---|---|
@@ -67,6 +89,6 @@ Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ig
 | Parking brake microswitch (COM → GND, NC → pin) | 2 |
 | Fuel selector LEFT / BOTH / RIGHT / OFF (common → GND) | 3 / 4 / 5 / 6 |
 | Trim encoder A / B (middle → GND) | 7 / 8 |
-| Ignition encoder A / B (middle → GND), push switch | 9 / 10, push switch 16 (free pins; the sketch doesn't read them yet) |
+| Ignition switch positions OFF / R / L / BOTH / START (common → GND) | 9 / 10 / 14 / 15 / 16 |
 
 Pot ends go to VCC and GND.
