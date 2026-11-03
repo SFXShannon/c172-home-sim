@@ -61,8 +61,8 @@ enc_pocket = 13.6;
 enc_skin = 2;
 
 /* [Pro Micro box] */
-// Inside of the box (a Type-C Pro Micro is about 35 x 18 mm; the rest is room for wires)
-box_in = [52, 30, 20];
+// Inside of the box (a Type-C Pro Micro is about 35 x 18 mm; the rest is room for wires and pins pointing up)
+box_in = [52, 30, 25];
 box_wall = 2;
 // Pro Micro board: length, width, thickness (measure yours)
 pm_size = [35, 18.3, 1.6];

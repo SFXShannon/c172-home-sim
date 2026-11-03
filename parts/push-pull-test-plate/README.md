@@ -41,7 +41,7 @@ Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ig
 
 ![Pro Micro box](images/pro_micro_box.png)
 
-`stl/pro_micro_box.stl`: a 56 × 34 × 22 mm cup that screws on behind the panel, so the panel is its lid. Use 4 × **M3 × 16** countersunk screws from the front into the corner posts.
+`stl/pro_micro_box.stl`: a 56 × 34 × 27 mm cup that screws on behind the panel, so the panel is its lid. Use 4 × **M3 × 16** countersunk screws from the front into the corner posts.
 
 - The board (Type-C Pro Micro, about 35 × 18.3 mm) drops onto two ledges with its USB-C socket in the opening in the end wall. The opening is 10 mm wide and has 3 mm of extra room on the rim side for the cable plug's moulding (`usb_open_up`).
 - It's held at **both ends**: two small lips hook over the corners at the USB end, and an **L clamp** (`stl/pro_micro_clamp.stl`) screws down at the far end with one **M2 × 8–10** screw into a post. The clamp's foot presses on the board between the two pin rows, right above a small ledge under the board's end, so the board is clamped, not bent.
