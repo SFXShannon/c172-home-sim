@@ -30,7 +30,7 @@ use <../trim-wheel/trim_wheel.scad>
 use <../panel-extras/panel_extras.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, plate, pro_micro_box]
+part = "assembly"; // [assembly, plate, pro_micro_box, pro_micro_box_view]
 
 /* [Extrusion mount] */
 // Extrusion width (20 = 2020, 25.4 = 1" 10-series, 40 = 4040)
@@ -137,15 +137,22 @@ module plate() mirror([1, 0, 0]) {
 // ------------------------------------------------------------------ Pro Micro box
 // A cup that screws on behind the plate (the plate is its lid) with 4 x M3
 // countersunk screws from the front into the corner posts. The board drops
-// onto two ledges with its USB-C end pushed against the opening in the end
-// wall (a strip of double-sided foam tape on the ledges holds it); a lip at
-// the far end and the side rails keep it from sliding. Wires come in through
-// the notch in the rim. Built floor down (as printed),
-// open rim at the top.
-pm_stand = 3;   // board sits this far off the floor
+// onto two ledges with its USB-C socket in the opening in the end wall; a
+// snap clip at the far end (where the board has no pins) hooks over it and
+// holds it in. Wires leave through big cut-outs in the rim on both long sides
+// and the far end. Built floor down (as printed), open rim at the top.
+pm_stand = 7;              // board sits this far off the floor (gives the clip room to flex)
+usb_open = [10, 4];        // USB-C opening: width, height (the socket is about 9 x 3.3)
+usb_z    = -0.4;           // centre of the opening relative to the top of the board
+clip_t   = 1.0;            // snap clip thickness / width
+clip_w   = 7;
+wire_cut = [[30, 9], [16, 9]];   // rim cut-outs: long sides [width, depth], far end [width, depth]
 
 module pro_micro_box() {
-    z_board = box_wall + pm_stand;
+    z_bot  = box_wall + pm_stand;            // underside of the board
+    z_top  = z_bot + pm_size[2];             // top of the board
+    x_usb  = -box_in[0] / 2;                 // USB end of the board (against the end wall)
+    x_far  = x_usb + pm_size[0];             // far end of the board
     difference() {
         union() {
             difference() {
@@ -154,23 +161,34 @@ module pro_micro_box() {
             }
             // corner posts
             for (s = box_screws) translate([s[0] - 4, s[1] - 4, 0]) cube([8, 8, box_out[2]]);
-            // ledges under the board's long edges, with side rails, from the USB end wall
-            for (s = [-1, 1]) translate([-box_in[0] / 2 - 0.01, s > 0 ? pm_size[1] / 2 - 1.5 : -pm_size[1] / 2 - 1.5, box_wall - 0.01])
+            // ledges under the board's long edges, with low side rails
+            for (s = [-1, 1]) translate([x_usb - 0.01, s > 0 ? pm_size[1] / 2 - 1.5 : -pm_size[1] / 2 - 1.5, box_wall - 0.01])
                 cube([pm_size[0] + 0.5, 3, pm_stand + pm_size[2] + 1]);
-            // lip at the far end of the board
-            translate([-box_in[0] / 2 + pm_size[0] + 0.5, -pm_size[1] / 2 - 1.5, box_wall - 0.01]) cube([1.5, pm_size[1] + 3, pm_stand + pm_size[2] + 1]);
         }
         // pocket the board drops into (0.25 mm play), open above
-        translate([-box_in[0] / 2 - 1, -pm_size[1] / 2 - 0.25, box_wall + pm_stand]) cube([pm_size[0] + 1.5, pm_size[1] + 0.5, 10]);
+        translate([x_usb - 1, -pm_size[1] / 2 - 0.25, z_bot]) cube([pm_size[0] + 1.15, pm_size[1] + 0.5, 20]);
         // ledges are only 1.25 mm wide under each edge; open the middle under the board for its pins
-        translate([-box_in[0] / 2 - 1, -pm_size[1] / 2 + 1.25, box_wall]) cube([pm_size[0] + 1.5, pm_size[1] - 2.5, 10]);
-        // USB-C opening in the end wall, centred on the connector (sits on top of the board)
-        translate([-box_out[0] / 2 - 1, -5.75, z_board + pm_size[2] - 0.6]) cube([box_wall + 2, 11.5, 5.4]);
-        // wire notch in the rim
-        translate([-12, box_in[1] / 2 - 1, box_out[2] - 7]) cube([24, box_wall + 2, 8]);
+        translate([x_usb - 1, -pm_size[1] / 2 + 1.25, box_wall]) cube([pm_size[0] + 1.15, pm_size[1] - 2.5, 20]);
+        // USB-C opening in the end wall
+        translate([-box_out[0] / 2 - 1, -usb_open[0] / 2, z_top + usb_z - usb_open[1] / 2]) cube([box_wall + 2, usb_open[0], usb_open[1]]);
+        // wire cut-outs in the rim: both long sides and the far end
+        for (s = [-1, 1]) translate([-wire_cut[0][0] / 2, s > 0 ? box_in[1] / 2 - 1 : -box_out[1] / 2 - 1, box_out[2] - wire_cut[0][1]])
+            cube([wire_cut[0][0], box_wall + 2, wire_cut[0][1] + 1]);
+        translate([box_in[0] / 2 - 1, -wire_cut[1][0] / 2, box_out[2] - wire_cut[1][1]]) cube([box_wall + 2, wire_cut[1][0], wire_cut[1][1] + 1]);
         // pilot holes in the posts
         for (s = box_screws) translate([s[0], s[1], box_out[2] - 12]) cylinder(d = m3_pilot_d, h = 12.1);
     }
+    // snap clip: a springy post at the far end with a hook over the board (added after the cuts)
+    translate([x_far + 0.15, -clip_w / 2, box_wall - 0.01]) cube([clip_t, clip_w, z_top + 1.8 - box_wall]);
+    translate([0, clip_w / 2, 0]) rotate([90, 0, 0]) linear_extrude(clip_w)
+        polygon([[x_far + 0.16, z_top + 0.15], [x_far - 0.8, z_top + 0.15], [x_far - 0.8, z_top + 0.55], [x_far + 0.16, z_top + 1.8]]);
+}
+
+// the board, for the pictures and checks (USB-C socket on top at the end)
+module pro_micro_dummy() {
+    z_bot = box_wall + pm_stand;
+    color([0.1, 0.3, 0.6]) translate([-box_in[0] / 2, -pm_size[1] / 2, z_bot]) cube(pm_size);
+    color("silver") translate([-box_in[0] / 2 - 1.2, -4.5, z_bot + pm_size[2] + usb_z - 1.65]) cube([7.5, 9, 3.3]);
 }
 
 // ------------------------------------------------------------------ views
@@ -215,6 +233,7 @@ module assembly() {
 
 if (part == "plate") plate();
 else if (part == "pro_micro_box") pro_micro_box();
+else if (part == "pro_micro_box_view") { pro_micro_box(); pro_micro_dummy(); }
 else if (part == "assembly") rotate([90, 0, 0]) assembly();
 
 echo(str("test panel: ", round(W), " x ", round(H), " mm, ", panel_thickness, " mm thick"));
