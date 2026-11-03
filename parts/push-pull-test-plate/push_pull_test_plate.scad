@@ -30,7 +30,7 @@ use <../trim-wheel/trim_wheel.scad>
 use <../panel-extras/panel_extras.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, plate, pro_micro_box, pro_micro_box_view]
+part = "assembly"; // [assembly, plate, pro_micro_box, pro_micro_clamp, pro_micro_box_view]
 
 /* [Extrusion mount] */
 // Extrusion width (20 = 2020, 25.4 = 1" 10-series, 40 = 4040)
@@ -138,14 +138,25 @@ module plate() mirror([1, 0, 0]) {
 // A cup that screws on behind the plate (the plate is its lid) with 4 x M3
 // countersunk screws from the front into the corner posts. The board drops
 // onto two ledges with its USB-C socket in the opening in the end wall. Two
-// small lips hold the corners at the USB end (slide that end in under them),
-// and a snap clip at the far end (where the board has no pins) clicks over it. Wires leave through big cut-outs in the rim on both long sides
-// and the far end. Built floor down (as printed), open rim at the top.
-pm_stand = 7;              // board sits this far off the floor (gives the clip room to flex)
-usb_open = [10, 5.6];      // USB-C opening: width, height (the socket is about 9 x 3.3)
-usb_z    = 0.4;            // centre of the opening relative to the top of the board
-clip_t   = 1.0;            // snap clip thickness / width
-clip_w   = 7;
+// small lips hold the corners at the USB end (slide that end in under them).
+// At the far end a separate L-shaped clamp screws down onto a post with one
+// M2 screw; its foot presses on the board between the two pin rows, right
+// over a small ledge under the board's end, so the board is clamped, not bent.
+// Wires leave through big cut-outs in the rim on both long sides and the far
+// end. Built floor down (as printed), open rim at the top.
+pm_stand = 7;              // board sits this far off the floor
+usb_open = [10, 5.6];      // USB-C opening: width, height around the socket (the socket is about 9 x 3.3)
+usb_open_up = 3;           // extra opening on the rim side, for the cable plug's moulding
+usb_z    = 0.4;            // centre of the socket relative to the top of the board
+// L clamp at the far end
+clamp_w     = 6;           // width of the clamp arm and foot (fits between the pin rows)
+clamp_t     = 2;           // arm thickness (it flexes a little, that's the clamping force)
+clamp_foot  = [3.5, 3];      // foot: length along the board, height (clears parts on top of the board)
+clamp_in    = 0.3;         // foot starts this far in from the board's far edge
+clamp_pre   = 0.2;         // post is this much lower than the arm, so the screw preloads the foot
+post_sz     = 6;           // the post the clamp screws to
+post_gap    = 3;           // gap between the board's far end and the post
+m2_pilot_d  = 1.7;         // M2 screw straight into plastic
 usb_lip  = 1.0;            // corner lips at the USB end: how far they reach over the board
 usb_lip_len = 2.5;         // and how far along it
 wire_cut = [[30, 9], [16, 9]];   // rim cut-outs: long sides [width, depth], far end [width, depth]
@@ -171,8 +182,8 @@ module pro_micro_box() {
         translate([x_usb - 1, -pm_size[1] / 2 - 0.25, z_bot]) cube([pm_size[0] + 1.15, pm_size[1] + 0.5, 20]);
         // ledges are only 1.25 mm wide under each edge; open the middle under the board for its pins
         translate([x_usb - 1, -pm_size[1] / 2 + 1.25, box_wall]) cube([pm_size[0] + 1.15, pm_size[1] - 2.5, 20]);
-        // USB-C opening in the end wall
-        translate([-box_out[0] / 2 - 1, -usb_open[0] / 2, z_top + usb_z - usb_open[1] / 2]) cube([box_wall + 2, usb_open[0], usb_open[1]]);
+        // USB-C opening in the end wall, with extra room on the rim side for the plug
+        translate([-box_out[0] / 2 - 1, -usb_open[0] / 2, z_top + usb_z - usb_open[1] / 2]) cube([box_wall + 2, usb_open[0], usb_open[1] + usb_open_up]);
         // wire cut-outs in the rim: both long sides and the far end
         for (s = [-1, 1]) translate([-wire_cut[0][0] / 2, s > 0 ? box_in[1] / 2 - 1 : -box_out[1] / 2 - 1, box_out[2] - wire_cut[0][1]])
             cube([wire_cut[0][0], box_wall + 2, wire_cut[0][1] + 1]);
@@ -183,10 +194,41 @@ module pro_micro_box() {
     // fixed lips over the two corners at the USB end: slide that end in under them first
     for (s = [-1, 1]) translate([x_usb - 0.01, s > 0 ? pm_size[1] / 2 - usb_lip : -pm_size[1] / 2 - 1.75, z_top + 0.3])
         cube([usb_lip_len, usb_lip + 1.75, 1.25]);
-    // snap clip: a springy post at the far end with a hook over the board (added after the cuts)
-    translate([x_far + 0.15, -clip_w / 2, box_wall - 0.01]) cube([clip_t, clip_w, z_top + 1.8 - box_wall]);
-    translate([0, clip_w / 2, 0]) rotate([90, 0, 0]) linear_extrude(clip_w)
-        polygon([[x_far + 0.16, z_top + 0.15], [x_far - 0.8, z_top + 0.15], [x_far - 0.8, z_top + 0.55], [x_far + 0.16, z_top + 1.8]]);
+    // ledge across the board's far end, under the clamp foot (between the pin rows)
+    translate([x_far - 2.5, -5.5, box_wall - 0.01]) cube([2.5, 11, z_bot - box_wall + 0.01]);
+    // post for the clamp screw
+    difference() {
+        translate([x_far + post_gap, -post_sz / 2, box_wall - 0.01]) cube([post_sz, post_sz, clamp_post_top() - box_wall + 0.01]);
+        translate([clamp_screw_x(), 0, clamp_post_top() - 9]) cylinder(d = m2_pilot_d, h = 9.1);
+    }
+}
+
+function pm_z_top() = box_wall + pm_stand + pm_size[2];
+function pm_x_far() = -box_in[0] / 2 + pm_size[0];
+function clamp_screw_x() = pm_x_far() + post_gap + post_sz / 2;
+function clamp_post_top() = pm_z_top() + clamp_foot[1] - clamp_pre;
+
+// The L clamp, in box coordinates (as fitted). Arm over the post, foot down on the board.
+// Two small skirts hug the post so it can't swing round the screw.
+module pro_micro_clamp() {
+    zt = pm_z_top();
+    xf = pm_x_far();
+    x0 = xf - clamp_in - clamp_foot[0];         // tip of the foot
+    x1 = xf + post_gap + post_sz;               // far end of the arm
+    sk = 1.2;                                   // skirt thickness
+    difference() {
+        union() {
+            // arm
+            translate([x0, -clamp_w / 2, zt + clamp_foot[1]]) cube([x1 - x0, clamp_w, clamp_t]);
+            // foot
+            translate([x0, -clamp_w / 2, zt]) cube([clamp_foot[0], clamp_w, clamp_foot[1] + 0.01]);
+            // wider pad over the post, with skirts down its sides
+            translate([xf + post_gap, -post_sz / 2 - 0.25 - sk, zt + clamp_foot[1]]) cube([post_sz, post_sz + 0.5 + 2 * sk, clamp_t]);
+            for (s = [-1, 1]) translate([xf + post_gap, s > 0 ? post_sz / 2 + 0.25 : -post_sz / 2 - 0.25 - sk, zt + clamp_foot[1] - 2.5])
+                cube([post_sz, sk, 2.51]);
+        }
+        translate([clamp_screw_x(), 0, zt]) cylinder(d = 2.4, h = clamp_foot[1] + clamp_t + 1);
+    }
 }
 
 // the board, for the pictures and checks (USB-C socket on top at the end)
@@ -194,6 +236,7 @@ module pro_micro_dummy() {
     z_bot = box_wall + pm_stand;
     color([0.1, 0.3, 0.6]) translate([-box_in[0] / 2, -pm_size[1] / 2, z_bot]) cube(pm_size);
     color("silver") translate([-box_in[0] / 2 - 1.2, -4.5, z_bot + pm_size[2] + usb_z - 1.65]) cube([7.5, 9, 3.3]);
+    color("dimgray") translate([0, 0, -clamp_pre]) pro_micro_clamp();   // as screwed down
 }
 
 // ------------------------------------------------------------------ views
@@ -238,6 +281,7 @@ module assembly() {
 
 if (part == "plate") plate();
 else if (part == "pro_micro_box") pro_micro_box();
+else if (part == "pro_micro_clamp") translate([0, 0, pm_z_top() + clamp_foot[1] + clamp_t]) mirror([0, 0, 1]) pro_micro_clamp();
 else if (part == "pro_micro_box_view") { pro_micro_box(); pro_micro_dummy(); }
 else if (part == "assembly") rotate([90, 0, 0]) assembly();
 
