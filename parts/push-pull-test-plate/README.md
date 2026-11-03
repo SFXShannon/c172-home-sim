@@ -43,7 +43,7 @@ Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ig
 
 `stl/pro_micro_box.stl`: a 56 × 34 × 22 mm cup that screws on behind the panel, so the panel is its lid. Use 4 × **M3 × 16** countersunk screws from the front into the corner posts.
 
-- The board (Type-C Pro Micro, about 35 × 18.3 mm) drops onto two ledges with its USB-C socket in the opening in the end wall (10 × 4 mm). A **snap clip** at the far end, where the board has no pins, clicks over it and holds it in. To take it out, push the clip back with a fingernail. If your board measures differently, set `pm_size`. To move the opening, set `usb_z`.
+- The board (Type-C Pro Micro, about 35 × 18.3 mm) drops onto two ledges with its USB-C socket in the opening in the end wall (10 × 4 mm). It's held at **both ends**: two small lips hook over the corners at the USB end, and a **snap clip** at the far end, where the board has no pins, clicks over it. To fit it, tilt the board, slide the USB end in under the lips and into the opening, then press the far end down until the clip clicks. To take it out, push the clip back with a fingernail and lift that end. If your board measures differently, set `pm_size`. To move the opening, set `usb_z`.
 - The USB-C opening faces the pilot's left, toward the trim wheel.
 - Wires leave through big cut-outs in the rim on **both long sides and the far end**, so they can go whichever way your controls are.
 - Prints floor down, no supports.

@@ -137,15 +137,17 @@ module plate() mirror([1, 0, 0]) {
 // ------------------------------------------------------------------ Pro Micro box
 // A cup that screws on behind the plate (the plate is its lid) with 4 x M3
 // countersunk screws from the front into the corner posts. The board drops
-// onto two ledges with its USB-C socket in the opening in the end wall; a
-// snap clip at the far end (where the board has no pins) hooks over it and
-// holds it in. Wires leave through big cut-outs in the rim on both long sides
+// onto two ledges with its USB-C socket in the opening in the end wall. Two
+// small lips hold the corners at the USB end (slide that end in under them),
+// and a snap clip at the far end (where the board has no pins) clicks over it. Wires leave through big cut-outs in the rim on both long sides
 // and the far end. Built floor down (as printed), open rim at the top.
 pm_stand = 7;              // board sits this far off the floor (gives the clip room to flex)
 usb_open = [10, 4];        // USB-C opening: width, height (the socket is about 9 x 3.3)
 usb_z    = -0.4;           // centre of the opening relative to the top of the board
 clip_t   = 1.0;            // snap clip thickness / width
 clip_w   = 7;
+usb_lip  = 1.0;            // corner lips at the USB end: how far they reach over the board
+usb_lip_len = 2.5;         // and how far along it
 wire_cut = [[30, 9], [16, 9]];   // rim cut-outs: long sides [width, depth], far end [width, depth]
 
 module pro_micro_box() {
@@ -178,6 +180,9 @@ module pro_micro_box() {
         // pilot holes in the posts
         for (s = box_screws) translate([s[0], s[1], box_out[2] - 12]) cylinder(d = m3_pilot_d, h = 12.1);
     }
+    // fixed lips over the two corners at the USB end: slide that end in under them first
+    for (s = [-1, 1]) translate([x_usb - 0.01, s > 0 ? pm_size[1] / 2 - usb_lip : -pm_size[1] / 2 - 1.75, z_top + 0.3])
+        cube([usb_lip_len, usb_lip + 1.75, 1.25]);
     // snap clip: a springy post at the far end with a hook over the board (added after the cuts)
     translate([x_far + 0.15, -clip_w / 2, box_wall - 0.01]) cube([clip_t, clip_w, z_top + 1.8 - box_wall]);
     translate([0, clip_w / 2, 0]) rotate([90, 0, 0]) linear_extrude(clip_w)
