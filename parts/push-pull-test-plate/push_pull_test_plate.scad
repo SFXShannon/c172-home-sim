@@ -142,8 +142,8 @@ module plate() mirror([1, 0, 0]) {
 // and a snap clip at the far end (where the board has no pins) clicks over it. Wires leave through big cut-outs in the rim on both long sides
 // and the far end. Built floor down (as printed), open rim at the top.
 pm_stand = 7;              // board sits this far off the floor (gives the clip room to flex)
-usb_open = [10, 4];        // USB-C opening: width, height (the socket is about 9 x 3.3)
-usb_z    = -0.4;           // centre of the opening relative to the top of the board
+usb_open = [10, 5.6];      // USB-C opening: width, height (the socket is about 9 x 3.3)
+usb_z    = 0.4;            // centre of the opening relative to the top of the board
 clip_t   = 1.0;            // snap clip thickness / width
 clip_w   = 7;
 usb_lip  = 1.0;            // corner lips at the USB end: how far they reach over the board
