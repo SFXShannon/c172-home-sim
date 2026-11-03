@@ -41,6 +41,8 @@ grip_t = 13;
 grip_rake = 12;
 // Gap between the escutcheon and the back of the handle when pushed in
 handle_gap = 3;
+// Length of the M3 screw that holds the handle on (anything from 16 to 30 fits; 20 is the usual)
+handle_screw_len = 20; // [16:1:30]
 
 /* [Hidden] */
 twist        = 90;
@@ -65,7 +67,9 @@ esc_d        = 24;        // escutcheon (small trim ring on the panel face)
 esc_t        = 2.5;
 socket_depth = 12;
 flat_depth   = 1;         // D-flat that keys the handle to the shaft
-rod_d        = 3.4;       // M3 threaded rod through the shaft
+screw_cb_d   = m3_head_d + 0.6;   // counterbore for the handle screw head (socket or pan head)
+screw_cb_depth = 3.5;              // head sits 0.5 mm below the handle face
+screw_seat_v = grip_root_w - screw_cb_depth;   // underside of the head, from the handle back face
 lug_w        = 4;
 lug_h        = 4;
 lug_r_in     = collar_d / 2 - 1;
@@ -74,7 +78,6 @@ z_lug        = z_top - collar_h / 2;
 z_handle_back = -(panel_thickness + esc_t + handle_gap);
 z_nose       = z_handle_back - socket_depth + 0.5;
 z_tail_top   = z_top + cap_t + tail_protrude;
-handle_nut_v = socket_depth + 3.5;   // nut position, measured from the handle back face
 
 // Microswitch (KW11 / SS-5GL style, 20 x 10 x 6.4 mm, M2 holes 9.5 mm apart)
 sw_len = 20; sw_t = 6.4; sw_hole_pitch = 9.5;
@@ -154,6 +157,8 @@ module housing() {
 
 // ------------------------------------------------------------------ shaft
 // Modelled in the "handle in" position. Prints nose-down with no supports.
+// The handle screw threads straight into the nose; a pull on the handle puts
+// the printed shaft in tension, which is fine for a sim control.
 
 module shaft() {
     cone_h = (collar_d - shaft_d) / 2;
@@ -169,8 +174,8 @@ module shaft() {
         }
         // D-flat (on +Y) that keys the handle
         translate([-nose_d, nose_d/2 - flat_depth, z_nose - 1]) cube([2 * nose_d, nose_d, z_handle_back - z_nose + 1]);
-        translate([0, 0, z_nose - 1]) cylinder(d = rod_d, h = z_tail_top - z_nose + 2);
-        translate([0, 0, z_tail_top - m3_nut_t - 0.6]) rotate([0, 0, 30]) m3_nut_pocket(5);
+        // pilot hole for the handle screw, deep enough for anything up to M3 x 30
+        translate([0, 0, z_nose - 1]) cylinder(d = m3_pilot_d, h = z_handle_back - screw_seat_v + 32 - z_nose + 1);
     }
 }
 
@@ -256,12 +261,10 @@ module handle_local() {
             translate([-nose_d, nose_d/2 - flat_depth + clearance]) square([2 * nose_d, nose_d]);
         }
         translate([0, 0, -0.01]) cylinder(d1 = nose_d + 1.2, d2 = nose_d, h = 0.6);
-        cylinder(d = rod_d, h = handle_nut_v + 4);
-        // captive nut, slides in from the -y face
-        translate([0, 0, handle_nut_v - (m3_nut_t + 0.4) / 2]) hull() {
-            rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
-            translate([0, -grip_t, 0]) rotate([0, 0, 30]) m3_nut_pocket(m3_nut_t + 0.4);
-        }
+        // M3 screw goes in from the pilot's side, head sunk in a counterbore,
+        // and threads into the end of the shaft
+        translate([0, 0, -1]) cylinder(d = m3_clear_d, h = grip_root_w + 2);
+        translate([0, 0, screw_seat_v]) cylinder(d = screw_cb_d, h = grip_root_w);
     }
 }
 
@@ -361,6 +364,7 @@ else if (part == "panel_test_plate") panel_test_plate();
 else if (part == "panel_cutout") panel_cutout();
 
 echo(str("Panel screws: 4x M3 x ", mount_screw_len(panel_thickness), " countersunk + 4x M3 nuts"));
-echo(str("Threaded rod: M3 x ~", ceil(z_tail_top - (z_handle_back - handle_nut_v) - 1), " mm"));
+echo(str("Handle screw: 1x M3 x ", handle_screw_len, " socket or pan head, ",
+         handle_screw_len - screw_seat_v + socket_depth - 0.5, " mm of thread in the shaft"));
 echo(str("Spring: OD <= ", chamber_d - 2, " mm, ID >= ", shaft_d + 1,
          " mm, free length ~", spring_space + 4, " mm, must compress to < ", spring_space - travel - 2, " mm"));

@@ -21,7 +21,7 @@ Modelled on the Cessna 172 parking brake: a black L-shaped lever on a 3/8" shaft
 - **Lug:** a small lug on the shaft rides in that slot. The handle can only rotate once it's fully out. At the end of the turn the lug drops into a 3 mm notch, and the spring holds it there.
 - **Spring:** compressed when you pull, so it returns the handle when released.
 - **Microswitch:** on the rear cap, pressed by the end of the shaft when the handle is in.
-- **M3 threaded rod:** runs through the shaft and clamps the handle on, so the printed shaft is always in compression.
+- **Handle screw:** one ordinary M3 screw goes in from the pilot's side of the handle, its head sunk in a counterbore, and threads into the end of the shaft.
 
 ## Mounting to the panel
 
@@ -38,8 +38,7 @@ All controls in this repo mount the same way. Four M3 countersunk screws go in f
 |---|---|---|
 | 1 each | Printed: `housing`, `shaft`, `handle`, `escutcheon`, `rear_cap` | [`stl/`](stl) |
 | 1 | Compression spring, OD ≤ 17 mm, ID ≥ 11 mm, ~44 mm long | Must compress below 13 mm. A 1.0 × 14 × 45 mm spring from an assortment works. |
-| 1 | M3 threaded rod, ~90 mm | The exact length is printed in OpenSCAD's console |
-| 2 | M3 nuts | One in the handle, one in the shaft tail |
+| 1 | M3 × 20 socket or pan head screw | Holds the handle on. Anything from 16 to 30 mm fits; set `handle_screw_len` if yours isn't 20. |
 | 4 + 4 | M3 × 14 countersunk screws + M3 nuts | Panel mount (6.35 mm panel) |
 | 2 | M3 × 8 screws | Rear cap |
 | 1 | Microswitch with lever, 20 × 10 × 6.4 mm (KW11 / SS-5GL / V-153) | |
@@ -55,7 +54,7 @@ No supports are needed for any part; each STL is already in its print orientatio
 2. Screw on the rear cap and check that the handle pulls, twists and locks. If it binds, sand the slot or raise `clearance`.
 3. Mount the microswitch on the cap. The plate has slots so you can slide the switch until it clicks with the handle fully in.
 4. Bolt the housing behind the panel with "UP" at the top, then push the escutcheon into the hole from the front.
-5. Put an M3 nut in the shaft tail and thread the rod through. Slide the second nut into the slot under the handle, push the handle onto the D-flat with the grip pointing right (brake off), and screw it tight.
+5. Push the handle onto the D-flat with the grip pointing right (brake off). Drive the M3 screw in from the face of the handle until it's snug; it cuts its own thread in the shaft. Don't overtighten.
 
 ## Wiring and sim
 
@@ -66,4 +65,4 @@ Wire the microswitch's **COM** and **NC** terminals to one input. The button is 
 
 ## Options (OpenSCAD Customizer)
 
-`stowed_side` (which way the grip points when off), `travel`, `grip_len`, `grip_rake`, `panel_thickness` and `clearance`.
+`stowed_side` (which way the grip points when off), `travel`, `grip_len`, `grip_rake`, `handle_screw_len`, `panel_thickness` and `clearance`.
