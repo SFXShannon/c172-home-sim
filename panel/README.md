@@ -29,8 +29,9 @@ Laid out from photos of the real 172S NAV III panel and kept at real scale; only
 - **Tiles:** 9 of them, 3 per row, sized for a 305 × 305 mm bed (QIDI Plus4). Row L (lower) in black; rows M and U in grey. Print them **front face down**. The largest is 298 × 147 mm. For a smaller printer, set `bed` and move the seams in `lower_splits`, `mid_splits` and `upper_splits` (up to 5 tiles per row); OpenSCAD warns if a tile is too wide.
 - **Joining:** see [Joining the pieces](#joining-the-pieces) below.
 - **Or cut it on a CNC router:** [`dashboard/cnc`](dashboard/cnc) has layered DXF / SVG files for cutting the panel from 1/4" plywood or MDF in 4 pieces (plus the pedestal plates), sized for an 800 × 400 mm router like the FoxAlien XE-PRO 8040.
-- **Glareshield:** 4 segments. Print them upside down with tree supports, or use them as formers and cover with foam and vinyl like the real padded one.
-- **Pedestal:** the face and floor plates.
+- **Glareshield:** 4 segments, in black. Print them upside down with tree supports, or use them as formers and cover with foam and vinyl like the real padded one.
+- **Pedestal:** the face and floor plates, in black.
+- **Colours at a glance:** [`dashboard/stl/README.md`](dashboard/stl/README.md) lists every STL with its colour: grey for rows U and M, black for everything else that shows.
 - **Full-size template:** [`dashboard/templates/`](dashboard/templates) has the whole panel as one SVG/DXF (front view), for a big laser or to print and check the layout.
 - **Mounting to your frame:** 4.5 mm holes along the bottom edge and the sides take #8 / M4 screws.
 
@@ -90,7 +91,7 @@ Panel pieces with every control's cutouts, mounting holes and countersinks alrea
 | Pedestal floor | Fuel selector | 150 × 150 mm | `floor` |
 
 - **Thickness:** all pieces are `panel_thickness` thick (6.35 mm by default, set in `common/sim_common.scad`).
-- **Printing:** print **front face down** for a smooth face; the engraved labels print correctly that way.
+- **Printing:** print **front face down** for a smooth face; the engraved labels print correctly that way. Print every piece in black (see [`stl/README.md`](stl/README.md)).
 - **Joining the lower panel:** the tiles butt together. Glue the `splice` strip across the seam on the back, plus 4 × M3 × 8 screws into the blind pilot holes.
 - **Mounting:** the 4.5 mm holes around the edges are for #8 or M4 screws into your frame.
 - **Cutting from plywood instead:** [`templates/`](templates) has full-size SVG and DXF files (front view) for a laser or CNC, or to print and drill through.
