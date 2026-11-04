@@ -27,6 +27,8 @@ The pointer handle on the pedestal floor, over a LEFT / BOTH / RIGHT placard, as
 
 No supports are needed. The handle prints flat-side down; print it in white or cream. The placard prints face up; paint the plate black and dry-brush the letters white.
 
+The small `handle_gear` carries all the load, so print it solid: **100 % infill and 4 or more walls**. PETG or PLA+ is tougher than plain PLA here. Its teeth run the full 9.7 mm height of the part (past the end of the shaft, so that part is solid) with rounded roots. If you printed the earlier 6 mm gear and it was weak, this one is a drop-in replacement: nothing else changes.
+
 ## Assembly
 
 1. Bolt the housing under the floor plate with "FWD" toward the panel.

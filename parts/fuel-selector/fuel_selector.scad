@@ -105,13 +105,24 @@ module shaft() {
 }
 
 // ------------------------------------------------------------------ gears
+// The 12-tooth handle gear. Made stronger than the first version without
+// changing anything it fits with (shaft, switch gear, housing, screw):
+//   - the teeth run the full height of the part (9.7 mm instead of 6 mm). The
+//     extra 3.7 mm sits past the end of the shaft, so it's solid plastic, and it
+//     backs up the 6 mm of tooth that actually meshes with the big gear
+//   - rounded tooth roots (no sharp inside corners for a crack to start from)
+// The stop arm, D bore and screw hole are where they were, so it's a drop-in
+// replacement on the parts you've already printed.
+hg_root_fillet = 0.5;
+module handle_gear_2d() offset(r = -hg_root_fillet) offset(r = hg_root_fillet)
+    projection() spur_gear(gm, z_small, 1);
+
 module handle_gear() {
     difference() {
         union() {
-            translate([0, 0, z_gear0]) spur_gear(gm, z_small, gear_t);
+            translate([0, 0, z_gear0]) linear_extrude(z_arm1 - z_gear0) handle_gear_2d();
             // stop arm (points the same way as the handle)
             if (!has_off) translate([-2, 0, z_gear1 - 0.01]) cube([4, stop_r + 2, arm_t]);
-            translate([0, 0, z_gear1 - 0.01]) cylinder(d = 12, h = arm_t);
         }
         translate([0, 0, z_gear0 - 1]) linear_extrude(gear_t + 1.01) difference() {
             circle(d = shaft_d + 2 * clearance);
