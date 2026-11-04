@@ -1,12 +1,12 @@
 # What colour to print each file
 
-These are the simple lower panel pieces. They match the lower row of the full dashboard, so print them all **black**.
+Each file name starts with its print colour. These pieces match the lower row of the full dashboard, so everything that shows is black:
 
-| File | Colour | What it is |
-|---|---|---|
-| `lower_tile_1.stl`, `lower_tile_2.stl` | **Black** | Lower panel (parking brake, throttle, mixture, prop) |
-| `pedestal.stl` | **Black** | Pedestal face (trim wheel) |
-| `floor.stl` | **Black** | Pedestal floor (fuel selector) |
-| `splice.stl` | Any | Joining strip glued on the back; it doesn't show |
+| File | What it is |
+|---|---|
+| `black_lower_tile_1`, `black_lower_tile_2` | Lower panel (parking brake, throttle, mixture, prop) |
+| `black_pedestal` | Pedestal face (trim wheel) |
+| `black_floor` | Pedestal floor (fuel selector) |
+| `hidden_splice` | Joining strip glued on the back. It never shows, so print it in any colour |
 
 Fill the engraved labels with white paint after printing.

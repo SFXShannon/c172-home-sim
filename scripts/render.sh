@@ -17,16 +17,22 @@ extra=()
 controls=("$@")
 [[ ${#controls[@]} -eq 0 ]] && controls=($(ls parts) panel dashboard)
 
+# Print colour goes at the front of each panel STL name, so the files sort by colour:
+# black_ / grey_ for pieces that show, hidden_ for ones behind the panel (any colour).
+dash_colour() { case "$1" in tile_M*|tile_U*) echo grey;; splice*) echo hidden;; *) echo black;; esac; }
+panel_colour() { case "$1" in splice*) echo hidden;; *) echo black;; esac; }
+
 render_dashboard() {
   local scad=panel/g1000_dashboard.scad out=panel/dashboard
   mkdir -p "$out/stl" "$out/templates" panel/images
   python3 scripts/place_splices.py     # find room for the splice plates on the back (writes panel/splices.scad)
   openscad "${extra[@]}" -D 'part="splice"' -o /tmp/_dash_check.csg "$scad" 2>&1 | grep -E "WARNING" || true
-  rm -f "$out"/stl/tile_*.stl "$out"/stl/glareshield_*.stl
+  rm -f "$out"/stl/*tile_*.stl "$out"/stl/*glareshield_*.stl
   # as many tiles / glareshield segments as the seams make (up to 5 per row); missing ones come out empty
   for p in tile_L{1..5} tile_M{1..5} tile_U{1..5} splice splice_small splice_narrow moza_frame glareshield_{1..5} pedestal_face pedestal_floor; do
-    openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$out/stl/$p.stl" "$scad" 2>/dev/null || true
-    if [[ -s "$out/stl/$p.stl" ]] && grep -q facet "$out/stl/$p.stl"; then echo "  dashboard/$p.stl"; else rm -f "$out/stl/$p.stl"; fi
+    f="$out/stl/$(dash_colour "$p")_$p.stl"
+    openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$f" "$scad" 2>/dev/null || true
+    if [[ -s "$f" ]] && grep -q facet "$f"; then echo "  ${f#panel/}"; else rm -f "$f"; fi
   done
   for ext in svg dxf; do openscad -q "${extra[@]}" -D 'part="panel_2d"' -o "$out/templates/dashboard_panel.$ext" "$scad"; done
   echo "  dashboard/templates/*"
@@ -39,10 +45,11 @@ render_panel() {
   # show any layout warnings (overlapping controls, seams through a control, ...)
   openscad "${extra[@]}" -D 'part="splice"' -o /tmp/_panel_check.csg "$scad" 2>&1 | grep -E "WARNING" || true
   for p in lower_tile_1 lower_tile_2 lower_tile_3 splice pedestal floor; do
-    rm -f "panel/stl/$p.stl"
-    openscad -q "${extra[@]}" -D "part=\"$p\"" -o "panel/stl/$p.stl" "$scad" 2>/dev/null || true
+    f="panel/stl/$(panel_colour "$p")_$p.stl"
+    rm -f "$f"
+    openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$f" "$scad" 2>/dev/null || true
     # tiles that don't exist (fewer splits) come out empty - drop them
-    [[ -s "panel/stl/$p.stl" ]] && grep -q facet "panel/stl/$p.stl" && echo "  panel/$p.stl" || rm -f "panel/stl/$p.stl"
+    [[ -s "$f" ]] && grep -q facet "$f" && echo "  $f" || rm -f "$f"
   done
   for p in lower pedestal floor; do for ext in svg dxf; do
     openscad -q "${extra[@]}" -D "part=\"${p}_2d\"" -o "panel/templates/${p}_panel.$ext" "$scad"

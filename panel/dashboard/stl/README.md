@@ -1,18 +1,22 @@
 # What colour to print each file
 
-The upper two rows of the dashboard are **grey**. The lower row, the AY210 trim frame, the pedestal and the glareshield are **black**, the same as the 172S panel.
+Each file name starts with its print colour, so they're grouped together in this folder:
 
-| File | Colour | What it is |
-|---|---|---|
-| `tile_U1.stl`, `tile_U2.stl`, `tile_U3.stl` | **Grey** | Upper row (top of the panel, PFD / MFD tops) |
-| `tile_M1.stl`, `tile_M2.stl`, `tile_M3.stl` | **Grey** | Middle row (switch panels, PFD / audio panel / MFD, standby gauges) |
-| `tile_L1.stl`, `tile_L2.stl`, `tile_L3.stl` | **Black** | Lower row (ignition, breakers, parking brake, AY210 window, throttle, mixture, flaps) |
-| `moza_frame.stl` | **Black** | Trim frame round the AY210 window (sits on the lower row) |
-| `glareshield_1.stl` … `glareshield_4.stl` | **Black** | Glareshield along the top |
-| `pedestal_face.stl` | **Black** | Pedestal face (trim wheel) |
-| `pedestal_floor.stl` | **Black** | Pedestal floor (fuel selector) |
-| `splice.stl`, `splice_small.stl`, `splice_narrow.stl` | Any | Joining plates glued on the back; they don't show |
+- **`black_`**: lower row, AY210 trim frame, glareshield and pedestal
+- **`grey_`**: upper and middle rows
+- **`hidden_`**: glued on the back where it never shows, so print it in any colour (use up leftover filament)
 
-Grey is a mid grey, like Cessna's panel grey; any plain mid or dark grey filament works. The engraved labels on every tile are filled with white paint after printing.
+| File | What it is |
+|---|---|
+| `black_tile_L1`, `black_tile_L2`, `black_tile_L3` | Lower row (ignition, breakers, parking brake, AY210 window, throttle, mixture, flaps) |
+| `black_moza_frame` | Trim frame round the AY210 window (sits on the lower row) |
+| `black_glareshield_1` … `black_glareshield_4` | Glareshield along the top |
+| `black_pedestal_face` | Pedestal face (trim wheel) |
+| `black_pedestal_floor` | Pedestal floor (fuel selector) |
+| `grey_tile_M1`, `grey_tile_M2`, `grey_tile_M3` | Middle row (switch panels, PFD / audio panel / MFD, standby gauges) |
+| `grey_tile_U1`, `grey_tile_U2`, `grey_tile_U3` | Upper row (top of the panel) |
+| `hidden_splice`, `hidden_splice_small`, `hidden_splice_narrow` | Joining plates glued across the seams on the back |
+
+Any plain mid or dark grey works for the grey rows. Fill the engraved labels on every tile with white paint after printing.
 
 The controls that mount on the panel (knobs, bezels, gauges and so on) have their own colours, listed in each part's README under [`parts/`](../../../parts).
