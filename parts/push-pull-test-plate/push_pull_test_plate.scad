@@ -280,5 +280,5 @@ else if (part == "assembly") rotate([90, 0, 0]) assembly();
 echo(str("test panel: ", round(W), " x ", round(H), " mm, ", panel_thickness, " mm thick"));
 echo(str("test panel: 8 mm holes at ", [for (h = holes) [round(h[0] - x0), round(h[1] - y0)]], " from the bottom-left corner (front view)"));
 echo(str("fuel hole is ", round(norm(fuel_p - brake_p)), " mm from the brake; handle swing + knob radius = ", 95 + fuel_knob[0] / 2, " mm"));
-echo(str("ignition: rotary switch; cut its shaft to ", 9 + panel_thickness, " mm from the mounting face (ends 9 mm in front of the panel)"));
+echo(str("ignition: rotary switch; cut its shaft to ", 14 + panel_thickness, " mm from the mounting face (ends 14 mm in front of the panel)"));
 echo(str("Pro Micro box: ", box_out, " mm outside; 4x M3 x ", box_screw_len, " countersunk screws from the front"));

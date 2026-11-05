@@ -35,7 +35,8 @@ Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ig
 
 - **Set the stop washer to 5 positions.** Lift the washer under the nut and drop its tab into the hole marked 5, so the switch only turns OFF → START.
 - Mount the switch from behind through the 10 mm hole, lock washer and nut on the front. The bezel covers the nut. If the switch has a small locating tab that stops it sitting flat against the back of the panel, snip it off; the nut holds it.
-- **Cut the shaft to about 15.5 mm from the switch's mounting face.** It then ends 9 mm in front of the panel and reaches into the lock.
+- **Cut the shaft to about 20.5 mm from the switch's mounting face** (don't cut it if it's shorter). It then ends 14 mm in front of the panel and fills the lock's 10 mm bore.
+- Glue the key's stub into the keyway once the lock is on.
 - Turn the shaft fully anticlockwise (OFF), then press the lock face on with its keyway pointing at OFF. The knurl bites into the 5.9 mm bore. If you have a switch with a D shaft instead, set `ign_shaft = "d"` in `panel_extras.scad`.
 
 ## Pro Micro box
