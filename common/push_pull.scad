@@ -36,6 +36,17 @@ rod_d = 25.4 * 5 / 16;
 // O-ring cross-section (mm). 1.78 = US size 011 (0.301" ID x 0.070"); 2 = metric 8 x 2
 oring_cs = 1.78;
 
+/* [Printed rod] */
+// The `rod` part is a 3D-printed stand-in for the steel rod. It prints lying down
+// on a small flat, so the layers run the full length (strong, and the layer lines
+// run the way it slides through the O-ring).
+// Depth of the flat it prints on (mm). Keep it small: the flat passes the O-ring.
+rod_flat = 0.4;
+// 0 = solid. 3 = hole down the middle for a 3 mm steel or carbon rod (stiffer)
+rod_core_d = 0;
+// Chamfer on both ends so the rod doesn't nick the O-ring going in (mm)
+rod_chamfer = 0.6;
+
 /* [Rod length] */
 // false = short rod that stops in the carriage (the carriage slides on the housing walls
 // and the tray); true = old long rod that also runs through the rear bushing
@@ -373,6 +384,22 @@ module carriage_assembled() {
     }
 }
 
+// ------------------------------------------------------------------ printed rod
+// Same size and length as the steel rod. Built along +z from 0; the flat is at -y.
+module rod_printed() {
+    r = rod_d / 2;
+    difference() {
+        intersection() {
+            hull() {
+                translate([0, 0, rod_chamfer]) cylinder(r = r, h = rod_len - 2 * rod_chamfer, $fn = 96);
+                cylinder(r = r - rod_chamfer, h = rod_len, $fn = 96);
+            }
+            translate([-r - 1, -r + rod_flat, -1]) cube([2 * r + 2, 2 * r + 2, rod_len + 2]);
+        }
+        if (rod_core_d > 0) translate([0, 0, -1]) cylinder(d = rod_core_d + 0.3, h = rod_len + 2, $fn = 32);
+    }
+}
+
 // ------------------------------------------------------------------ panel bits
 
 module panel_cutout() {
@@ -462,6 +489,8 @@ module push_pull_output() {
     // throttle prints face-down, mixture/prop print back-down
     else if (part == "knob") { if (control == "throttle") translate([0, 0, knob_len]) knob(); else rotate([180, 0, 0]) knob(); }
     else if (part == "housing") translate([0, 0, -y_floor_bot]) rotate([90, 0, 0]) housing();
+    // printed rod: lying down on its flat
+    else if (part == "rod") translate([0, 0, rod_d / 2 - rod_flat]) rotate([90, 0, 0]) rotate([0, 90, 0]) rod_printed();
     else if (part == "carriage") carriage();
     else if (part == "carriage_cap") carriage_cap();
     else if (part == "tray") translate([0, 0, -y_tray_bot]) rotate([90, 0, 0]) tray();
@@ -471,7 +500,7 @@ module push_pull_output() {
     else if (part == "panel_cutout") panel_cutout();
 }
 
-echo(str(control, ": ", rod_d, " mm smooth rod, cut to ", ceil(rod_len), " mm (", round(rod_len / 25.4 * 8) / 8, " in)"));
+echo(str(control, ": ", rod_d, " mm smooth rod, cut to ", ceil(rod_len), " mm (", round(rod_len / 25.4 * 8) / 8, " in), or print the `rod` part"));
 echo(str(control, ": uses ", round(use_from * 100), "% to ", round(use_to * 100), "% of the pot's travel; reaches ", ceil(z_floor_end), " mm behind the panel"));
 if (!rod_through) echo(str(control, ": carriage clamp 2x M3 x ", cap_screw, " socket head + 2x M3 nuts; lid 4x M3 x 10 screws"));
 else echo(str(control, ": carriage set screw M3 x 8"));

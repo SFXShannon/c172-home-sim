@@ -18,7 +18,7 @@ Throttle, mixture and prop all use the same simple mechanism. Only the knob and 
 
 ## How it works (kept simple)
 
-- **Shaft:** a 5/16" (7.94 mm) smooth steel rod (drill rod, ground rod or a straight piece of cold-rolled round from the hardware store). 8 mm printer rod also works: set `rod_d = 8`. It only runs from the knob, through the front bushing, into the carriage, so it's short (170 mm) and nothing sticks out the back.
+- **Shaft:** a 5/16" (7.94 mm) smooth steel rod (drill rod, ground rod or a straight piece of cold-rolled round from the hardware store). 8 mm printer rod also works: set `rod_d = 8`. It only runs from the knob, through the front bushing, into the carriage, so it's short (170 mm) and nothing sticks out the back. Or **print it**: see [Printed rod](#printed-rod-instead-of-steel) below.
 - **Friction:** a size 011 O-ring (0.301" ID × 0.070", the 5/16" O-ring in hardware-store assortments) in the front bushing holds the knob wherever you leave it, like the friction lock on the real throttle.
 - **Sensor:** the slide pot drops into a printed **tray**, and the tray slides into the housing from the back. A printed carriage clamped to the rod with an M3 set screw has a slot underneath that fits over the pot's flat arm. It's drawn for the Fielect **128 mm** fader: 10K linear, 100 mm travel, body 128 × 15.7 × 6.9 mm, arm 9 mm tall × 8 mm long (along the travel) × 1 mm thick (`pot_lever_h`, `pot_lever_len`, `pot_lever_t`).
 - **Carriage and lid:** a lid screws onto the top of the housing (4 × M3 × 10). A dovetail tongue on top of the carriage rides in a groove under the lid, which locks it side to side, up and down and against twisting, and holds up the back end of the rod. The carriage is a two-piece clamp: the rod sits between the lower half (`carriage`, with the arm slot) and the top half (`carriage_cap`, with the tongue), and two M3 × 14 socket-head screws, one each side of the tongue, pull them together. The screw heads sink into the top half below the lid, so nothing sticks up into the groove. The rear block is just the end stop. (For the old long rod that also runs through the rear block, set `rod_through = true`.)
@@ -36,7 +36,7 @@ Throttle, mixture and prop all use the same simple mechanism. Only the knob and 
 | Qty | Item | Notes |
 |---|---|---|
 | 1 each | Printed: `knob`, `escutcheon`, `housing`, `tray`, `carriage`, `carriage_cap`, `lid` | [`stl/`](stl) |
-| 1 | 5/16" smooth steel rod, 170 mm (6 5/8") | OpenSCAD prints the exact length. Cut it with a hacksaw and file the ends; take any burr off so it slides through the bushings. |
+| 1 | 5/16" smooth steel rod, 170 mm (6 5/8"), **or** the printed `grey_rod` | OpenSCAD prints the exact length. Cut it with a hacksaw and file the ends; take any burr off so it slides through the bushings. |
 | 1 | Slide potentiometer, 10 kΩ linear, 128 mm long / 100 mm travel (e.g. Fielect 128 mm fader) | Sits in the tray. Measure yours and set `pot_len`, `pot_w`, `pot_h`, `pot_lever_h`, `pot_lever_len`, `pot_lever_t`, `pot_travel` if they differ |
 | 1 | O-ring, size 011 (0.301" ID × 0.070") | For friction. A metric 8 × 2 mm O-ring also fits if you set `oring_cs = 2` |
 | 2 + 2 | M3 × 14 socket-head screws + M3 nuts | Carriage clamp |
@@ -54,6 +54,17 @@ No supports needed.
 - **tray:** prints floor down. The end bars bridge across the top.
 - **carriage** and **carriage_cap:** print standing on one end, so the rod bore, arm slot and tongue are vertical.
 - **lid:** prints top face down, groove up.
+
+### Printed rod instead of steel
+
+`grey_rod.stl` is a printed stand-in for the steel rod: same 5/16" diameter, already the right length for that control (throttle 170 mm, mixture and prop 168 mm), with chamfered ends so it doesn't nick the O-ring. Print it in **grey** so it looks like the steel one.
+
+- **Prints lying down** on a 0.4 mm flat (`rod_flat`). The layers run the whole length, so it's strong and the layer lines run the same way it slides. Don't stand it up: printed upright it snaps at a layer line the first time the knob gets knocked sideways.
+- **Material:** PETG, ASA or PA-CF. PLA works but can take a bend over time.
+- **Settings:** 4–5 walls, 100 % infill, no supports. A brim helps it stay down on such a long, thin footprint.
+- **Fit:** it should slide through the bushings with the same 0.4 mm clearance as steel. If it's tight, sand it lightly lengthwise; if it's loose in the knob, the glue takes up the gap.
+- **Stiffer option:** set `rod_core_d = 3` and re-export. That leaves a hole down the middle for a 3 mm steel or carbon rod, glued in.
+- **Assembly** is the same as steel. Put the flat facing down when you clamp it in the carriage. The carriage screws only need to be snug: overtightening crushes a printed rod.
 
 ## Assembly
 

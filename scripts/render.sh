@@ -21,6 +21,8 @@ controls=("$@")
 # black_ / grey_ for pieces that show, hidden_ for ones behind the panel (any colour).
 dash_colour() { case "$1" in tile_M*|tile_U*) echo grey;; splice*) echo hidden;; *) echo black;; esac; }
 panel_colour() { case "$1" in splice*) echo hidden;; *) echo black;; esac; }
+# Same idea for control parts that have a set colour (others keep their plain name)
+part_file() { case "$1" in rod) echo "grey_$1";; *) echo "$1";; esac; }
 
 render_dashboard() {
   local scad=panel/g1000_dashboard.scad out=panel/dashboard
@@ -84,8 +86,9 @@ for c in "${controls[@]}"; do
           openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$dir/panel-template/$p.$ext" "$scad"
         done ;;
       *)
-        echo "  $c/$p.stl"
-        openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$dir/stl/$p.stl" "$scad" ;;
+        f=$(part_file "$p")
+        echo "  $c/$f.stl"
+        openscad -q "${extra[@]}" -D "part=\"$p\"" -o "$dir/stl/$f.stl" "$scad" ;;
     esac
   done
 done
