@@ -316,10 +316,10 @@ namespace C172TestPanel
                 string found = null, version = null;
                 if (autoConnect)
                 {
-                    // ask the likely boards first, then anything else
+                    // only ask Pro Micro / Leonardo-type boards
                     foreach (var p in ports)
                     {
-                        if (p.Name == current) continue;
+                        if (p.Name == current || !p.LooksLikeBoard) continue;
                         version = PanelLink.Probe(p.Name);
                         if (version != null) { found = p.Name; break; }
                     }

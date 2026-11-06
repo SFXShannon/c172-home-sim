@@ -13,7 +13,7 @@ namespace C172TestPanel
     {
         public string Name;          // COM5
         public string Description;   // Arduino Leonardo (COM5)
-        public bool LooksLikeBoard;  // Arduino / SparkFun USB IDs
+        public bool LooksLikeBoard;  // a Leonardo / Micro / Pro Micro (ATmega32U4) USB ID
 
         public override string ToString() =>
             string.IsNullOrEmpty(Description) ? Name : Description;
@@ -55,8 +55,15 @@ namespace C172TestPanel
         public event Action<string> LineReceived;
         public event Action Lost;
 
-        // Arduino (Leonardo / Pro Micro sketch), SparkFun, Arduino.org
-        static readonly string[] BoardVids = { "VID_2341", "VID_1B4F", "VID_2A03" };
+        // ATmega32U4 boards (Leonardo, Micro, SparkFun Pro Micro). Only these are
+        // probed automatically: opening an Uno resets it, and other serial
+        // devices (wheel bases, other controllers) shouldn't be sent commands.
+        static readonly string[] BoardIds =
+        {
+            "VID_2341&PID_8036", "VID_2341&PID_8037", "VID_2341&PID_0036", "VID_2341&PID_0037",
+            "VID_2A03&PID_8036", "VID_2A03&PID_8037",
+            "VID_1B4F&PID_9205", "VID_1B4F&PID_9206", "VID_1B4F&PID_9203", "VID_1B4F&PID_9204",
+        };
 
         public static List<PortInfo> ListPorts()
         {
@@ -76,8 +83,7 @@ namespace C172TestPanel
                         var p = list.FirstOrDefault(x => x.Name == m.Groups[1].Value);
                         if (p == null) continue;
                         p.Description = name;
-                        p.LooksLikeBoard = BoardVids.Any(v => id.Contains(v)) ||
-                                           name.IndexOf("Arduino", StringComparison.OrdinalIgnoreCase) >= 0;
+                        p.LooksLikeBoard = BoardIds.Any(v => id.Contains(v));
                     }
                 }
             }
