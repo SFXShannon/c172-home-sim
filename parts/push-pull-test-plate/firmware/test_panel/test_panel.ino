@@ -46,6 +46,8 @@
 // washer set to 5 positions. Wire its common to GND and positions 1-5 to the
 // five pins above, in order, so position 1 (fully anticlockwise) is OFF.
 // If they come out backwards, set REVERSE_IGNITION = true instead of rewiring.
+// Wired in some other order? Set which pin is which key position in the setup
+// app (Key positions...), or change DEF_IGN_MAP below.
 // While the switch is between two positions no ignition button is held.
 //
 // SETUP APP: tools/test-panel-app (C172 Test Panel.exe) talks to this sketch
@@ -76,13 +78,18 @@ const bool RESET_CALIBRATION = false;     // true = forget the learned lever ran
 // With this true, the toggle's centre (off) position reads as BOTH. No OFF position.
 const bool DEF_FUEL_TOGGLE = false;
 const bool DEF_AUTO_CAL = true;           // ranges grow on their own as the levers move
+// Which ignition pin each key position is on, as an index into PIN_IGN below
+// (0 = pin 9, 1 = pin 10, 2 = pin 14, 3 = pin 15, 4 = pin 16; 255 = not wired),
+// in the order OFF, R, L, BOTH, START.
+const uint8_t DEF_IGN_MAP[5] = {0, 1, 2, 3, 4};
 
-const char FW_VERSION[] = "2";
+const char FW_VERSION[] = "3";
 
 // the live settings (loaded from EEPROM in setup)
 bool REVERSE_THROTTLE, REVERSE_MIXTURE, REVERSE_PROP, REVERSE_TRIM, REVERSE_IGNITION;
 bool FUEL_TOGGLE, AUTO_CAL;
 int  TRIM_STEPS_PER_DETENT, PULSE_MS;
+uint8_t IGN_MAP[5];
 
 // ---- pins -------------------------------------------------------------------
 const int PIN_THROTTLE = A0, PIN_MIXTURE = A1, PIN_PROP = A2;
@@ -144,8 +151,8 @@ int calibrated(int i, int raw) {
 
 
 // ---- saved settings (separate EEPROM block from the lever ranges) ----------
-const int SET_ADDR = 32, SET_MAGIC = 0x172E;
-struct Saved { int magic; uint8_t flags, trimSteps, pulseMs, spare; };
+const int SET_ADDR = 32, SET_MAGIC = 0x172F;
+struct Saved { int magic; uint8_t flags, trimSteps, pulseMs, spare; uint8_t ign[5]; };
 enum { F_REV_THR = 1, F_REV_MIX = 2, F_REV_PROP = 4, F_REV_TRIM = 8, F_REV_IGN = 16,
        F_FUEL_TOGGLE = 32, F_AUTO_CAL = 64 };
 
@@ -155,6 +162,7 @@ void defaultSettings() {
   REVERSE_IGNITION = DEF_REVERSE_IGNITION; FUEL_TOGGLE = DEF_FUEL_TOGGLE;
   AUTO_CAL = DEF_AUTO_CAL;
   TRIM_STEPS_PER_DETENT = DEF_TRIM_STEPS_PER_DETENT; PULSE_MS = DEF_PULSE_MS;
+  for (int i = 0; i < 5; i++) IGN_MAP[i] = DEF_IGN_MAP[i];
 }
 void loadSettings() {
   defaultSettings();
@@ -167,6 +175,7 @@ void loadSettings() {
   AUTO_CAL = sv.flags & F_AUTO_CAL;
   TRIM_STEPS_PER_DETENT = constrain(sv.trimSteps, 1, 8);
   PULSE_MS = constrain(sv.pulseMs, 10, 250);
+  for (int i = 0; i < 5; i++) IGN_MAP[i] = sv.ign[i] < 5 ? sv.ign[i] : 255;
 }
 void saveSettings() {
   Saved sv;
@@ -176,6 +185,7 @@ void saveSettings() {
              (REVERSE_IGNITION ? F_REV_IGN : 0) | (FUEL_TOGGLE ? F_FUEL_TOGGLE : 0) |
              (AUTO_CAL ? F_AUTO_CAL : 0);
   sv.trimSteps = TRIM_STEPS_PER_DETENT; sv.pulseMs = PULSE_MS; sv.spare = 0;
+  for (int i = 0; i < 5; i++) sv.ign[i] = IGN_MAP[i];
   EEPROM.put(SET_ADDR, sv);
 }
 
@@ -183,10 +193,13 @@ void saveSettings() {
 // One command per line. Replies are one line each.
 //   HELLO            -> C172TP,<version>
 //   GET              -> CFG,revThr,revMix,revProp,revTrim,revIgn,fuelToggle,autoCal,
-//                           trimSteps,pulseMs,lo0,hi0,lo1,hi1,lo2,hi2
+//                           trimSteps,pulseMs,lo0,hi0,lo1,hi1,lo2,hi2,ignMap
+//                       ignMap = 5 characters, the PIN_IGN index (0-4) for OFF, R, L,
+//                       BOTH, START, or '-' if that position isn't wired
 //   SET <name> <n>   -> OK / ERR   (takes effect now; SAVE keeps it after unplugging)
 //      names: REV_THR REV_MIX REV_PROP REV_TRIM REV_IGN FUEL_TOGGLE AUTO_CAL
 //             TRIM_STEPS PULSE_MS LO0 HI0 LO1 HI1 LO2 HI2
+//             IGN0..IGN4 (key position OFF..START -> PIN_IGN index 0-4, or -1 = not wired)
 //   SAVE             -> OK   (settings and lever ranges to EEPROM)
 //   LOAD             -> OK   (throw away unsaved changes: reload what's in EEPROM)
 //   DEFAULTS         -> OK   (back to the defaults at the top of this sketch; not saved)
@@ -204,9 +217,15 @@ int cmdLen = 0;
 long trimCount = 0;
 uint16_t buttonMask = 0;
 
+// Live data: only if it fits in the USB buffer right now, so a slow app never
+// holds up the controls. Serial.dtr() rather than "if (Serial)", which costs a
+// 10 ms delay on the 32U4.
 void sendLine(const char *line) {
-  // Serial.dtr() rather than "if (Serial)", which costs a 10 ms delay on the 32U4
   if (Serial.dtr() && Serial.availableForWrite() >= (int)strlen(line) + 2) Serial.println(line);
+}
+// Replies to a command: the app is reading, so just send them.
+void reply(const char *line) {
+  if (Serial.dtr()) Serial.println(line);
 }
 
 bool setValue(const char *name, long v) {
@@ -219,6 +238,8 @@ bool setValue(const char *name, long v) {
   else if (!strcmp(name, "AUTO_CAL"))    AUTO_CAL = v;
   else if (!strcmp(name, "TRIM_STEPS"))  TRIM_STEPS_PER_DETENT = constrain(v, 1, 8);
   else if (!strcmp(name, "PULSE_MS"))    PULSE_MS = constrain(v, 10, 250);
+  else if (!strncmp(name, "IGN", 3) && name[3] >= '0' && name[3] <= '4' && !name[4])
+    IGN_MAP[name[3] - '0'] = (v >= 0 && v < 5) ? v : 255;
   else if ((name[0] == 'L' && name[1] == 'O') || (name[0] == 'H' && name[1] == 'I')) {
     int i = name[2] - '0';
     if (i < 0 || i > 2 || name[3]) return false;
@@ -233,27 +254,30 @@ void runCommand(char *c) {
   for (char *p = c; *p; p++) *p = toupper(*p);
   char buf[96];
   if (!strcmp(c, "HELLO")) {
-    snprintf(buf, sizeof buf, "C172TP,%s", FW_VERSION); sendLine(buf);
+    snprintf(buf, sizeof buf, "C172TP,%s", FW_VERSION); reply(buf);
   } else if (!strcmp(c, "GET")) {
-    snprintf(buf, sizeof buf, "CFG,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+    char ign[6];
+    for (int i = 0; i < 5; i++) ign[i] = IGN_MAP[i] < 5 ? '0' + IGN_MAP[i] : '-';
+    ign[5] = 0;
+    snprintf(buf, sizeof buf, "CFG,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s",
              REVERSE_THROTTLE, REVERSE_MIXTURE, REVERSE_PROP, REVERSE_TRIM, REVERSE_IGNITION,
              FUEL_TOGGLE, AUTO_CAL, TRIM_STEPS_PER_DETENT, PULSE_MS,
-             calLo[0], calHi[0], calLo[1], calHi[1], calLo[2], calHi[2]);
-    sendLine(buf);
+             calLo[0], calHi[0], calLo[1], calHi[1], calLo[2], calHi[2], ign);
+    reply(buf);
   } else if (!strncmp(c, "SET ", 4)) {
     char *name = c + 4, *val = strchr(name, ' ');
-    if (val) { *val++ = 0; sendLine(setValue(name, atol(val)) ? "OK" : "ERR"); }
-    else sendLine("ERR");
+    if (val) { *val++ = 0; reply(setValue(name, atol(val)) ? "OK" : "ERR"); }
+    else reply("ERR");
   } else if (!strcmp(c, "SAVE")) {
-    saveSettings(); saveCalibration(); sendLine("OK");
+    saveSettings(); saveCalibration(); reply("OK");
   } else if (!strcmp(c, "LOAD")) {
-    loadSettings(); loadCalibration(); sendLine("OK");
+    loadSettings(); loadCalibration(); reply("OK");
   } else if (!strcmp(c, "DEFAULTS")) {
-    defaultSettings(); sendLine("OK");
+    defaultSettings(); reply("OK");
   } else if (!strncmp(c, "STREAM ", 7)) {
-    streaming = c[7] == '1'; sendLine("OK");
+    streaming = c[7] == '1'; reply("OK");
   } else if (c[0]) {
-    sendLine("ERR");
+    reply("ERR");
   }
 }
 
@@ -332,8 +356,8 @@ void updateTrim(unsigned long now) {
 // ---- ignition key: one held button per switch position ----------------------
 void updateIgnition() {
   for (int i = 0; i < 5; i++) {
-    int pin = PIN_IGN[REVERSE_IGNITION ? 4 - i : i];
-    setButton(BTN_IGN + i, digitalRead(pin) == LOW);
+    uint8_t idx = IGN_MAP[REVERSE_IGNITION ? 4 - i : i];
+    setButton(BTN_IGN + i, idx < 5 && digitalRead(PIN_IGN[idx]) == LOW);
   }
 }
 

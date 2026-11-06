@@ -31,7 +31,9 @@ namespace C172TestPanel
         LiveData last;
 
         // ---- setup
-        CheckBox revThr, revMix, revProp, revTrim, revIgn, fuelToggle, autoCal;
+        CheckBox revThr, revMix, revProp, revTrim, fuelToggle, autoCal;
+        FlatBtn keyBtn;
+        KeyMapDialog keyDialog;
         NumericUpDown trimSteps, pulseMs;
         readonly NumericUpDown[] loBox = new NumericUpDown[3], hiBox = new NumericUpDown[3];
         FlatBtn calBtn, calCancelBtn, saveBtn, undoBtn, defaultsBtn;
@@ -309,7 +311,10 @@ namespace C172TestPanel
             revMix  = AddCheck(dir, "Reverse mixture", 16, 58, "REV_MIX");
             revProp = AddCheck(dir, "Reverse prop", 16, 84, "REV_PROP");
             revTrim = AddCheck(dir, "Reverse trim wheel", 190, 32, "REV_TRIM");
-            revIgn  = AddCheck(dir, "Reverse ignition key", 190, 58, "REV_IGN");
+            keyBtn = new FlatBtn("Key positions…") { Left = 190, Top = 56, Width = 160, Height = 26 };
+            keyBtn.Click += (s, e) => EditKeyPositions();
+            dir.Controls.Add(keyBtn);
+            new ToolTip().SetToolTip(keyBtn, "Set which pin each ignition key position is wired to");
             MakeLabel(dir, "Changes work right away; Save keeps them.", 16, 108, Theme.Small, Theme.Dim);
 
             var fu = AddCard("Fuel selector", X, 206, W, 74);
@@ -510,7 +515,7 @@ namespace C172TestPanel
         {
             connectBtn.Text = on || wantedPort != null ? "Disconnect" : "Connect";
             portBox.Enabled = !on && wantedPort == null;
-            foreach (Control c in new Control[] { revThr, revMix, revProp, revTrim, revIgn, fuelToggle, autoCal,
+            foreach (Control c in new Control[] { revThr, revMix, revProp, revTrim, keyBtn, fuelToggle, autoCal,
                                                   trimSteps, pulseMs, calBtn, saveBtn, undoBtn, defaultsBtn })
                 c.Enabled = on;
             foreach (var n in loBox.Concat(hiBox)) n.Enabled = on;
@@ -569,6 +574,7 @@ namespace C172TestPanel
             bool Btn(int i) => (d.Buttons & (1 << i)) != 0;
             for (int i = 0; i < 14; i++) buttonLamps[i].On = Btn(i);
             for (int i = 0; i < 12; i++) pinLamps[i].On = (d.Pins & (1 << i)) != 0;
+            keyDialog?.UpdatePins(d.Pins);
 
             brakeLamp.On = Btn(0);
             brakeLamp.Text = Btn(0) ? "SET" : "RELEASED";
@@ -616,7 +622,7 @@ namespace C172TestPanel
             try
             {
                 SetCheck(revThr, c.RevThr); SetCheck(revMix, c.RevMix); SetCheck(revProp, c.RevProp);
-                SetCheck(revTrim, c.RevTrim); SetCheck(revIgn, c.RevIgn);
+                SetCheck(revTrim, c.RevTrim);
                 SetCheck(fuelToggle, c.FuelToggle); SetCheck(autoCal, c.AutoCal);
                 SetNumber(trimSteps, c.TrimSteps);
                 SetNumber(pulseMs, c.PulseMs);
@@ -667,6 +673,32 @@ namespace C172TestPanel
         {
             dirty = on;
             dirtyLabel.Text = on ? "Not saved yet: the panel forgets these when unplugged." : "";
+        }
+
+        void EditKeyPositions()
+        {
+            if (!link.IsOpen) return;
+            if (config == null || config.IgnMap == null)
+            {
+                MessageBox.Show(this, "Upload the latest test_panel.ino (firmware v3) to set the key positions.",
+                                "C172 Test Panel", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            // the old "reverse ignition" setting is folded into the map
+            int[] current = config.IgnMap;
+            if (config.RevIgn) current = current.Reverse().ToArray();
+            using (keyDialog = new KeyMapDialog(current))
+            {
+                if (last != null) keyDialog.UpdatePins(last.Pins);
+                var r = keyDialog.ShowDialog(this);
+                var map = keyDialog.Map;
+                keyDialog = null;
+                if (r != DialogResult.OK || !link.IsOpen) return;
+                link.Send("SET REV_IGN 0");
+                for (int i = 0; i < 5; i++) link.Send($"SET IGN{i} {map[i]}");
+                link.Send("GET");
+                SetDirty(true);
+            }
         }
 
         void StartCalibration()

@@ -37,6 +37,7 @@ namespace C172TestPanel
         public int TrimSteps, PulseMs;
         public int[] Lo = new int[3];
         public int[] Hi = new int[3];
+        public int[] IgnMap;     // per key position OFF..START: pin index 0-4 or -1; null on firmware v2
     }
 
     /// <summary>
@@ -56,13 +57,14 @@ namespace C172TestPanel
         public event Action<string> LineReceived;
         public event Action Lost;
 
-        // A Pro Micro flashed as "Arduino Leonardo" (as the sketch says to), or with
-        // SparkFun's Pro Micro board files. Only these are probed automatically:
+        // A Pro Micro flashed as "Arduino Leonardo" (as the sketch says to), as
+        // "Arduino Micro", or with SparkFun's Pro Micro board files. Only these are probed automatically:
         // opening an Uno resets it, and other USB serial devices (SimHub boards,
         // wheel bases) shouldn't be sent commands.
         static readonly string[] BoardIds =
         {
-            "VID_2341&PID_8036", "VID_2A03&PID_8036", "VID_1B4F&PID_9205", "VID_1B4F&PID_9206",
+            "VID_2341&PID_8036", "VID_2A03&PID_8036", "VID_2341&PID_8037", "VID_2A03&PID_8037",
+            "VID_1B4F&PID_9205", "VID_1B4F&PID_9206",
         };
 
         public static List<PortInfo> ListPorts()
@@ -263,6 +265,8 @@ namespace C172TestPanel
                     AutoCal = n(7) != 0, TrimSteps = n(8), PulseMs = n(9),
                 };
                 for (int i = 0; i < 3; i++) { c.Lo[i] = n(10 + i * 2); c.Hi[i] = n(11 + i * 2); }
+                if (f.Length > 16 && f[16].Length == 5)
+                    c.IgnMap = f[16].Select(ch => ch >= '0' && ch <= '4' ? ch - '0' : -1).ToArray();
                 return c;
             }
             catch { return null; }
