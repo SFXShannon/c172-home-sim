@@ -103,7 +103,9 @@ Buttons 1–9 match the full-panel sketch in [`/firmware`](../../firmware), so y
 1. Install the Arduino IDE, and the **Joystick** library by Matthew Heironimus: download https://github.com/MHeironimus/ArduinoJoystickLibrary as a ZIP, then *Sketch → Include Library → Add .ZIP Library*.
 2. Open `test_panel.ino`, choose the board **Arduino Leonardo** (works for the Pro Micro) and upload.
 3. Move the throttle, mixture and prop end to end once. The sketch learns each lever's range and saves it.
-4. Check everything in Windows under *Set up USB game controllers*. Settings at the top of the sketch reverse the levers, the trim direction or the ignition.
+4. Check everything with the **[C172 Test Panel app](../../tools/test-panel-app)** (Windows): it shows every lever, switch and pin live, calibrates the levers and changes the settings (reverse a lever, the trim direction or the ignition, fuel toggle mode) without re-uploading. Or use Windows' *Set up USB game controllers* and the settings at the top of the sketch.
+
+![C172 Test Panel app](../../tools/test-panel-app/release/screenshot.png)
 
 If the compile stops with `Joystick.h: No such file or directory`, or an error about `PluggableUSB`, see [the fixes in the firmware guide](../../firmware#if-it-says-joystickh-no-such-file-or-directory).
 

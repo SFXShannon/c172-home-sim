@@ -205,7 +205,8 @@ long trimCount = 0;
 uint16_t buttonMask = 0;
 
 void sendLine(const char *line) {
-  if (Serial && Serial.availableForWrite() >= (int)strlen(line) + 2) Serial.println(line);
+  // Serial.dtr() rather than "if (Serial)", which costs a 10 ms delay on the 32U4
+  if (Serial.dtr() && Serial.availableForWrite() >= (int)strlen(line) + 2) Serial.println(line);
 }
 
 bool setValue(const char *name, long v) {
@@ -262,7 +263,7 @@ void pollSerial() {
     if (ch == '\n' || ch == '\r') { cmd[cmdLen] = 0; runCommand(cmd); cmdLen = 0; }
     else if (cmdLen < (int)sizeof(cmd) - 1) cmd[cmdLen++] = ch;
   }
-  if (!Serial) streaming = false;   // app closed the port
+  if (!Serial.dtr()) streaming = false;   // app closed the port
 }
 
 uint16_t pinMask() {
