@@ -42,8 +42,8 @@ namespace C172TestPanel
 
             for (int i = 0; i < 5; i++) Map[i] = current != null && i < current.Length ? current[i] : i;
 
-            Lbl("Pick the pin each key position is wired to, or click Learn and turn the key " +
-                "through its positions.", 18, 14, 424, 36, Theme.Body, Theme.Dim);
+            Lbl("Pick the pin for each key position, or click Learn and turn the key.",
+                18, 14, 430, 40, Theme.Body, Theme.Dim);
 
             Lbl("Key position", 18, 60, 120, 18, Theme.Small, Theme.Dim);
             Lbl("Wired to", 140, 60, 120, 18, Theme.Small, Theme.Dim);
