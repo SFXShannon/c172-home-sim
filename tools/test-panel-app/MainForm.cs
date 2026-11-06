@@ -108,7 +108,7 @@ namespace C172TestPanel
             connectBtn.Text = "Disconnect";
             portBox.Items.Add(new PortInfo { Name = "COM4", Description = "Arduino Leonardo (COM4)" });
             portBox.SelectedIndex = 0;
-            Status("● Connected   COM4 · firmware v2", Theme.Green);
+            Status("● Connected   COM4 · firmware v3", Theme.Green);
             ShowConfig(new PanelConfig
             {
                 AutoCal = true, TrimSteps = 4, PulseMs = 40,
@@ -311,7 +311,7 @@ namespace C172TestPanel
             revMix  = AddCheck(dir, "Reverse mixture", 16, 58, "REV_MIX");
             revProp = AddCheck(dir, "Reverse prop", 16, 84, "REV_PROP");
             revTrim = AddCheck(dir, "Reverse trim wheel", 190, 32, "REV_TRIM");
-            keyBtn = new FlatBtn("Key positions…") { Left = 190, Top = 56, Width = 160, Height = 26 };
+            keyBtn = new FlatBtn("Key positions…") { Left = 190, Top = 54, Width = 160, Height = 30 };
             keyBtn.Click += (s, e) => EditKeyPositions();
             dir.Controls.Add(keyBtn);
             new ToolTip().SetToolTip(keyBtn, "Set which pin each ignition key position is wired to");
