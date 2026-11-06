@@ -121,6 +121,8 @@ The sketch compiles for the Pro Micro but hasn't been tested on real hardware ye
 
 Pot ends go to VCC and GND. The easy way to share those is the [power breakout](#power-breakout).
 
+![Throttle, prop and mixture wiring](../../docs/three-slide-pots-wiring.png)
+
 ![Ignition switch wiring](../../docs/ignition-switch-wiring.png)
 
 **Finding the ignition switch's lugs:** makers number them differently, so check with a multimeter on continuity (beep) before soldering:
