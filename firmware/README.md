@@ -18,6 +18,10 @@ Pots: wire the two ends to VCC and GND, and the wiper to the pin.
 
 ![Slide pot wiring](../docs/slide-pot-wiring.png)
 
+Encoder: middle pin (C) to GND, the outer pins (A, B) to pins 7 and 8. No VCC needed; the sketch uses the internal pull-ups.
+
+![EC11 encoder wiring](../docs/ec11-encoder-wiring.png)
+
 ## Install
 
 1. Install the Arduino IDE.
