@@ -1,10 +1,10 @@
 # C172 Test Panel app (Windows)
 
-Test and set up the [push-pull test panel](../../parts/push-pull-test-plate) without re-uploading the sketch. It talks to the Pro Micro over its USB serial port, alongside the joystick Windows already sees.
+Test and set up the [push-pull test panel](../../parts/push-pull-test-plate) without re-uploading the sketch, and fly with it in MSFS without binding anything. It talks to the Pro Micro over its USB serial port, alongside the joystick Windows already sees.
 
 ![C172 Test Panel app](release/screenshot.png)
 
-**Download:** [`release/C172-Test-Panel.zip`](release/C172-Test-Panel.zip). Unzip anywhere and run `C172 Test Panel.exe`. It needs nothing installed: it uses .NET Framework 4.8, which comes with Windows 10 and 11. Keep the `.exe.config` file next to the exe so it stays sharp on high-DPI screens.
+**Download:** [`release/C172-Test-Panel.zip`](release/C172-Test-Panel.zip). Unzip anywhere and run `C172 Test Panel.exe`. It needs nothing installed: it uses .NET Framework 4.8, which comes with Windows 10 and 11. Keep the other two files next to the exe: `SimConnect.dll` talks to MSFS, and the `.exe.config` keeps it sharp on high-DPI screens.
 
 ## First time
 
@@ -32,6 +32,21 @@ Changes take effect straight away, so you can try them. **Save to panel** writes
 
 If something goes wrong, the app keeps a short log in `%LOCALAPPDATA%\C172TestPanel\log.txt`.
 
+## Flying with it in MSFS
+
+With **Send the panel to MSFS** ticked, the app drives Microsoft Flight Simulator (2020 or 2024) directly through SimConnect, so you don't bind anything in the sim. Start the app and the sim in either order; it connects when the sim is running.
+
+- **Levers** move the sim's throttle, mixture and prop.
+- **Switches** (parking brake, fuel selector, ignition key) are sent when they change, and all of them again when a flight starts or an aircraft loads, so the sim always matches the panel. *Sync now* sends everything again.
+- **START** is repeated while you hold the key there, like the real thing; let go and it goes back to BOTH.
+- **Trim wheel**: one trim step per click.
+
+Clear any MSFS bindings you made for the panel's joystick ("Arduino Leonardo"), or the levers and buttons get there twice.
+
+**What gets sent** is in `sim-map.txt` (*Edit mapping*). It starts with the classic key events that most aircraft understand. The MSFS 2024 aircraft also have their own *input events*: each time an aircraft loads, the app lists them in `input-events.txt` (*Events*), and any of them can be used in `sim-map.txt` as `B:NAME value`. Save the file and the change applies within a couple of seconds, no restart. Both files are in `%LOCALAPPDATA%\C172TestPanel`, along with `log.txt`, which records everything sent to the sim.
+
+The bottom row shows whether it's connected, which aircraft is loaded and the last thing it sent.
+
 ## Build it yourself
 
 With the .NET SDK installed:
@@ -41,7 +56,7 @@ cd tools\test-panel-app
 dotnet build -c Release
 ```
 
-The exe lands in `bin\Release\net48`. `"C172 Test Panel.exe" --screenshot shot.png` renders the window with sample values (that's how the picture above is made).
+The exe lands in `bin\Release\net48`. `lib\SimConnect.dll` is the 64-bit one from the MSFS SDK (`SimConnect SDK\lib`), so the app builds as x64. `"C172 Test Panel.exe" --screenshot shot.png` renders the window with sample values (that's how the picture above is made).
 
 ## How it talks to the sketch
 

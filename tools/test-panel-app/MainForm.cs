@@ -393,18 +393,18 @@ namespace C172TestPanel
             simOn.CheckedChanged += (s, e) => { sim.Enabled = simOn.Checked; Settings.Set("sim", simOn.Checked ? "1" : "0"); };
             c.Controls.Add(simOn);
 
-            simStatus = MakeLabel(c, "", 230, 26, Theme.Body, Theme.Dim, 500);
+            simStatus = MakeLabel(c, "", 230, 26, Theme.Body, Theme.Dim, 460);
             simStatus.Height = 20;
-            simLast = MakeLabel(c, "", 230, 44, Theme.Small, Theme.Dim, 500);
+            simLast = MakeLabel(c, "", 230, 44, Theme.Small, Theme.Dim, 460);
             simLast.Height = 18;
 
-            var sync = new FlatBtn("Sync now") { Left = 748, Top = 26, Width = 90, Height = 30 };
+            var sync = new FlatBtn("Sync now") { Left = 700, Top = 26, Width = 100, Height = 30 };
             sync.Click += (s, e) => sim.ResyncSoon();
             c.Controls.Add(sync);
-            var edit = new FlatBtn("Edit mapping") { Left = 846, Top = 26, Width = 104, Height = 30 };
+            var edit = new FlatBtn("Edit mapping") { Left = 808, Top = 26, Width = 130, Height = 30 };
             edit.Click += (s, e) => OpenFile(SimBridge.MapPath);
             c.Controls.Add(edit);
-            var evs = new FlatBtn("Events") { Left = 958, Top = 26, Width = 76, Height = 30 };
+            var evs = new FlatBtn("Events") { Left = 946, Top = 26, Width = 88, Height = 30 };
             evs.Click += (s, e) => OpenFile(SimBridge.EventsPath);
             c.Controls.Add(evs);
             var tips = new ToolTip();
