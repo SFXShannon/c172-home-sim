@@ -11,7 +11,7 @@ namespace C172TestPanel
         public static readonly Color Card    = Color.FromArgb(0x1E, 0x23, 0x2A);
         public static readonly Color Border  = Color.FromArgb(0x2E, 0x35, 0x3F);
         public static readonly Color Track   = Color.FromArgb(0x2A, 0x30, 0x39);
-        public static readonly Color Range   = Color.FromArgb(0x3A, 0x4B, 0x5E);
+        public static readonly Color Range   = Color.FromArgb(0x4A, 0x63, 0x7E);
         public static readonly Color Text    = Color.FromArgb(0xE6, 0xE9, 0xED);
         public static readonly Color Dim     = Color.FromArgb(0x8C, 0x96, 0xA3);
         public static readonly Color Accent  = Color.FromArgb(0xF2, 0xA3, 0x3A);   // amber
@@ -39,7 +39,11 @@ namespace C172TestPanel
             return p;
         }
 
-        public static float Scale(Control c) => c.DeviceDpi / 96f;
+        // How much the window has been scaled from its 96-dpi layout. Taken from the
+        // window's real size so painting always matches the layout (DeviceDpi can
+        // disagree with it on mixed-DPI setups).
+        public static float UiScale = 1f;
+        public static float Scale(Control c) => UiScale;
     }
 
     /// <summary>Rounded card with a small caps title. Children go below the title.</summary>
@@ -159,7 +163,7 @@ namespace C172TestPanel
             }
 
             // raw track
-            float ty = 46 * s, th = 10 * s;
+            float ty = 46 * s, th = 8 * s;
             var track = new RectangleF(0, ty, w - 1, th);
             using (var b = new SolidBrush(Theme.Track)) g.FillRectangle(b, track);
             float X(int v) => track.X + track.Width * Math.Max(0, Math.Min(1023, v)) / 1023f;

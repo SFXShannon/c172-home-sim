@@ -87,6 +87,8 @@ namespace C172TestPanel
             tick.Start();
 
             SetConnectedUi(false);
+            Theme.UiScale = ClientSize.Width / 1080f;
+            Resize += (s, e) => { if (ClientSize.Width > 0) Theme.UiScale = ClientSize.Width / 1080f; Invalidate(true); };
             if (!demo) Shown += (s, e) => Rescan(autoConnect: true);
             else tick.Stop();
         }
@@ -207,7 +209,7 @@ namespace C172TestPanel
             var lv = AddCard("Levers   ·   axis value Windows sees, raw pot reading below", L, 64, W, 248);
             for (int i = 0; i < 3; i++)
             {
-                levers[i].SetBounds(14, 34 + i * 70, W - 28, 60);
+                levers[i].SetBounds(14, 34 + i * 70, W - 28, 62);
                 lv.Controls.Add(levers[i]);
             }
 
@@ -228,8 +230,8 @@ namespace C172TestPanel
             var tr = AddCard("Trim wheel", L + 436, 324, 224, 124);
             trimCountLabel = MakeLabel(tr, "0", 14, 30, Theme.Big, Theme.Text, 100);
             trimCountLabel.Height = 34;
-            MakeLabel(tr, "clicks (+ = nose down)", 14, 64, Theme.Small, Theme.Dim);
-            var zero = new FlatBtn("Zero") { Left = 14, Top = 88, Width = 60, Height = 26, Font = Theme.Small };
+            MakeLabel(tr, "clicks, + = nose down", 14, 64, Theme.Small, Theme.Dim);
+            var zero = new FlatBtn("Zero") { Left = 14, Top = 88, Width = 60, Height = 24, Font = Theme.Small };
             zero.Click += (s, e) => { trimZero = trimLast; UpdateTrimCount(); };
             tr.Controls.Add(zero);
             trimDnLamp = AddLamp(tr, "NOSE DN", 126, 32, 84, 34, Theme.Accent);
@@ -258,8 +260,8 @@ namespace C172TestPanel
                 pinLamps[i] = AddLamp(wi, PinNames[i], 14 + col * 106, 34 + row * 40, 100, 32, Theme.Green);
                 pinLamps[i].Font = Theme.Small;
             }
-            MakeLabel(wi, "Flip each switch and watch its pin light. Nothing lights: check that switch's GND wire. " +
-                          "The wrong one lights: two wires are swapped.", 14, 118, Theme.Small, Theme.Dim, W - 28).Height = 34;
+            MakeLabel(wi, "Flip each switch: nothing lights = check its GND wire; the wrong pin lights = wires swapped.",
+                      14, 120, Theme.Small, Theme.Dim, W - 28).Height = 22;
         }
 
         Lamp AddLamp(Control parent, string text, int x, int y, int w, int h, Color? on = null)
@@ -354,8 +356,8 @@ namespace C172TestPanel
             tips.SetToolTip(undoBtn, "Go back to what's saved on the panel");
             tips.SetToolTip(defaultsBtn, "Go back to the settings at the top of test_panel.ino (lever ranges stay). Save to keep.");
 
-            dirtyLabel = MakeLabel(this, "", X, 690, Theme.Small, Theme.Accent, W);
-            dirtyLabel.Height = 36;
+            dirtyLabel = MakeLabel(this, "", X, 692, Theme.Small, Theme.Accent, W);
+            dirtyLabel.Height = 22;
         }
 
         // =====================================================================
@@ -663,7 +665,7 @@ namespace C172TestPanel
         void SetDirty(bool on)
         {
             dirty = on;
-            dirtyLabel.Text = on ? "Unsaved changes: they're working now, but the panel forgets them when unplugged." : "";
+            dirtyLabel.Text = on ? "Not saved yet: the panel forgets these when unplugged." : "";
         }
 
         void StartCalibration()
