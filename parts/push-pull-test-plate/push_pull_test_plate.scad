@@ -8,7 +8,7 @@
 //     12-position rotary switch (RS26 type, stop washer set to 5 positions),
 //     with OFF R L BOTH START engraved round it
 //   - blind pilot holes (no holes through the front) for the power breakout
-//     (part "power_breakout"): WAGO 221 lever connectors for GND and +5V
+//     (part "power_breakout"): a printed screw-terminal strip for GND and +5V
 //   - 4 countersunk holes for the Pro Micro box (part "pro_micro_box"), which
 //     screws on behind the plate
 // so you can build, wire and test everything before the dashboard exists.
@@ -65,12 +65,16 @@ box_wall = 2;
 pm_size = [35, 18.3, 1.6];
 
 /* [Power breakout] */
-// One WAGO 221 lever connector per pocket, left to right as seen from behind
-breakout_rails = ["GND", "GND", "+5V"];
-// WAGO 221-415 (5 wires): width across the wire holes, depth, height
-wago = [29.9, 18.6, 8.3];
-// Screws: from behind, through the end tabs into blind pilot holes in the plate
-breakout_screw_len = 6;          // M3 x 6 pan head
+// Rails along the strip, left to right as seen from behind: [name, terminals]
+breakout_rails = [["GND", 9], ["+5V", 5]];
+// Terminal spacing (M3 pan heads are about 5.5 mm across)
+bk_pitch = 8;
+// Bus wire that runs the length of each rail: a stripped piece of solid wire (20-22 AWG is about 0.8 / 0.65 mm)
+bk_bus = 1.4;                    // square tunnel it slides through
+// Hole each incoming wire goes into (Dupont jumper wire, 22-26 AWG hookup wire, or a crimped Dupont pin)
+bk_wire_d = 2.2;
+// Mounting: M3 pan-head screws from behind, through the tabs into blind pilot holes in the plate
+breakout_screw_len = 6;          // M3 x 6
 breakout_tab_t = 2.5;            // tab thickness under the screw head
 
 /* [Hidden] */
@@ -84,29 +88,29 @@ trim_p     = [0, -95];
 brake_p    = [pitch, -62];
 fuel_p     = [146, -153];   // outside the parking brake handle's swing (stowed -> set)
 box_p      = [95, -145];
-breakout_p = [100, -113];   // power breakout, between the parking brake and the Pro Micro box
+breakout_p = [97, -105];    // power breakout (its screw row), between the parking brake and the Pro Micro box
 ign_p      = [-56, 2];      // ignition key, left of the throttle
 
 box_out = [box_in[0] + 2 * box_wall, box_in[1] + 2 * box_wall, box_in[2] + box_wall];
 box_screws = [for (x = [-1, 1], y = [-1, 1]) [x * (box_out[0] / 2 - 4), y * (box_out[1] / 2 - 4)]];
-// power breakout layout (its own frame: wire holes face +y, printed floor down)
-bk_clr   = 0.2;                                   // play round each connector
-bk_pkt   = [wago[0] + 2 * bk_clr, wago[1] + 2 * bk_clr];
-bk_div   = 1.6;                                   // wall between pockets
-bk_end   = 2;                                     // end walls
-bk_back  = 4;                                     // back wall (labels on top)
-bk_floor = 2;
-bk_lip   = [1.2, 1.5];                            // low lip along the wire side: thickness, height
-bk_wall_h = bk_floor + 5.5;                       // walls hold the bottom 5.5 mm of each connector
-bk_tab   = 10;                                    // screw tab beyond each end wall
-bk_n     = len(breakout_rails);
-bk_in_w  = bk_n * bk_pkt[0] + (bk_n - 1) * bk_div;
-bk_body  = [bk_in_w + 2 * bk_end, bk_pkt[1] + bk_back + bk_lip[0]];
-bk_out   = [bk_body[0] + 2 * bk_tab, bk_body[1]];
-bk_y0    = -bk_body[1] / 2;                        // back edge; the wire holes face +y
-bk_screws = [for (s = [-1, 1]) [s * (bk_body[0] / 2 + bk_tab / 2), bk_y0 + bk_body[1] / 2]];
+// power breakout layout, in its own frame: x along the strip, the screw row at
+// y = 0, the wire holes in the +y face, floor (against the plate) at z = 0
+bk_front  = 5;                                    // screw row to the wire face
+bk_back   = 8;                                    // screw row to the back edge (labels on top)
+bk_end    = 2;                                    // past the last terminal at each end of the strip
+bk_gap    = 4;                                    // solid gap between two rails
+bk_floor  = 1.5;
+bk_h      = 11;
+bk_pocket = [3.6, 5.2];                           // clamp pocket under each screw: width (x), top (z)
+bk_wire_z = bk_floor + bk_bus + bk_wire_d / 2 - 0.1;   // wire hole centre: its bottom sits on top of the bus
+bk_tab    = [10, 9];                              // mounting tabs off the back edge at each end
+bk_len    = [for (r = breakout_rails) r[1] * bk_pitch];
+function bk_sum(v, n) = n <= 0 ? 0 : v[n - 1] + bk_sum(v, n - 1);
+bk_L      = bk_sum(bk_len, len(bk_len)) + (len(bk_len) - 1) * bk_gap + 2 * bk_end;
+function bk_rail_x(i) = -bk_L / 2 + bk_end + bk_sum(bk_len, i) + i * bk_gap;      // left end of rail i
+function bk_term_x(i, k) = bk_rail_x(i) + (k + 0.5) * bk_pitch;                     // terminal k of rail i
+bk_screws = [for (s = [-1, 1]) [s * (bk_L / 2 - bk_tab[0] / 2), -bk_back - bk_tab[1] / 2]];
 bk_pilot_depth = breakout_screw_len - breakout_tab_t + 0.7;   // blind hole in the plate
-function bk_pkt_x(i) = -bk_in_w / 2 + i * (bk_pkt[0] + bk_div);  // left edge of pocket i
 
 box_screw_len = [for (l = [12, 14, 16, 18, 20]) if (l >= panel_thickness + 8) l][0];
 
@@ -267,42 +271,46 @@ module pro_micro_dummy() {
 }
 
 // ------------------------------------------------------------------ power breakout
-// A tray for WAGO 221 lever connectors, one per rail, so several controls can
-// share GND and +5V. It screws on behind the plate with 2 x M3 x 6 pan-head
-// screws from behind through the end tabs into blind pilot holes; nothing goes
-// through to the front. Each connector presses down into its pocket (small
-// ribs on the end walls grip it) with its wire holes facing the open side and
-// its levers on top. Rail names are engraved on top of the back wall.
+// A fully printed screw-terminal strip, so several controls can share GND and
+// +5V. Each rail has a square tunnel along it for a bare BUS WIRE (a stripped
+// piece of solid 20-22 AWG wire pushed in from the end). Every terminal is a
+// wire hole in the front face that crosses over the bus inside a little pocket,
+// with an M3 x 10 screw threaded straight into the plastic above it: tighten
+// the screw and it pinches the incoming wire's bare end down onto the bus.
+// The strip screws on behind the plate with 2 x M3 x 6 pan-head screws from
+// behind through the tabs into blind pilot holes; nothing goes through to the
+// front. Rail names are engraved on top along the back edge.
 // Built floor down; the floor goes against the plate.
 module power_breakout() {
     difference() {
         union() {
-            translate([-bk_out[0] / 2, bk_y0, 0]) cube([bk_out[0], bk_out[1], breakout_tab_t]);
-            translate([-bk_body[0] / 2, bk_y0, 0]) cube([bk_body[0], bk_body[1], bk_wall_h]);
+            translate([-bk_L / 2, -bk_back, 0]) cube([bk_L, bk_back + bk_front, bk_h]);
+            for (s = [-1, 1]) translate([s > 0 ? bk_L / 2 - bk_tab[0] : -bk_L / 2, -bk_back - bk_tab[1], 0])
+                cube([bk_tab[0], bk_tab[1] + 0.01, breakout_tab_t]);
         }
-        for (i = [0 : bk_n - 1]) {
-            // pocket; the wire side is open above a low lip (under the wire holes) that stops the connector sliding out
-            translate([bk_pkt_x(i), bk_y0 + bk_back, bk_floor]) cube([bk_pkt[0], bk_pkt[1], bk_wall_h]);
-            translate([bk_pkt_x(i), bk_y0 + bk_back + bk_pkt[1] - 0.01, bk_floor + bk_lip[1]]) cube([bk_pkt[0], bk_lip[0] + 1, bk_wall_h]);
-            // rail name on top of the back wall
-            translate([bk_pkt_x(i) + bk_pkt[0] / 2, bk_y0 + bk_back / 2, bk_wall_h - 0.6])
-                linear_extrude(1) text(breakout_rails[i], size = 2.8, halign = "center", valign = "center", font = "Liberation Sans:style=Bold");
+        for (i = [0 : len(breakout_rails) - 1]) {
+            // bus tunnel, open at both ends of the rail (and out the strip's ends for the outer rails)
+            x0 = i == 0 ? -bk_L / 2 - 1 : bk_rail_x(i) - 0.6;
+            x1 = i == len(breakout_rails) - 1 ? bk_L / 2 + 1 : bk_rail_x(i) + bk_len[i] + 0.6;
+            translate([x0, -bk_bus / 2, bk_floor]) cube([x1 - x0, bk_bus, bk_bus]);
+            for (k = [0 : breakout_rails[i][1] - 1]) translate([bk_term_x(i, k), 0, 0]) {
+                // clamp pocket where the wire crosses the bus
+                translate([-bk_pocket[0] / 2, -bk_bus / 2 - 0.6, bk_floor]) cube([bk_pocket[0], bk_front, bk_pocket[1] - bk_floor]);
+                // wire hole from the front face
+                translate([0, -0.5, bk_wire_z]) rotate([-90, 0, 0]) cylinder(d = bk_wire_d, h = bk_front + 1, $fn = 24);
+                // screw, threaded into the plastic above the pocket
+                translate([0, 0, bk_pocket[1] - 0.01]) cylinder(d = m3_tap_d(), h = bk_h, $fn = 24);
+                translate([0, 0, bk_h - 0.4]) cylinder(d1 = m3_tap_d(), d2 = m3_tap_d() + 0.8, h = 0.41, $fn = 24);
+            }
+            // rail name along the back edge, with a bar over its terminals
+            translate([bk_rail_x(i) + bk_len[i] / 2, -bk_back + 2.6, bk_h - 0.6])
+                linear_extrude(1) text(breakout_rails[i][0], size = 3.2, halign = "center", valign = "center", font = "Liberation Sans:style=Bold");
+            for (e = [0, 1]) translate([e == 0 ? bk_rail_x(i) + 0.8 : bk_rail_x(i) + bk_len[i] / 2 + 7, -bk_back + 2.35, bk_h - 0.6])
+                cube([bk_len[i] / 2 - 7.8, 0.5, 1]);
         }
-        // screw holes in the end tabs
         for (s = bk_screws) translate([s[0], s[1], -1]) cylinder(d = m3_clear_d, h = breakout_tab_t + 2);
     }
-    // grip ribs on the end walls of every pocket
-    for (i = [0 : bk_n - 1], e = [0, 1]) let(x = bk_pkt_x(i) + e * bk_pkt[0])
-        translate([e == 0 ? x - 0.01 : x - 0.35, bk_y0 + bk_back + bk_pkt[1] / 2 - 2, bk_floor])
-            cube([0.36, 4, bk_wall_h - bk_floor]);
 }
-
-// stand-in WAGO 221-415s for the pictures and clearance checks
-module wago_dummies() for (i = [0 : bk_n - 1])
-    translate([bk_pkt_x(i) + bk_clr, bk_y0 + bk_back + bk_clr, bk_floor]) {
-        color([0.85, 0.87, 0.9, 0.85]) cube([wago[0], wago[1], wago[2] - 1.5]);
-        color("darkorange") for (k = [0 : 4]) translate([k * wago[0] / 5 + 0.4, 2, wago[2] - 1.5]) cube([wago[0] / 5 - 0.8, wago[1] - 3, 1.5]);
-    }
 
 // ------------------------------------------------------------------ views
 function m(p) = [-p[0], p[1], 0];   // pilot's view -> model
@@ -310,7 +318,7 @@ function m(p) = [-p[0], p[1], 0];   // pilot's view -> model
 // rim against the back of the plate, USB end toward the pilot's left
 module box_placed() translate(m(box_p)) mirror([1, 0, 0]) translate([0, 0, box_out[2]]) mirror([0, 0, 1]) pro_micro_box();
 
-module breakout_placed() translate(m(breakout_p)) { color("seagreen") power_breakout(); wago_dummies(); }
+module breakout_placed() translate(m(breakout_p)) color("seagreen") power_breakout();
 
 module mounted_controls(brake_set = false) {
     translate(m(throttle_p)) throttle_mounted(0.2);
@@ -351,7 +359,6 @@ else if (part == "pro_micro_box") pro_micro_box();
 else if (part == "pro_micro_clamp") translate([0, 0, pm_z_top() + clamp_foot[1] + clamp_t]) mirror([0, 0, 1]) pro_micro_clamp();
 else if (part == "pro_micro_box_view") { pro_micro_box(); pro_micro_dummy(); }
 else if (part == "power_breakout") power_breakout();
-else if (part == "power_breakout_view") { power_breakout(); wago_dummies(); }
 else if (part == "assembly") rotate([90, 0, 0]) assembly();
 
 echo(str("test panel: ", round(W), " x ", round(H), " mm, ", panel_thickness, " mm thick"));
@@ -359,4 +366,4 @@ echo(str("test panel: 8 mm holes at ", [for (h = holes) [round(h[0] - x0), round
 echo(str("fuel hole is ", round(norm(fuel_p - brake_p)), " mm from the brake; handle swing + knob radius = ", 95 + fuel_knob[0] / 2, " mm"));
 echo(str("ignition: rotary switch; cut its shaft to ", 14 + panel_thickness, " mm from the mounting face (ends 14 mm in front of the panel)"));
 echo(str("Pro Micro box: ", box_out, " mm outside; 4x M3 x ", box_screw_len, " countersunk screws from the front"));
-echo(str("power breakout: ", [round(bk_out[0]), round(bk_out[1]), bk_wall_h], " mm; 2x M3 x ", breakout_screw_len, " pan head from behind; pilot holes ", bk_pilot_depth, " mm deep, ", panel_thickness - bk_pilot_depth, " mm of plastic left at the front"));
+echo(str("power breakout: ", [round(bk_L), bk_back + bk_front + bk_tab[1], bk_h], " mm; terminals ", [for (r = breakout_rails) str(r[0], " x ", r[1])], "; mount 2x M3 x ", breakout_screw_len, " pan head from behind; pilot holes ", bk_pilot_depth, " mm deep, ", panel_thickness - bk_pilot_depth, " mm of plastic left at the front"));
