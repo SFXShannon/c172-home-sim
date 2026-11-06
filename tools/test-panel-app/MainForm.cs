@@ -59,8 +59,11 @@ namespace C172TestPanel
             "8  trim B", "9  key OFF", "10  key R", "14  key L", "15  key BOTH", "16  key START",
         };
 
-        public MainForm()
+        readonly bool demo;
+
+        public MainForm(bool demo = false)
         {
+            this.demo = demo;
             Text = "C172 Test Panel";
             AutoScaleDimensions = new SizeF(96f, 96f);
             AutoScaleMode = AutoScaleMode.Dpi;
@@ -84,7 +87,64 @@ namespace C172TestPanel
             tick.Start();
 
             SetConnectedUi(false);
-            Shown += (s, e) => Rescan(autoConnect: true);
+            if (!demo) Shown += (s, e) => Rescan(autoConnect: true);
+            else tick.Stop();
+        }
+
+        protected override bool ShowWithoutActivation => demo;
+
+        /// <summary>Fills the window with sample values and saves it as a PNG.</summary>
+        public void SaveDemoScreenshot(string path)
+        {
+            StartPosition = FormStartPosition.Manual;
+            Location = new Point(-20000, -20000);
+            ShowInTaskbar = false;
+            Show();
+            SetConnectedUi(true);
+            connectBtn.Text = "Disconnect";
+            portBox.Items.Add(new PortInfo { Name = "COM4", Description = "Arduino Leonardo (COM4)" });
+            portBox.SelectedIndex = 0;
+            Status("● Connected   COM4 · firmware v2", Theme.Green);
+            ShowConfig(new PanelConfig
+            {
+                AutoCal = true, TrimSteps = 4, PulseMs = 40,
+                Lo = new[] { 38, 41, 36 }, Hi = new[] { 987, 990, 984 },
+            });
+            int Out(int raw, int lo, int hi) => Math.Max(0, Math.Min(1023, (raw - lo - 6) * 1023 / (hi - lo - 12)));
+            ShowLive(new LiveData
+            {
+                Raw = new[] { 801, 990, 512 },
+                Out = new[] { Out(801, 38, 987), 1023, Out(512, 36, 984) },
+                // brake set, fuel BOTH, key BOTH, trim nose-down pulse
+                Buttons = (1 << 0) | (1 << 4) | (1 << 12) | (1 << 7),
+                // pins: brake(2) LOW, fuel BOTH (4), trim A (7), key BOTH (15)
+                Pins = (1 << 0) | (1 << 2) | (1 << 5) | (1 << 10),
+                Trim = 7,
+            });
+            SetDirty(true);
+            Application.DoEvents();
+            using (var bmp = new Bitmap(ClientSize.Width, ClientSize.Height))
+            {
+                DrawClient(bmp);
+                bmp.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+            }
+            Close();
+        }
+
+        void DrawClient(Bitmap bmp)
+        {
+            // DrawToBitmap draws the whole window including the title bar; draw
+            // just the client area by drawing each top-level control in place.
+            using (var g = Graphics.FromImage(bmp)) g.Clear(BackColor);
+            foreach (Control c in Controls.Cast<Control>().Reverse())
+            {
+                if (!c.Visible) continue;
+                using (var part = new Bitmap(c.Width, c.Height))
+                {
+                    c.DrawToBitmap(part, new Rectangle(0, 0, c.Width, c.Height));
+                    using (var g = Graphics.FromImage(bmp)) g.DrawImage(part, c.Left, c.Top);
+                }
+            }
         }
 
         // =====================================================================
