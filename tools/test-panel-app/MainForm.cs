@@ -46,6 +46,12 @@ namespace C172TestPanel
 
         readonly System.Windows.Forms.Timer tick = new System.Windows.Forms.Timer { Interval = 1000 };
 
+        // ---- flight simulator
+        readonly SimBridge sim = new SimBridge();
+        readonly System.Windows.Forms.Timer simTick = new System.Windows.Forms.Timer { Interval = 50 };
+        CheckBox simOn;
+        Label simStatus, simLast;
+
         static readonly string[] FuelNames = { "LEFT", "BOTH", "RIGHT", "OFF" };
         static readonly string[] IgnNames = { "OFF", "R", "L", "BOTH", "START" };
         static readonly string[] ButtonTips =
@@ -72,7 +78,7 @@ namespace C172TestPanel
             BackColor = Theme.Back;
             ForeColor = Theme.Text;
             Font = Theme.Body;
-            ClientSize = new Size(1080, 742);
+            ClientSize = new Size(1080, 818);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -82,10 +88,12 @@ namespace C172TestPanel
             BuildTopBar();
             BuildLive();
             BuildSetup();
+            BuildSim();
 
             link.LineReceived += line => { try { BeginInvoke((Action)(() => OnLine(line))); } catch { } };
             link.Lost += () => { try { BeginInvoke((Action)OnLost); } catch { } };
             tick.Tick += (s, e) => OnTick();
+            simTick.Tick += (s, e) => { sim.Tick(); UpdateSimStatus(); };
             tick.Start();
 
             SetConnectedUi(false);
@@ -93,6 +101,7 @@ namespace C172TestPanel
             Resize += (s, e) => { if (ClientSize.Width > 0) Theme.UiScale = ClientSize.Width / 1080f; Invalidate(true); };
             if (!demo) Shown += (s, e) => Rescan(autoConnect: true);
             else tick.Stop();
+            if (!demo) simTick.Start();
         }
 
         protected override bool ShowWithoutActivation => demo;
@@ -126,6 +135,10 @@ namespace C172TestPanel
                 Trim = 7,
             });
             SetDirty(true);
+            simOn.Checked = true;
+            simStatus.Text = "● Connected to MSFS   ·   Asobo_C172SP_Classic   ·   312 input events";
+            simStatus.ForeColor = Theme.Green;
+            simLast.Text = "Last sent   fuel.both: K:FUEL_SELECTOR_ALL";
             Application.DoEvents();
             using (var bmp = new Bitmap(ClientSize.Width, ClientSize.Height))
             {
@@ -366,6 +379,74 @@ namespace C172TestPanel
             dirtyLabel.Height = 22;
         }
 
+        void BuildSim()
+        {
+            var c = AddCard("Microsoft Flight Simulator", 16, 738, 1048, 66);
+            simOn = new CheckBox
+            {
+                Text = "Send the panel to MSFS", Left = 16, Top = 34, AutoSize = true, FlatStyle = FlatStyle.Flat,
+                ForeColor = Theme.Text, BackColor = Theme.Card, Font = Theme.Bold,
+            };
+            simOn.FlatAppearance.CheckedBackColor = Theme.Accent;
+            simOn.Checked = Settings.Get("sim", "1") == "1";
+            sim.Enabled = simOn.Checked;
+            simOn.CheckedChanged += (s, e) => { sim.Enabled = simOn.Checked; Settings.Set("sim", simOn.Checked ? "1" : "0"); };
+            c.Controls.Add(simOn);
+
+            simStatus = MakeLabel(c, "", 230, 26, Theme.Body, Theme.Dim, 500);
+            simStatus.Height = 20;
+            simLast = MakeLabel(c, "", 230, 44, Theme.Small, Theme.Dim, 500);
+            simLast.Height = 18;
+
+            var sync = new FlatBtn("Sync now") { Left = 748, Top = 26, Width = 90, Height = 30 };
+            sync.Click += (s, e) => sim.ResyncSoon();
+            c.Controls.Add(sync);
+            var edit = new FlatBtn("Edit mapping") { Left = 846, Top = 26, Width = 104, Height = 30 };
+            edit.Click += (s, e) => OpenFile(SimBridge.MapPath);
+            c.Controls.Add(edit);
+            var evs = new FlatBtn("Events") { Left = 958, Top = 26, Width = 76, Height = 30 };
+            evs.Click += (s, e) => OpenFile(SimBridge.EventsPath);
+            c.Controls.Add(evs);
+            var tips = new ToolTip();
+            tips.SetToolTip(sync, "Send every switch and lever to the sim again");
+            tips.SetToolTip(edit, "What each control sends (sim-map.txt). Saved changes apply straight away.");
+            tips.SetToolTip(evs, "Every input event the loaded aircraft has (input-events.txt)");
+            tips.SetToolTip(simOn, "No bindings needed in MSFS. Clear any MSFS bindings for this panel's joystick so nothing happens twice.");
+        }
+
+        void OpenFile(string path)
+        {
+            try
+            {
+                if (!System.IO.File.Exists(path))
+                {
+                    if (path == SimBridge.MapPath) { System.IO.Directory.CreateDirectory(Log.Folder); System.IO.File.WriteAllText(path, SimBridge.DefaultMap); }
+                    else { MessageBox.Show(this, "Load an aircraft in MSFS first: the list is written when it loads.", "C172 Test Panel"); return; }
+                }
+                System.Diagnostics.Process.Start("notepad.exe", "\"" + path + "\"");
+            }
+            catch (Exception ex) { MessageBox.Show(this, ex.Message, "C172 Test Panel"); }
+        }
+
+        void UpdateSimStatus()
+        {
+            string text; Color color;
+            if (!sim.Enabled) { text = "Off: bind the panel's joystick in MSFS instead."; color = Theme.Dim; }
+            else if (sim.Problem.Length > 0) { text = sim.Problem; color = Theme.Red; }
+            else if (!sim.Connected) { text = "Waiting for MSFS to start…"; color = Theme.Dim; }
+            else
+            {
+                text = "● Connected to MSFS" + (sim.Aircraft.Length > 0 ? "   ·   " + sim.Aircraft : "") +
+                       (sim.InputEventCount > 0 ? $"   ·   {sim.InputEventCount} input events" : "");
+                if (last == null) text += "   ·   panel not connected";
+                color = last == null ? Theme.Accent : Theme.Green;
+            }
+            if (simStatus.Text != text) simStatus.Text = text;
+            simStatus.ForeColor = color;
+            string ls = sim.LastSent.Length > 0 ? "Last sent   " + sim.LastSent : "";
+            if (simLast.Text != ls) simLast.Text = ls;
+        }
+
         // =====================================================================
         //  connection
         // =====================================================================
@@ -557,6 +638,7 @@ namespace C172TestPanel
         void ShowLive(LiveData d)
         {
             last = d;
+            sim.Update(d);
             for (int i = 0; i < 3; i++)
             {
                 levers[i].Raw = d.Raw[i];
@@ -607,6 +689,7 @@ namespace C172TestPanel
         void ClearLive()
         {
             last = null;
+            sim.Update(null);
             foreach (var l in levers) { l.Raw = l.Out = -1; l.Invalidate(); }
             foreach (var l in buttonLamps.Concat(pinLamps).Concat(fuelLamps).Concat(ignLamps)) l.On = false;
             brakeLamp.On = brakeSetLamp.On = brakeRelLamp.On = trimDnLamp.On = trimUpLamp.On = false;
@@ -754,6 +837,8 @@ namespace C172TestPanel
                 Thread.Sleep(100);
             }
             tick.Stop();
+            simTick.Stop();
+            sim.Dispose();
             link.Close();
             base.OnFormClosing(e);
         }

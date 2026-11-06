@@ -307,3 +307,40 @@ namespace C172TestPanel
         }
     }
 }
+
+namespace C172TestPanel
+{
+    /// <summary>Tiny key=value settings file in %LOCALAPPDATA%\C172TestPanel.</summary>
+    static class Settings
+    {
+        static string FilePath => System.IO.Path.Combine(Log.Folder, "settings.txt");
+
+        public static string Get(string key, string fallback)
+        {
+            try
+            {
+                foreach (var line in System.IO.File.ReadAllLines(FilePath))
+                {
+                    int eq = line.IndexOf('=');
+                    if (eq > 0 && line.Substring(0, eq) == key) return line.Substring(eq + 1);
+                }
+            }
+            catch { }
+            return fallback;
+        }
+
+        public static void Set(string key, string value)
+        {
+            try
+            {
+                System.IO.Directory.CreateDirectory(Log.Folder);
+                var lines = System.IO.File.Exists(FilePath)
+                    ? System.IO.File.ReadAllLines(FilePath).Where(l => !l.StartsWith(key + "=")).ToList()
+                    : new List<string>();
+                lines.Add(key + "=" + value);
+                System.IO.File.WriteAllLines(FilePath, lines);
+            }
+            catch { }
+        }
+    }
+}
