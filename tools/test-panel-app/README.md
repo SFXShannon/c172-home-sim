@@ -11,7 +11,7 @@ Test and set up the [push-pull test panel](../../parts/push-pull-test-plate) wit
 1. Upload the latest [`test_panel.ino`](../../parts/push-pull-test-plate/firmware/test_panel/test_panel.ino) (firmware v3). Older uploads don't have the serial link, and the app will say the panel "doesn't answer".
 2. Run the app. It finds the panel by itself; otherwise pick its port (it shows up as **Arduino Leonardo**, or **Arduino Micro** if you uploaded it with that board selected) and click **Connect**.
 
-It only knocks on Leonardo-type ports by itself, so it leaves other Arduinos, SimHub boards and wheel bases alone. If you unplug the panel or re-upload the sketch, it reconnects when the port comes back. Close the Arduino IDE's Serial Monitor first: only one program can have the port open.
+It only knocks on Leonardo- and Micro-type ports by itself, so it leaves Unos and other USB serial devices such as wheel bases alone. If you unplug the panel or re-upload the sketch, it reconnects when the port comes back. Close the Arduino IDE's Serial Monitor first: only one program can have the port open.
 
 ## Testing
 
