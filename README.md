@@ -93,6 +93,25 @@ Each animation shows the control from the pilot's seat (left) and from behind th
 
 The Moza AY210 yoke has its own buttons and hats, so those aren't modelled. The base's 13-switch front panel sits in a window in the dashboard, so it stays usable next to the C-post and lights panels.
 
+## Parts I used
+
+The electronics and hardware for the controls, with where I bought them. Other brands of the same part work; each control's README gives the sizes that matter.
+
+| Part | Used for | Link |
+|---|---|---|
+| Pro Micro, ATmega32U4 5V/16MHz, USB-C (AYWHP, 3-pack) | The controller board (shows up as a USB joystick) | [Amazon](https://www.amazon.com/dp/B0DFGZDXSD) |
+| Fielect 128 mm 10K linear slide pot (5-pack) | Throttle, mixture, prop, flap lever | [Amazon](https://www.amazon.com/dp/B08CD8ZDVZ) |
+| Taiss RS26 1-pole 12-position rotary switch (3-pack) | Ignition key (set the stop washer to 5 positions) | [Amazon](https://www.amazon.com/dp/B08Z3L1ZBK) |
+| Nilight 6-pin DPDT ON-OFF-ON toggle switch | Stand-in for the fuel selector (LEFT / BOTH / RIGHT) | [Amazon](https://www.amazon.com/dp/B087NCLX3W) |
+| KW11 lever microswitch (Antrader 10-pack) | Parking brake | [Amazon](https://www.amazon.com/dp/B07YQQ3R7W) |
+| uxcell compression spring, 1 × 14 × 50 mm stainless (10-pack) | Parking brake return spring | [Amazon](https://www.amazon.com/dp/B076M4RLGD) |
+| EC11 rotary encoder, 15 mm shaft | Trim wheel | |
+| Moza AY210 yoke and base | Yoke (not modelled; its front panel sits in the dashboard) | |
+| 5/16" steel rod | Throttle / mixture / prop shafts | Hardware store |
+| M3 countersunk screws + nuts | Mounting every control to the panel | Hardware store |
+
+Software: the [Arduino IDE](https://www.arduino.cc/en/software) and the [ArduinoJoystickLibrary](https://github.com/MHeironimus/ArduinoJoystickLibrary) (install steps in [`firmware/`](firmware#install)).
+
 ## Panel mounting (same for every control)
 
 Every control bolts behind the panel the same way. Four **M3 countersunk screws** go in from the front, through the control's flange, into **M3 nuts captured in the back of the flange**. The screw heads sit flush, like the real panel. Each control folder has a `panel-template/` (SVG to print 1:1, DXF for laser/CNC) and a `panel_test_plate` STL for test-fitting.

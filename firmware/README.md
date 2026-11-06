@@ -30,6 +30,20 @@ Encoder: middle pin (C) to GND, the outer pins (A, B) to pins 7 and 8. No VCC ne
 4. **Calibrate:** move the throttle, mixture, prop and flap lever end to end once. The throttle, mixture and prop use nearly all of the pots' travel, and the flap lever about 60 mm of it; either way the sketch learns where each one stops and stretches that to the full axis. It saves the ranges in EEPROM, so you only do this once. To start over, set `RESET_CALIBRATION = true`, upload, set it back to `false` and upload again.
 5. In Windows, open *Set up USB game controllers* to check the axes and buttons.
 
+### If it says `Joystick.h: No such file or directory`
+
+The Joystick library isn't installed. It isn't in the IDE's Library Manager, so it has to come from GitHub:
+
+1. Go to [github.com/MHeironimus/ArduinoJoystickLibrary](https://github.com/MHeironimus/ArduinoJoystickLibrary), click the green **Code** button and choose **Download ZIP**.
+2. In the Arduino IDE: *Sketch → Include Library → Add .ZIP Library…* and pick that ZIP. Don't unzip it first.
+3. Restart the IDE and compile again.
+
+If the IDE says the ZIP isn't a valid library, unzip it and copy the library folder (the one that holds `src` and `library.properties`) into `Documents\Arduino\libraries\`, renamed to `Joystick` (drop the `-master` ending). Restart the IDE.
+
+### If it complains about `PluggableUSB` or `HID`
+
+The board setting is wrong. The library only works on boards with built-in USB, so choose **Tools → Board → Arduino Leonardo** (or *SparkFun Pro Micro, 5V/16MHz* if you've installed SparkFun's board package), not Uno or Nano.
+
 The settings at the top of the sketch reverse axes or the trim direction, and set the number of encoder steps per click.
 
 The sketch passes a syntax check but hasn't been tested on real hardware yet.

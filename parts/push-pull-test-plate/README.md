@@ -105,6 +105,8 @@ Buttons 1–9 match the full-panel sketch in [`/firmware`](../../firmware), so y
 3. Move the throttle, mixture and prop end to end once. The sketch learns each lever's range and saves it.
 4. Check everything in Windows under *Set up USB game controllers*. Settings at the top of the sketch reverse the levers, the trim direction or the ignition.
 
+If the compile stops with `Joystick.h: No such file or directory`, or an error about `PluggableUSB`, see [the fixes in the firmware guide](../../firmware#if-it-says-joystickh-no-such-file-or-directory).
+
 The sketch compiles for the Pro Micro but hasn't been tested on real hardware yet.
 
 ## Wiring
