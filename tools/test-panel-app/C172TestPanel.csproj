@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- .NET Framework 4.8 is built into Windows 10 and 11, so the exe runs
+       without installing anything and stays small. Build with:
+       dotnet build -c Release   (needs the .NET SDK) -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>C172 Test Panel</AssemblyName>
+    <RootNamespace>C172TestPanel</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.0</Version>
+    <Product>C172 Test Panel</Product>
+    <Company>SFXShannon</Company>
+    <Description>Test and set up the C172 home-sim test panel (Pro Micro)</Description>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Management" />
+  </ItemGroup>
+
+</Project>
