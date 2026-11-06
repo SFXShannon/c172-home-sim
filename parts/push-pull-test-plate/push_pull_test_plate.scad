@@ -69,8 +69,9 @@ pm_size = [35, 18.3, 1.6];
 breakout_rails = [["GND", 9], ["+5V", 5]];
 // Terminal spacing (M3 pan heads are about 5.5 mm across)
 bk_pitch = 8;
-// Bus wire that runs the length of each rail: a stripped piece of solid wire (20-22 AWG is about 0.8 / 0.65 mm)
-bk_bus = 1.4;                    // square tunnel it slides through
+// Bus wire that runs the length of each rail: a stripped piece of solid wire
+// (12 AWG is about 2.05 mm; thinner works too, the screw pushes the wire down onto it)
+bk_bus = 2.5;                    // square tunnel it slides through
 // Hole each incoming wire goes into (Dupont jumper wire, 22-26 AWG hookup wire, or a crimped Dupont pin)
 bk_wire_d = 2.2;
 // Mounting: M3 pan-head screws from behind, through the tabs into blind pilot holes in the plate
@@ -100,9 +101,9 @@ bk_back   = 8;                                    // screw row to the back edge 
 bk_end    = 2;                                    // past the last terminal at each end of the strip
 bk_gap    = 4;                                    // solid gap between two rails
 bk_floor  = 1.5;
-bk_h      = 11;
-bk_pocket = [3.6, 5.2];                           // clamp pocket under each screw: width (x), top (z)
-bk_wire_z = bk_floor + bk_bus + bk_wire_d / 2 - 0.1;   // wire hole centre: its bottom sits on top of the bus
+bk_wire_z = bk_floor + bk_bus + bk_wire_d / 2 - 0.3;   // wire hole centre: its bottom sits on top of the bus
+bk_pocket = [3.6, bk_wire_z + bk_wire_d / 2 + 0.3];    // clamp pocket under each screw: width (x), top (z)
+bk_h      = bk_pocket[1] + 6;                     // 6 mm of thread above the pocket
 bk_tab    = [10, 9];                              // mounting tabs off the back edge at each end
 bk_len    = [for (r = breakout_rails) r[1] * bk_pitch];
 function bk_sum(v, n) = n <= 0 ? 0 : v[n - 1] + bk_sum(v, n - 1);
@@ -295,7 +296,7 @@ module power_breakout() {
             translate([x0, -bk_bus / 2, bk_floor]) cube([x1 - x0, bk_bus, bk_bus]);
             for (k = [0 : breakout_rails[i][1] - 1]) translate([bk_term_x(i, k), 0, 0]) {
                 // clamp pocket where the wire crosses the bus
-                translate([-bk_pocket[0] / 2, -bk_bus / 2 - 0.6, bk_floor]) cube([bk_pocket[0], bk_front, bk_pocket[1] - bk_floor]);
+                translate([-bk_pocket[0] / 2, -bk_bus / 2 - 0.4, bk_floor]) cube([bk_pocket[0], bk_front, bk_pocket[1] - bk_floor]);
                 // wire hole from the front face
                 translate([0, -0.5, bk_wire_z]) rotate([-90, 0, 0]) cylinder(d = bk_wire_d, h = bk_front + 1, $fn = 24);
                 // screw, threaded into the plastic above the pocket

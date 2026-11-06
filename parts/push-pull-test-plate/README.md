@@ -59,20 +59,20 @@ Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ig
 
 ![Where it goes, seen from behind (green)](images/rear_power_breakout.png)
 
-`stl/hidden_power_breakout.stl`: a fully printed screw-terminal strip, 120 × 22 × 11 mm, so every control can share ground and +5V without splicing wires at the Pro Micro. It has **9 GND terminals and 5 +5V terminals**, with the rail names engraved along the back edge.
+`stl/hidden_power_breakout.stl`: a fully printed screw-terminal strip, 120 × 22 × 12 mm, so every control can share ground and +5V without splicing wires at the Pro Micro. It has **9 GND terminals and 5 +5V terminals**, with the rail names engraved along the back edge.
 
-**How it works:** each rail has a small square tunnel running its full length for a **bus wire**, a stripped piece of solid 20–22 AWG hookup wire. Every terminal is a hole in the front face that crosses over that bus inside a little pocket, with an **M3 × 10** screw threaded straight into the plastic above it. Push a wire's bare end in and tighten the screw: it pinches the wire down onto the bus.
+**How it works:** each rail has a small square tunnel running its full length for a **bus wire**: a stripped piece of solid **12 AWG** wire (house wire works). Thinner solid wire works too; the screw just pushes the incoming wire down a little further to meet it. Every terminal is a hole in the front face that crosses over that bus inside a little pocket, with an **M3 × 10** screw threaded straight into the plastic above it. Push a wire's bare end in and tighten the screw: it pinches the wire down onto the bus.
 
-**What you need:** 14 × M3 × 10 screws (pan head or socket head), 2 × M3 × 6 pan-head screws to mount it, and about 30 cm of solid 20–22 AWG wire for the two bus wires.
+**What you need:** 14 × M3 × 10 screws (pan head or socket head), 2 × M3 × 6 pan-head screws to mount it, and about 30 cm of solid 12 AWG wire for the two bus wires.
 
 **Assembly:**
 
 1. **Tap the holes.** Run an M3 screw into each of the 14 terminal holes once, all the way down, and back it out. It cuts the threads so the screws turn easily later.
-2. **Bus wires.** Strip about 80 mm of solid wire for the GND rail and push it in from the strip's end on the GND side until it reaches the far end of that rail. Leave the insulated part sticking out of the end; that can be the GND feed to the Pro Micro. Do the same with about 45 mm for +5V from the other end. The two rails don't connect: there's a solid gap between them.
+2. **Bus wires.** Strip about 80 mm of the 12 AWG wire for the GND rail and push it in from the strip's end on the GND side until it reaches the far end of that rail. Snip off any bare bit that pokes out. Do the same with about 45 mm for +5V from the other end. The two rails don't connect: there's a solid gap between them.
 3. **Mount it.** Use 2 × M3 × 6 pan-head screws from behind through the end tabs, into the blind pilot holes in the back of the plate. The holes are 4.2 mm deep, which leaves 2.15 mm of plastic at the front, so nothing shows. Already printed the plate? Hold the strip in place, mark through its tab holes, and drill 2.5 mm, 4.2 mm deep, with tape on the bit as a depth flag.
 4. **Wires.** Strip about 6 mm, push the bare end into a terminal hole until it stops, and tighten the screw until the wire won't pull out. Don't crank it: it's threaded into plastic. The holes take 22–26 AWG hookup wire or Dupont jumper wire, and a crimped Dupont pin fits too.
 
-**Wiring:** the GND bus feeds from a Pro Micro GND pin, and the +5V bus from VCC. You can use the bus wire's own tail or one of the terminals. That leaves 8 GND and 4 +5V terminals free: the three pot ends on each rail, plus the commons of the parking brake, fuel selector, trim encoder and ignition switch on GND, with spares.
+**Wiring:** feed each bus from the Pro Micro through one of its own terminals, a GND pin to a GND terminal and VCC to a +5V terminal. 12 AWG is too thick for the Pro Micro's holes, so run an ordinary hookup wire for the feed. That leaves 8 GND and 4 +5V terminals free: the three pot ends on each rail, plus the commons of the parking brake, fuel selector, trim encoder and ignition switch on GND, with spares.
 
 **Changing it:** edit `breakout_rails`, e.g. `[["GND", 8], ["+5V", 6]]`, and re-render the strip and the plate. A longer strip has to stay clear of the right-hand extrusion. Set `use_heat_set_inserts = true` in `common/sim_common.scad` if you'd rather put brass inserts in the terminal holes.
 
