@@ -43,7 +43,7 @@ With **Send the panel to MSFS** ticked, the app drives Microsoft Flight Simulato
 
 Clear any MSFS bindings you made for the panel's joystick ("Arduino Leonardo"), or the levers and buttons get there twice.
 
-**What gets sent** is in `sim-map.txt` (*Edit mapping*). It starts with the classic key events that most aircraft understand. The MSFS 2024 aircraft also have their own *input events*: each time an aircraft loads, the app lists them in `input-events.txt` (*Events*), and any of them can be used in `sim-map.txt` as `B:NAME value`. Save the file and the change applies within a couple of seconds, no restart. Both files are in `%LOCALAPPDATA%\C172TestPanel`, along with `log.txt`, which records everything sent to the sim.
+**What gets sent** is in `sim-map.txt` (*Edit mapping*). It starts with the classic key events that most aircraft understand. The MSFS 2024 aircraft also have their own *input events*: each time an aircraft loads, the app lists them in `input-events.txt` (*Events*), and any of them can be used in `sim-map.txt` as `B:NAME value`. Save the file and the change applies within a couple of seconds, no restart. Both files are in `%LOCALAPPDATA%\C172TestPanel`, along with `log.txt`, which records each switch change and trim step sent to the sim.
 
 The bottom row shows whether it's connected, which aircraft is loaded and the last thing it sent.
 
