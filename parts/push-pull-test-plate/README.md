@@ -125,6 +125,10 @@ Pot ends go to VCC and GND. The easy way to share those is the [power breakout](
 
 ![Parking brake wiring](../../docs/parking-brake-wiring.png)
 
+**Fuel selector stand-in (toggle switch):** until the rotary fuel selector is built, an ON-OFF-ON toggle (DPDT, 6 pins) can stand in for LEFT / BOTH / RIGHT. Wire one pole: its centre pin to GND, one outer pin to pin 3 (LEFT) and the other to pin 5 (RIGHT). Set `FUEL_TOGGLE = true` in `test_panel.ino`, so the toggle's middle (off) position reads as BOTH (button 5). There's no fuel OFF in this setup. A toggle connects the pin on the side opposite the bat, so if LEFT and RIGHT come out backwards, swap those two wires.
+
+![Fuel toggle wiring](../../docs/fuel-toggle-wiring.png)
+
 ![Ignition switch wiring](../../docs/ignition-switch-wiring.png)
 
 **Finding the ignition switch's lugs:** makers number them differently, so check with a multimeter on continuity (beep) before soldering:

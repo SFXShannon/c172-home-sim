@@ -65,6 +65,10 @@ const bool REVERSE_IGNITION = false;  // true if OFF and START come out swapped
 const int  TRIM_STEPS_PER_DETENT = 4; // EC11 trim encoder: usually 4 (try 2 if it skips)
 const int  PULSE_MS = 40;             // how long each trim / brake pulse is held
 const bool RESET_CALIBRATION = false; // true = forget the learned lever ranges
+// Fuel selector stand-in: an ON-OFF-ON toggle instead of the rotary selector.
+// Wire one pole: centre pin -> GND, the outer pins -> pins 3 (LEFT) and 5 (RIGHT).
+// With this true, the toggle's centre (off) position reads as BOTH. No OFF position.
+const bool FUEL_TOGGLE = false;
 
 // ---- pins -------------------------------------------------------------------
 const int PIN_THROTTLE = A0, PIN_MIXTURE = A1, PIN_PROP = A2;
@@ -216,7 +220,10 @@ void loop() {
   Joystick.setButton(BTN_BRAKE_REL, now < brakePulseUntil[1]);
 
   // ---- fuel selector
-  for (int i = 0; i < 4; i++) Joystick.setButton(BTN_FUEL + i, digitalRead(PIN_FUEL[i]) == LOW);
+  bool fuel[4];
+  for (int i = 0; i < 4; i++) fuel[i] = digitalRead(PIN_FUEL[i]) == LOW;
+  if (FUEL_TOGGLE) { fuel[1] = !fuel[0] && !fuel[2]; fuel[3] = false; }   // centre = BOTH
+  for (int i = 0; i < 4; i++) Joystick.setButton(BTN_FUEL + i, fuel[i]);
 
   // ---- trim wheel and ignition key
   pollEncoders();
