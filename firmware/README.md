@@ -16,6 +16,8 @@ As far as I know, the GP-Wiz is a button-only board, so it can't read the thrott
 
 Pots: wire the two ends to VCC and GND, and the wiper to the pin.
 
+![Slide pot wiring](../docs/slide-pot-wiring.png)
+
 ## Install
 
 1. Install the Arduino IDE.
