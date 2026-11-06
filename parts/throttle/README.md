@@ -61,7 +61,8 @@ No supports needed.
 
 - **Prints lying down** on a 0.4 mm flat (`rod_flat`). The layers run the whole length, so it's strong and the layer lines run the same way it slides. Don't stand it up: printed upright it snaps at a layer line the first time the knob gets knocked sideways.
 - **Material:** PETG, ASA or PA-CF. PLA works but can take a bend over time.
-- **Settings:** 4–5 walls, 100 % infill, no supports. A brim helps it stay down on such a long, thin footprint.
+- **Settings:** 6 walls, 15–20 % gyroid infill, no supports, seam at the back. Don't use 100 % infill: on a rod this thin it overpacks and leaves blobs. 0.12–0.16 mm layers give a smoother top. A brim helps it stay down on such a long, thin footprint.
+- **Still blobby?** Lower the flow ratio 3–5 %, turn ironing off, and for PETG slow the outer wall to about 40 mm/s.
 - **Fit:** it should slide through the bushings with the same 0.4 mm clearance as steel. If it's tight, sand it lightly lengthwise; if it's loose in the knob, the glue takes up the gap.
 - **Stiffer option:** set `rod_core_d = 3` and re-export. That leaves a hole down the middle for a 3 mm steel or carbon rod, glued in.
 - **Assembly** is the same as steel. Put the flat facing down when you clamp it in the carriage. The carriage screws only need to be snug: overtightening crushes a printed rod.
