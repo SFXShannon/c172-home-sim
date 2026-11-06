@@ -22,7 +22,7 @@ controls=("$@")
 dash_colour() { case "$1" in tile_M*|tile_U*) echo grey;; splice*) echo hidden;; *) echo black;; esac; }
 panel_colour() { case "$1" in splice*) echo hidden;; *) echo black;; esac; }
 # Same idea for control parts that have a set colour (others keep their plain name)
-part_file() { case "$1" in rod) echo "grey_$1";; *) echo "$1";; esac; }
+part_file() { case "$1" in rod) echo "grey_$1";; power_breakout) echo "hidden_$1";; *) echo "$1";; esac; }
 
 render_dashboard() {
   local scad=panel/g1000_dashboard.scad out=panel/dashboard

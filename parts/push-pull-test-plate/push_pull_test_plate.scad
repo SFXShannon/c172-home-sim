@@ -7,6 +7,8 @@
 //   - the IGNITION KEY (panel-extras key, lock face and bezel) on a 1-pole
 //     12-position rotary switch (RS26 type, stop washer set to 5 positions),
 //     with OFF R L BOTH START engraved round it
+//   - blind pilot holes (no holes through the front) for the power breakout
+//     (part "power_breakout"): WAGO 221 lever connectors for GND and +5V
 //   - 4 countersunk holes for the Pro Micro box (part "pro_micro_box"), which
 //     screws on behind the plate
 // so you can build, wire and test everything before the dashboard exists.
@@ -29,7 +31,7 @@ use <../trim-wheel/trim_wheel.scad>
 use <../panel-extras/panel_extras.scad>
 
 /* [What to show] */
-part = "assembly"; // [assembly, plate, pro_micro_box, pro_micro_clamp, pro_micro_box_view]
+part = "assembly"; // [assembly, plate, pro_micro_box, pro_micro_clamp, pro_micro_box_view, power_breakout]
 
 /* [Extrusion mount] */
 // Extrusion width (20 = 2020, 25.4 = 1" 10-series, 40 = 4040)
@@ -62,6 +64,15 @@ box_wall = 2;
 // Pro Micro board: length, width, thickness (measure yours)
 pm_size = [35, 18.3, 1.6];
 
+/* [Power breakout] */
+// One WAGO 221 lever connector per pocket, left to right as seen from behind
+breakout_rails = ["GND", "GND", "+5V"];
+// WAGO 221-415 (5 wires): width across the wire holes, depth, height
+wago = [29.9, 18.6, 8.3];
+// Screws: from behind, through the end tabs into blind pilot holes in the plate
+breakout_screw_len = 6;          // M3 x 6 pan head
+breakout_tab_t = 2.5;            // tab thickness under the screw head
+
 /* [Hidden] */
 flange_half = mount_flange_size / 2;   // 21
 
@@ -73,10 +84,30 @@ trim_p     = [0, -95];
 brake_p    = [pitch, -62];
 fuel_p     = [146, -153];   // outside the parking brake handle's swing (stowed -> set)
 box_p      = [95, -145];
+breakout_p = [100, -113];   // power breakout, between the parking brake and the Pro Micro box
 ign_p      = [-56, 2];      // ignition key, left of the throttle
 
 box_out = [box_in[0] + 2 * box_wall, box_in[1] + 2 * box_wall, box_in[2] + box_wall];
 box_screws = [for (x = [-1, 1], y = [-1, 1]) [x * (box_out[0] / 2 - 4), y * (box_out[1] / 2 - 4)]];
+// power breakout layout (its own frame: wire holes face +y, printed floor down)
+bk_clr   = 0.2;                                   // play round each connector
+bk_pkt   = [wago[0] + 2 * bk_clr, wago[1] + 2 * bk_clr];
+bk_div   = 1.6;                                   // wall between pockets
+bk_end   = 2;                                     // end walls
+bk_back  = 4;                                     // back wall (labels on top)
+bk_floor = 2;
+bk_lip   = [1.2, 1.5];                            // low lip along the wire side: thickness, height
+bk_wall_h = bk_floor + 5.5;                       // walls hold the bottom 5.5 mm of each connector
+bk_tab   = 10;                                    // screw tab beyond each end wall
+bk_n     = len(breakout_rails);
+bk_in_w  = bk_n * bk_pkt[0] + (bk_n - 1) * bk_div;
+bk_body  = [bk_in_w + 2 * bk_end, bk_pkt[1] + bk_back + bk_lip[0]];
+bk_out   = [bk_body[0] + 2 * bk_tab, bk_body[1]];
+bk_y0    = -bk_body[1] / 2;                        // back edge; the wire holes face +y
+bk_screws = [for (s = [-1, 1]) [s * (bk_body[0] / 2 + bk_tab / 2), bk_y0 + bk_body[1] / 2]];
+bk_pilot_depth = breakout_screw_len - breakout_tab_t + 0.7;   // blind hole in the plate
+function bk_pkt_x(i) = -bk_in_w / 2 + i * (bk_pkt[0] + bk_div);  // left edge of pocket i
+
 box_screw_len = [for (l = [12, 14, 16, 18, 20]) if (l >= panel_thickness + 8) l][0];
 
 // plate outline
@@ -116,6 +147,9 @@ module plate() mirror([1, 0, 0]) {
         translate(brake_p) parking_brake_panel_countersinks();
         translate(trim_p) trim_wheel_panel_countersinks();
         for (s = box_screws) translate(box_p + s) m3_csk();
+        // blind pilot holes for the power breakout, from the back (nothing shows on the front)
+        for (s = bk_screws) translate([breakout_p[0] - s[0], breakout_p[1] + s[1], panel_thickness - bk_pilot_depth])
+            cylinder(d = m3_pilot_d, h = bk_pilot_depth + 0.01);
         if (labels) translate([ign_p[0], ign_p[1], -0.01]) linear_extrude(0.61) ignition_labels_2d();
         // (the plate is mirrored, so plain text reads correctly from the front)
         label(throttle_p, "THROTTLE", -36); label(prop_p, "PROP", -36); label(mixture_p, "MIXTURE", -36);
@@ -232,11 +266,51 @@ module pro_micro_dummy() {
     color("dimgray") translate([0, 0, -clamp_pre]) pro_micro_clamp();   // as screwed down
 }
 
+// ------------------------------------------------------------------ power breakout
+// A tray for WAGO 221 lever connectors, one per rail, so several controls can
+// share GND and +5V. It screws on behind the plate with 2 x M3 x 6 pan-head
+// screws from behind through the end tabs into blind pilot holes; nothing goes
+// through to the front. Each connector presses down into its pocket (small
+// ribs on the end walls grip it) with its wire holes facing the open side and
+// its levers on top. Rail names are engraved on top of the back wall.
+// Built floor down; the floor goes against the plate.
+module power_breakout() {
+    difference() {
+        union() {
+            translate([-bk_out[0] / 2, bk_y0, 0]) cube([bk_out[0], bk_out[1], breakout_tab_t]);
+            translate([-bk_body[0] / 2, bk_y0, 0]) cube([bk_body[0], bk_body[1], bk_wall_h]);
+        }
+        for (i = [0 : bk_n - 1]) {
+            // pocket; the wire side is open above a low lip (under the wire holes) that stops the connector sliding out
+            translate([bk_pkt_x(i), bk_y0 + bk_back, bk_floor]) cube([bk_pkt[0], bk_pkt[1], bk_wall_h]);
+            translate([bk_pkt_x(i), bk_y0 + bk_back + bk_pkt[1] - 0.01, bk_floor + bk_lip[1]]) cube([bk_pkt[0], bk_lip[0] + 1, bk_wall_h]);
+            // rail name on top of the back wall
+            translate([bk_pkt_x(i) + bk_pkt[0] / 2, bk_y0 + bk_back / 2, bk_wall_h - 0.6])
+                linear_extrude(1) text(breakout_rails[i], size = 2.8, halign = "center", valign = "center", font = "Liberation Sans:style=Bold");
+        }
+        // screw holes in the end tabs
+        for (s = bk_screws) translate([s[0], s[1], -1]) cylinder(d = m3_clear_d, h = breakout_tab_t + 2);
+    }
+    // grip ribs on the end walls of every pocket
+    for (i = [0 : bk_n - 1], e = [0, 1]) let(x = bk_pkt_x(i) + e * bk_pkt[0])
+        translate([e == 0 ? x - 0.01 : x - 0.35, bk_y0 + bk_back + bk_pkt[1] / 2 - 2, bk_floor])
+            cube([0.36, 4, bk_wall_h - bk_floor]);
+}
+
+// stand-in WAGO 221-415s for the pictures and clearance checks
+module wago_dummies() for (i = [0 : bk_n - 1])
+    translate([bk_pkt_x(i) + bk_clr, bk_y0 + bk_back + bk_clr, bk_floor]) {
+        color([0.85, 0.87, 0.9, 0.85]) cube([wago[0], wago[1], wago[2] - 1.5]);
+        color("darkorange") for (k = [0 : 4]) translate([k * wago[0] / 5 + 0.4, 2, wago[2] - 1.5]) cube([wago[0] / 5 - 0.8, wago[1] - 3, 1.5]);
+    }
+
 // ------------------------------------------------------------------ views
 function m(p) = [-p[0], p[1], 0];   // pilot's view -> model
 
 // rim against the back of the plate, USB end toward the pilot's left
 module box_placed() translate(m(box_p)) mirror([1, 0, 0]) translate([0, 0, box_out[2]]) mirror([0, 0, 1]) pro_micro_box();
+
+module breakout_placed() translate(m(breakout_p)) { color("seagreen") power_breakout(); wago_dummies(); }
 
 module mounted_controls(brake_set = false) {
     translate(m(throttle_p)) throttle_mounted(0.2);
@@ -266,6 +340,7 @@ module assembly() {
     color([0.30, 0.31, 0.33]) translate([0, 0, -panel_thickness]) plate();
     mounted_controls();
     color("steelblue") box_placed();
+    breakout_placed();
     fuel_dummy();
     ignition_placed();
     color([0.78, 0.8, 0.83, 0.8]) rails();   // extrusion, just for the picture
@@ -275,6 +350,8 @@ if (part == "plate") plate();
 else if (part == "pro_micro_box") pro_micro_box();
 else if (part == "pro_micro_clamp") translate([0, 0, pm_z_top() + clamp_foot[1] + clamp_t]) mirror([0, 0, 1]) pro_micro_clamp();
 else if (part == "pro_micro_box_view") { pro_micro_box(); pro_micro_dummy(); }
+else if (part == "power_breakout") power_breakout();
+else if (part == "power_breakout_view") { power_breakout(); wago_dummies(); }
 else if (part == "assembly") rotate([90, 0, 0]) assembly();
 
 echo(str("test panel: ", round(W), " x ", round(H), " mm, ", panel_thickness, " mm thick"));
@@ -282,3 +359,4 @@ echo(str("test panel: 8 mm holes at ", [for (h = holes) [round(h[0] - x0), round
 echo(str("fuel hole is ", round(norm(fuel_p - brake_p)), " mm from the brake; handle swing + knob radius = ", 95 + fuel_knob[0] / 2, " mm"));
 echo(str("ignition: rotary switch; cut its shaft to ", 14 + panel_thickness, " mm from the mounting face (ends 14 mm in front of the panel)"));
 echo(str("Pro Micro box: ", box_out, " mm outside; 4x M3 x ", box_screw_len, " countersunk screws from the front"));
+echo(str("power breakout: ", [round(bk_out[0]), round(bk_out[1]), bk_wall_h], " mm; 2x M3 x ", breakout_screw_len, " pan head from behind; pilot holes ", bk_pilot_depth, " mm deep, ", panel_thickness - bk_pilot_depth, " mm of plastic left at the front"));

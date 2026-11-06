@@ -20,6 +20,7 @@ A flat bench panel for building, wiring and testing the controls before the dash
 | Under the prop | **Parking brake**, handle stows pointing right | 16 mm + 4 countersunk M3 on a 28 mm square |
 | Lower right corner | **Fuel selector** | 12.5 mm plain hole, outside the parking brake handle's swing (room for a knob up to 40 mm across) |
 | Lower middle | **Pro Micro box**, screws on behind | 4 countersunk M3 |
+| Behind, between the parking brake and the Pro Micro box | **Power breakout** (GND and +5V) | 2 blind M3 pilot holes in the back, nothing on the front |
 
 The panel is **286 × 240 mm**, 6.35 mm thick, and completely flat (no bosses), so it prints quickly and fits a 305 mm bed. Labels are engraved 0.6 mm into the front.
 
@@ -52,11 +53,27 @@ Uses the key, lock face and bezel from [`../panel-extras`](../panel-extras) (`ig
 - Wires leave through big cut-outs in the rim on **both long sides and the far end**, so they can go whichever way your controls are.
 - Prints floor down, no supports.
 
+## Power breakout
+
+![Power breakout](images/power_breakout.png)
+
+![Where it goes, seen from behind (green)](images/rear_power_breakout.png)
+
+`stl/hidden_power_breakout.stl`: a 118 × 24 mm tray that holds three **WAGO 221-415** lever connectors (5 wires each), so every control can share ground and +5V without splicing wires at the Pro Micro. Rails, left to right as seen from behind: **GND, GND, +5V**, engraved on the back wall.
+
+- **Mounting, no front holes:** 2 × **M3 × 6 pan-head** screws from behind through the end tabs, into blind pilot holes in the back of the plate. The holes are 4.2 mm deep, so 2.15 mm of plastic is left at the front.
+- **Already printed the plate?** Hold the tray in place, mark through its two tab holes, and drill 2.5 mm, 4.2 mm deep. A bit of tape on the drill as a depth flag stops you going through.
+- Press each connector down into its pocket, levers up, wire holes facing the open side (toward the controls above). Ribs on the end walls grip it; if one's loose, a dab of glue or double-sided tape holds it.
+- **Wiring:** run one Pro Micro GND pin to each GND connector (it has more than one GND pin, so they don't need a jumper between them) and the Pro Micro VCC to the +5V one. That leaves 4 + 4 free GND spots and 4 free +5V spots: the pot ends, and the commons of the parking brake, fuel selector, trim encoder and ignition switch, with room to spare. The connectors take 0.14–4 mm² wire (26–12 AWG).
+- Want a different mix? Change `breakout_rails`, e.g. `["GND", "GND", "+5V", "+5V"]`, and re-render the tray and the plate (the tray gets longer, so check it still clears the right-hand extrusion).
+- Prints floor down, no supports.
+
 ## Printing
 
 - `stl/plate.stl`: front face down, no supports.
 - `stl/pro_micro_box.stl`: floor down.
 - `stl/pro_micro_clamp.stl`: flat side down, as exported.
+- `stl/hidden_power_breakout.stl`: floor down.
 - See the throttle, trim wheel and parking brake folders for their parts.
 
 ## Firmware
@@ -92,4 +109,4 @@ The sketch compiles for the Pro Micro but hasn't been tested on real hardware ye
 | Trim encoder A / B (middle → GND) | 7 / 8 |
 | Ignition switch positions OFF / R / L / BOTH / START (common → GND) | 9 / 10 / 14 / 15 / 16 |
 
-Pot ends go to VCC and GND.
+Pot ends go to VCC and GND. The easy way to share those is the [power breakout](#power-breakout).
