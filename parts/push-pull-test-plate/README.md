@@ -120,3 +120,14 @@ The sketch compiles for the Pro Micro but hasn't been tested on real hardware ye
 | Ignition switch positions OFF / R / L / BOTH / START (common → GND) | 9 / 10 / 14 / 15 / 16 |
 
 Pot ends go to VCC and GND. The easy way to share those is the [power breakout](#power-breakout).
+
+![Ignition switch wiring](../../docs/ignition-switch-wiring.png)
+
+**Finding the ignition switch's lugs:** makers number them differently, so check with a multimeter on continuity (beep) before soldering:
+
+1. Set the stop washer to 5 positions and turn the shaft fully anticlockwise (seen from the front). That's OFF.
+2. Put one probe on the lug nearest the centre (usually marked A or C). That's **COM**. Touch the other probe round the outer ring until it beeps. That lug is **position 1 (OFF)** → pin 9.
+3. Click the shaft one step clockwise and find the lug that beeps now: **position 2 (R)** → pin 10. Do the same for L → 14, BOTH → 15, START → 16.
+4. COM → GND. The other 7 outer lugs stay unconnected.
+
+If the beep is on every outer lug, or on none, you've got the wrong lug as COM; try the other inner one.
