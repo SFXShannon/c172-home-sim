@@ -60,6 +60,8 @@ No supports are needed for any part; each STL is already in its print orientatio
 
 Wire the microswitch's **COM** and **NC** terminals to one input. The button is held while the brake is set.
 
+![Parking brake wiring](../../docs/parking-brake-wiring.png)
+
 - **With the Pro Micro sketch** in [`/firmware`](../../firmware): use pin 2. You get button 1 (held), plus button 2 (a pulse when the brake is set) and button 3 (a pulse when it's released).
 - **In MSFS:** bind "set parking brake" to the press and "release parking brake" to the release. The most reliable way is a MobiFlight input with `1 (>K:PARKING_BRAKE_SET)` on press and `0 (>K:PARKING_BRAKE_SET)` on release.
 

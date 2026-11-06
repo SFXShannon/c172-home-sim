@@ -123,6 +123,8 @@ Pot ends go to VCC and GND. The easy way to share those is the [power breakout](
 
 ![Throttle, prop and mixture wiring](../../docs/three-slide-pots-wiring.png)
 
+![Parking brake wiring](../../docs/parking-brake-wiring.png)
+
 ![Ignition switch wiring](../../docs/ignition-switch-wiring.png)
 
 **Finding the ignition switch's lugs:** makers number them differently, so check with a multimeter on continuity (beep) before soldering:
