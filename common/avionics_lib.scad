@@ -54,9 +54,15 @@ module flip_arrow(w = 7, h = 3) {
 }
 
 // Standoff posts on the back of the front plate (add to the plate)
-module face_post(h = sw_gap) {
+// d: post diameter. flare: how much wider (each side) the post gets where it meets the
+// plate, as a 45 degree cone. A thicker, flared post bonds to the plate far better when
+// the plate is printed face down and the posts are small islands on top of it.
+module face_post(h = sw_gap, d = post_d, flare = 0) {
     difference() {
-        translate([0, 0, -face_t - h]) cylinder(d = post_d, h = h + 0.01);
+        union() {
+            translate([0, 0, -face_t - h]) cylinder(d = d, h = h + 0.01);
+            if (flare > 0) translate([0, 0, -face_t - flare]) cylinder(d1 = d, d2 = d + 2 * flare, h = flare + 0.01);
+        }
         translate([0, 0, -face_t - h - 1]) cylinder(d = m3_pilot_d, h = h);
     }
 }

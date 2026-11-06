@@ -77,8 +77,12 @@ knobs = [
     [ 128.8, -77.8, "dual",   "FMS",      -12.5]];
 
 // front-plate posts the switch plate screws to (placed in the gaps between keys and knobs)
-posts = [[-60, 88], [-20, 88], [60, 88], [-105, -89], [105, -89],
-         [-114, 34], [114, 34], [-114, -70], [114, -71]];
+// (bottom-right post sits at x 112, clear of softkey 12's cap flange; the bottom side pair sit
+//  at y -73, clear of the AP VS/DN and CLR/ENT cap flanges, so the flared base fits)
+posts = [[-60, 88], [-20, 88], [60, 88], [-105, -88], [112, -88],
+         [-114, 34], [114, 34], [-114, -73], [114, -73]];
+gdu_post_d     = 8;    // thicker than the shared 6 mm so they print solid face down
+gdu_post_flare = 1;    // 45 degree flare at the base: 10 mm where the post meets the plate
 // panel-back screw holes for the LCD cradle
 cradle_screws = [for (sx = [-1, 1], sy = [-1, 1]) [sx * 146, win_c[1] + sy * (lcd_h / 2 - 8)]];
 
@@ -87,7 +91,7 @@ module front_plate() {
     difference() {
         union() {
             translate([0, 0, -face_t]) linear_extrude(face_t) rounded_rect([W, H], 6);
-            for (p = posts) translate(p) face_post();
+            for (p = posts) translate(p) face_post(d = gdu_post_d, flare = gdu_post_flare);
         }
         translate([win_c[0], win_c[1], -face_t - 1]) linear_extrude(face_t + 2) rounded_rect(win, 2);
         // slight bevel round the screen window
@@ -124,8 +128,8 @@ module switch_plate() {
         for (k = keys) translate([k[0], k[1]]) tact_pocket();
         for (k = knobs) translate([k[0], k[1]]) enc_clear();
         for (p = posts) translate([p[0], p[1], -sw_z - sw_t - 1]) cylinder(d = m3_clear_d, h = sw_t + 2);
-        // wire exits between the key columns
-        for (y = [30, -20, -70]) for (s = [-1, 1]) translate([s * 112, y, -sw_z - sw_t - 1]) cylinder(d = 4, h = sw_t + 2);
+        // wire exits between the key columns (kept clear of the posts)
+        for (y = [26, -20, -64]) for (s = [-1, 1]) translate([s * 111, y, -sw_z - sw_t - 1]) cylinder(d = 4, h = sw_t + 2);
     }
 }
 
