@@ -228,10 +228,10 @@ namespace C172TestPanel
             fuelNote.Height = 32;
 
             var tr = AddCard("Trim wheel", L + 436, 324, 224, 124);
-            trimCountLabel = MakeLabel(tr, "0", 14, 30, Theme.Big, Theme.Text, 100);
+            trimCountLabel = MakeLabel(tr, "0", 12, 34, Theme.Big, Theme.Text, 100);
             trimCountLabel.Height = 34;
-            MakeLabel(tr, "clicks, + = nose down", 14, 64, Theme.Small, Theme.Dim);
-            var zero = new FlatBtn("Zero") { Left = 14, Top = 88, Width = 60, Height = 24, Font = Theme.Small };
+            MakeLabel(tr, "clicks, + = nose down", 14, 72, Theme.Small, Theme.Dim);
+            var zero = new FlatBtn("Zero") { Left = 14, Top = 94, Width = 56, Height = 22, Font = Theme.Small };
             zero.Click += (s, e) => { trimZero = trimLast; UpdateTrimCount(); };
             tr.Controls.Add(zero);
             trimDnLamp = AddLamp(tr, "NOSE DN", 126, 32, 84, 34, Theme.Accent);
