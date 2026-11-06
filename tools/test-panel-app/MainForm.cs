@@ -16,7 +16,7 @@ namespace C172TestPanel
         Label statusLabel;
         string firmware;              // version from HELLO, null until it answers
         string wantedPort;            // port to come back to after an unplug
-        DateTime lastData = DateTime.MinValue, openedAt = DateTime.MinValue;
+        DateTime lastData = DateTime.MinValue, openedAt = DateTime.MinValue, lastRetry = DateTime.MinValue;
         bool scanning;
 
         // ---- live view
@@ -128,13 +128,13 @@ namespace C172TestPanel
             rescanBtn.Click += (s, e) => Rescan(autoConnect: !link.IsOpen);
             bar.Controls.Add(rescanBtn);
 
-            connectBtn = new FlatBtn("Connect", primary: true) { Left = 564, Top = 13, Width = 100, Height = 27 };
+            connectBtn = new FlatBtn("Connect", primary: true) { Left = 564, Top = 13, Width = 110, Height = 27 };
             connectBtn.Click += (s, e) => { if (link.IsOpen || wantedPort != null) Disconnect(); else ConnectSelected(); };
             bar.Controls.Add(connectBtn);
 
-            statusLabel = MakeLabel(bar, "", 680, 18, Theme.Body, Theme.Dim);
+            statusLabel = MakeLabel(bar, "", 684, 18, Theme.Body, Theme.Dim);
             statusLabel.AutoSize = false;
-            statusLabel.Width = 384;
+            statusLabel.Width = 380;
             statusLabel.Height = 20;
             statusLabel.TextAlign = ContentAlignment.MiddleRight;
         }
@@ -168,8 +168,8 @@ namespace C172TestPanel
             var tr = AddCard("Trim wheel", L + 436, 324, 224, 124);
             trimCountLabel = MakeLabel(tr, "0", 14, 30, Theme.Big, Theme.Text, 100);
             trimCountLabel.Height = 34;
-            MakeLabel(tr, "clicks (+ = nose down)", 14, 66, Theme.Small, Theme.Dim);
-            var zero = new FlatBtn("Zero") { Left = 14, Top = 88, Width = 60, Height = 24, Font = Theme.Small };
+            MakeLabel(tr, "clicks (+ = nose down)", 14, 64, Theme.Small, Theme.Dim);
+            var zero = new FlatBtn("Zero") { Left = 14, Top = 88, Width = 60, Height = 26, Font = Theme.Small };
             zero.Click += (s, e) => { trimZero = trimLast; UpdateTrimCount(); };
             tr.Controls.Add(zero);
             trimDnLamp = AddLamp(tr, "NOSE DN", 126, 32, 84, 34, Theme.Accent);
@@ -199,7 +199,7 @@ namespace C172TestPanel
                 pinLamps[i].Font = Theme.Small;
             }
             MakeLabel(wi, "Flip each switch and watch its pin light. Nothing lights: check that switch's GND wire. " +
-                          "The wrong one lights: two wires are swapped.", 14, 120, Theme.Small, Theme.Dim, W - 28).Height = 30;
+                          "The wrong one lights: two wires are swapped.", 14, 118, Theme.Small, Theme.Dim, W - 28).Height = 34;
         }
 
         Lamp AddLamp(Control parent, string text, int x, int y, int w, int h, Color? on = null)
@@ -284,10 +284,10 @@ namespace C172TestPanel
             saveBtn = new FlatBtn("Save to panel", primary: true) { Left = X, Top = 648, Width = 140, Height = 32 };
             saveBtn.Click += (s, e) => Save();
             Controls.Add(saveBtn);
-            undoBtn = new FlatBtn("Undo changes") { Left = X + 148, Top = 648, Width = 112, Height = 32 };
+            undoBtn = new FlatBtn("Undo changes") { Left = X + 148, Top = 648, Width = 120, Height = 32 };
             undoBtn.Click += (s, e) => { link.Send("LOAD"); link.Send("GET"); SetDirty(false); };
             Controls.Add(undoBtn);
-            defaultsBtn = new FlatBtn("Defaults") { Left = X + 268, Top = 648, Width = 108, Height = 32 };
+            defaultsBtn = new FlatBtn("Defaults") { Left = X + 276, Top = 648, Width = 100, Height = 32 };
             defaultsBtn.Click += (s, e) => { link.Send("DEFAULTS"); link.Send("GET"); SetDirty(true); };
             Controls.Add(defaultsBtn);
             var tips = new ToolTip();
@@ -316,8 +316,9 @@ namespace C172TestPanel
                 string found = null, version = null;
                 if (autoConnect)
                 {
-                    // only ask Pro Micro / Leonardo-type boards
-                    foreach (var p in ports)
+                    // only ask Pro Micro / Leonardo-type boards, the one that worked last time first
+                    string lastGood = Log.LastPort;
+                    foreach (var p in ports.OrderByDescending(x => x.Name == lastGood))
                     {
                         if (p.Name == current || !p.LooksLikeBoard) continue;
                         version = PanelLink.Probe(p.Name);
@@ -367,6 +368,7 @@ namespace C172TestPanel
             }
             catch (Exception ex)
             {
+                Log.Write($"connect {name}: {ex.Message}");
                 Status($"Couldn't open {name}: {ex.Message}", Theme.Red);
                 return;
             }
@@ -404,6 +406,8 @@ namespace C172TestPanel
             // come back after an unplug / re-upload
             if (!link.IsOpen && wantedPort != null && !scanning)
             {
+                if ((DateTime.UtcNow - lastRetry).TotalSeconds < 3) return;
+                lastRetry = DateTime.UtcNow;
                 if (System.IO.Ports.SerialPort.GetPortNames().Contains(wantedPort))
                 {
                     try { Connect(wantedPort); } catch { }
@@ -472,6 +476,8 @@ namespace C172TestPanel
             else if (line.StartsWith("C172TP,"))
             {
                 firmware = line.Substring(7);
+                Log.LastPort = link.PortName;
+                Log.Write($"{link.PortName}: test panel firmware v{firmware}");
                 UpdateStatus();
             }
             else if (line == "ERR")

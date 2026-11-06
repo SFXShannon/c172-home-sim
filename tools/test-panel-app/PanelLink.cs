@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace C172TestPanel
 {
@@ -55,14 +56,13 @@ namespace C172TestPanel
         public event Action<string> LineReceived;
         public event Action Lost;
 
-        // ATmega32U4 boards (Leonardo, Micro, SparkFun Pro Micro). Only these are
-        // probed automatically: opening an Uno resets it, and other serial
-        // devices (wheel bases, other controllers) shouldn't be sent commands.
+        // A Pro Micro flashed as "Arduino Leonardo" (as the sketch says to), or with
+        // SparkFun's Pro Micro board files. Only these are probed automatically:
+        // opening an Uno resets it, and other USB serial devices (SimHub boards,
+        // wheel bases) shouldn't be sent commands.
         static readonly string[] BoardIds =
         {
-            "VID_2341&PID_8036", "VID_2341&PID_8037", "VID_2341&PID_0036", "VID_2341&PID_0037",
-            "VID_2A03&PID_8036", "VID_2A03&PID_8037",
-            "VID_1B4F&PID_9205", "VID_1B4F&PID_9206", "VID_1B4F&PID_9203", "VID_1B4F&PID_9204",
+            "VID_2341&PID_8036", "VID_2A03&PID_8036", "VID_1B4F&PID_9205", "VID_1B4F&PID_9206",
         };
 
         public static List<PortInfo> ListPorts()
@@ -106,6 +106,26 @@ namespace C172TestPanel
         };
 
         /// <summary>
+        /// Opens a port, giving up after a few seconds: a USB serial port whose
+        /// device has stopped responding can hang Open() forever.
+        /// </summary>
+        static SerialPort OpenPort(string name, int timeoutMs = 3000)
+        {
+            var p = MakePort(name);
+            var t = Task.Run(() => p.Open());
+            try
+            {
+                if (!t.Wait(timeoutMs))
+                {
+                    Log.Write($"{name}: open timed out");
+                    throw new TimeoutException($"{name} didn't open (the device isn't responding)");
+                }
+            }
+            catch (AggregateException ae) { throw ae.InnerException; }
+            return p;
+        }
+
+        /// <summary>
         /// Opens a port briefly and asks "HELLO". Returns the firmware version
         /// if test_panel.ino answers, otherwise null.
         /// </summary>
@@ -113,9 +133,8 @@ namespace C172TestPanel
         {
             try
             {
-                using (var p = MakePort(name))
+                using (var p = OpenPort(name))
                 {
-                    p.Open();
                     Thread.Sleep(150);
                     p.DiscardInBuffer();
                     var until = DateTime.UtcNow.AddMilliseconds(timeoutMs);
@@ -130,21 +149,23 @@ namespace C172TestPanel
                         try
                         {
                             string line = p.ReadLine().Trim();
+                            Log.Write($"{name} probe reply: {line}");
                             if (line.StartsWith("C172TP,")) return line.Substring(7);
                         }
                         catch (TimeoutException) { }
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { Log.Write($"{name} probe: {ex.Message}"); }
+            Log.Write($"{name} probe: no answer");
             return null;
         }
 
         public void Open(string name)
         {
             Close();
-            var p = MakePort(name);
-            p.Open();
+            var p = OpenPort(name);
+            Log.Write($"{name}: opened");
             port = p;
             PortName = name;
             running = true;
@@ -160,8 +181,9 @@ namespace C172TestPanel
                 string line;
                 try { line = p.ReadLine(); }
                 catch (TimeoutException) { continue; }
-                catch
+                catch (Exception ex)
                 {
+                    Log.Write($"{PortName} read: {ex.GetType().Name} {ex.Message}");
                     if (running) { running = false; Lost?.Invoke(); }
                     return;
                 }
@@ -179,8 +201,9 @@ namespace C172TestPanel
                 lock (writeLock) p.Write(command + "\n");
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Write($"{PortName} write: {ex.GetType().Name} {ex.Message}");
                 if (running) { running = false; Lost?.Invoke(); }
                 return false;
             }
@@ -243,6 +266,40 @@ namespace C172TestPanel
                 return c;
             }
             catch { return null; }
+        }
+    }
+}
+
+namespace C172TestPanel
+{
+    /// <summary>A small log and the last port that worked, in %LOCALAPPDATA%\C172TestPanel.</summary>
+    static class Log
+    {
+        static readonly object gate = new object();
+        public static readonly string Folder = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "C172TestPanel");
+        static string LogFile => System.IO.Path.Combine(Folder, "log.txt");
+        static string PortFile => System.IO.Path.Combine(Folder, "last-port.txt");
+
+        public static void Write(string text)
+        {
+            try
+            {
+                lock (gate)
+                {
+                    System.IO.Directory.CreateDirectory(Folder);
+                    var fi = new System.IO.FileInfo(LogFile);
+                    if (fi.Exists && fi.Length > 256 * 1024) fi.Delete();
+                    System.IO.File.AppendAllText(LogFile, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}  {text}\r\n");
+                }
+            }
+            catch { }
+        }
+
+        public static string LastPort
+        {
+            get { try { return System.IO.File.ReadAllText(PortFile).Trim(); } catch { return null; } }
+            set { try { System.IO.Directory.CreateDirectory(Folder); System.IO.File.WriteAllText(PortFile, value ?? ""); } catch { } }
         }
     }
 }
